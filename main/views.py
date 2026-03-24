@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from urllib.parse import urlparse, parse_qs
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from .models import Contact
+from .models import Contact, ContactMessage
 import json
 import requests
 from django.utils.text import slugify
