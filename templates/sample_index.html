@@ -2790,7 +2790,7 @@ function loadFeaturedProperties() {
   const grid = document.querySelector('.properties-grid');
   grid.innerHTML = `<p>Loading Featured Properties...</p>`;
 
-  fetch('https://offplan.market/api/properties/filter/', {
+  fetch('https://microservice.x-opp.com/api/properties/filter/', {
     method: 'POST',
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ property_type: "Residential" })

@@ -4,10 +4,9 @@ from decouple import config
 from dotenv import load_dotenv
 
 
-
 load_dotenv()
 
-MICROSERVICE_API=os.getenv('MICROSERVICE_API')
+MICROSERVICE_API = os.getenv("MICROSERVICE_API", "http://54.237.196.120/api")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -139,7 +138,6 @@ CACHES = {
     }
 }
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -184,8 +182,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

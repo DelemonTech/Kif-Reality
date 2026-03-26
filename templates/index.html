@@ -353,11 +353,12 @@
 <div class="properties-grid"></div>
 
 <script>
+    // ✅ FIX: Single declaration at the top — shared by all functions below
+   const MICROSERVICE_API = "http://127.0.0.1:8000/api";
+
     function loadFeaturedProperties() {
         const grid = document.querySelector('.properties-grid');
         grid.innerHTML = `<p>Loading Featured Properties...</p>`;
-
-        const MICROSERVICE_API = "{{ MICROSERVICE_API }}";
 
         const API_URL = `${MICROSERVICE_API}/properties/filter/`;
         console.log(API_URL);
@@ -367,19 +368,17 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 property_type: "Residential",
-                limit: 8,        // Try to limit results
-                page_size: 8     // Alternative parameter
+                limit: 8,
+                page_size: 8
             })
         })
             .then(res => res.json())
             .then(data => {
-                grid.innerHTML = ""; // clear loading message
+                grid.innerHTML = "";
 
                 if (data?.data?.results?.length) {
-                    // ✅ Show only first 8 properties
                     data.data.results.slice(0, 8).forEach(p => {
 
-                        // Create slug from API slug or title
                         const slug = p.slug || createSlug(p.title?.en || 'property');
                         const propertyUrl = `/property/${slug}-${p.id}/`;
 
@@ -390,7 +389,6 @@
               <h3>${p.title?.en || 'Untitled Property'}</h3>
               <h4>${p.low_price || 'Price on request'} <span>${p.currency || "AED"}</span></h4>
               <p>${p.district?.name?.en || ""} / ${p.city?.name?.en || ""}</p>
-             
               <a href="${propertyUrl}" class="learn-more" aria-label="Learn more about ${p.title?.en || 'this property'}">LEARN MORE</a>
             </div>
           </div>
@@ -404,36 +402,32 @@
                 console.error('Error loading properties:', err);
                 grid.innerHTML = `<p>Error loading properties. Please try again later.</p>`;
             });
-    } // ✅ Function properly closed here
+    }
 
     // ✅ Helper function defined OUTSIDE loadFeaturedProperties
     function createSlug(text) {
         return text
             .toLowerCase()
-            .replace(/[^\w\s-]/g, '') // Remove special characters
-            .replace(/\s+/g, '-')      // Replace spaces with hyphens
-            .replace(/--+/g, '-')      // Replace multiple hyphens with single hyphen
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
             .trim();
     }
 
     // ✅ Run on page load
     document.addEventListener("DOMContentLoaded", function () {
         loadFeaturedProperties();
-        loadCitiesFromAPI(); // ✅ Also load cities
+        loadCitiesFromAPI();
     });
 
-    // ✅ Load cities function
+    // ✅ Load cities function — uses shared MICROSERVICE_API above, no redeclaration
     function loadCitiesFromAPI() {
-
-        const MICROSERVICE_API = "{{ MICROSERVICE_API }}";
-
-        API_URL = `${MICROSERVICE_API}/cities/`;
-        console.log("Cities:",API_URL);
+        const API_URL = `${MICROSERVICE_API}/cities/`;
+        console.log("Cities:", API_URL);
 
         fetch(API_URL)
             .then(response => response.json())
             .then(result => {
-                // Handle the nested structure: result.data.data
                 if (result && result.data && result.data.status && result.data.data) {
                     citiesData = result.data.data;
                     populateCitiesDropdown();
@@ -462,10 +456,8 @@
             return;
         }
 
-        // Clear existing options except the first one
         citySelect.innerHTML = '<option value="">All Cities</option>';
 
-        // Add cities from API - Use a Set to avoid duplicates
         const uniqueCities = new Map();
         citiesData.forEach(city => {
             if (city.name && city.name.en) {
@@ -473,7 +465,6 @@
             }
         });
 
-        // Add unique cities to dropdown
         uniqueCities.forEach((city, cityName) => {
             const option = document.createElement('option');
             option.value = cityName;
@@ -998,15 +989,15 @@
             // Store actual values 
             let actualValues = {
                 propertyPrice: 1200000,
-                downPayment: 240000,     // Will be recalculated based on residency
-                loanAmount: 960000,      // Will be recalculated based on residency
+                downPayment: 240000,
+                loanAmount: 960000,
                 loanPeriod: 25,
                 interestRate: 3.75
             };
 
             function getResidencyLimits() {
                 const activeStatusEl = document.querySelector('.status-btn.active');
-                if (!activeStatusEl) return { maxLoanPercent: 0.80, minDownPercent: 0.20 }; // default
+                if (!activeStatusEl) return { maxLoanPercent: 0.80, minDownPercent: 0.20 };
 
                 const activeStatus = activeStatusEl.getAttribute('data-value');
 
@@ -1014,7 +1005,7 @@
                     return { maxLoanPercent: 0.85, minDownPercent: 0.15 };
                 } else if (activeStatus === 'uae-resident') {
                     return { maxLoanPercent: 0.80, minDownPercent: 0.20 };
-                } else { // non-resident
+                } else {
                     return { maxLoanPercent: 0.60, minDownPercent: 0.40 };
                 }
             }
@@ -1023,7 +1014,6 @@
                 const price = actualValues.propertyPrice;
                 const limits = getResidencyLimits();
 
-                // Set loan to maximum allowed and down payment to minimum required
                 actualValues.loanAmount = price * limits.maxLoanPercent;
                 actualValues.downPayment = price * limits.minDownPercent;
             }
@@ -1037,7 +1027,6 @@
                 const minLoan = price * limits.minDownPercent;
                 const maxLoan = price * limits.maxLoanPercent;
 
-                // Update slider ranges
                 elements.downPayment.min = minDown;
                 elements.downPayment.max = maxDown;
                 elements.loanAmount.min = minLoan;
@@ -1051,39 +1040,31 @@
                 const period = actualValues.loanPeriod;
                 const rate = actualValues.interestRate;
 
-                // Update slider ranges first
                 updateSliderRanges();
 
-                // Update input displays with precise values
                 elements.propertyPriceInput.value = formatNumber(price);
                 elements.downPaymentInput.value = formatNumber(down);
                 elements.loanAmountInput.value = formatNumber(loan);
                 elements.loanPeriodInput.value = period;
                 elements.interestRateInput.value = rate.toFixed(2);
 
-                // Update slider values to match actual values
                 elements.propertyPrice.value = price;
                 elements.downPayment.value = down;
                 elements.loanAmount.value = loan;
                 elements.loanPeriod.value = period;
-                // elements.interestRate.value = rate;
 
-                // Update percentages
                 const downPercent = (down / price) * 100;
                 const loanPercent = (loan / price) * 100;
                 if (elements.downPercentage) elements.downPercentage.textContent = downPercent.toFixed(1) + '%';
                 if (elements.loanPercentage) elements.loanPercentage.textContent = loanPercent.toFixed(1) + '%';
 
-                // Update min/max displays based on residency status
                 const limits = getResidencyLimits();
-                const minDown = price * limits.minDownPercent; // minimum down payment
-                const maxLoan = price * limits.maxLoanPercent; // maximum loan
+                const minDown = price * limits.minDownPercent;
+                const maxLoan = price * limits.maxLoanPercent;
 
                 const downMinDisplay = document.getElementById('down-min-display');
                 const loanMinDisplay = document.getElementById('loan-min-display');
 
-                // Set the minimum loan value to be equal to the minimum down payment (240,000 AED)
-                // Set the minimum down payment value to be displayed in the down-min-display span
                 if (downMinDisplay) {
                     downMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
                 }
@@ -1091,9 +1072,6 @@
                     loanMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
                 }
 
-
-
-                // Calculate monthly payment using standard amortization formula
                 const monthlyRate = rate / 100 / 12;
                 const numberOfPayments = period * 12;
 
@@ -1108,7 +1086,6 @@
                 if (elements.monthlyPayment) elements.monthlyPayment.textContent = formatCurrency(monthlyPayment);
                 if (elements.displayRate) elements.displayRate.textContent = rate.toFixed(2) + '%';
 
-                // Update fees breakdown
                 updateFeesBreakdown(price, down);
             }
 
@@ -1128,85 +1105,61 @@
                 if (totalUpfrontEl) totalUpfrontEl.textContent = formatCurrency(totalUpfront);
             }
 
-            // Property price slider
             elements.propertyPrice.addEventListener('input', function () {
                 actualValues.propertyPrice = parseFloat(this.value);
-                setToMaxLoanPosition(); // Reset to max loan when property price changes
+                setToMaxLoanPosition();
                 updateMortgageCalculations();
             });
 
-            // Down payment slider
             elements.downPayment.addEventListener('input', function () {
                 actualValues.downPayment = parseFloat(this.value);
                 actualValues.loanAmount = actualValues.propertyPrice - actualValues.downPayment;
                 updateMortgageCalculations();
             });
 
-            // Loan amount slider
             elements.loanAmount.addEventListener('input', function () {
                 actualValues.loanAmount = parseFloat(this.value);
                 actualValues.downPayment = actualValues.propertyPrice - actualValues.loanAmount;
                 updateMortgageCalculations();
             });
 
-            // Loan period slider
             elements.loanPeriod.addEventListener('input', function () {
                 actualValues.loanPeriod = parseFloat(this.value);
                 updateMortgageCalculations();
             });
 
-
-            // Interest rate slider
-            // --- FIXED INTEREST RATE INPUT HANDLING ---
             elements.interestRateInput.addEventListener('input', function () {
                 let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
 
-                // Allow only one decimal point
                 const parts = value.split('.');
                 if (parts.length > 2) {
-                    value = parts[0] + '.' + parts[1]; // drop extra dots
+                    value = parts[0] + '.' + parts[1];
                 }
 
-                this.value = value; // let user type freely (like "3.", "3.7", etc.)
+                this.value = value;
             });
 
-            // On blur (finalize input)
             elements.interestRateInput.addEventListener('blur', function () {
                 let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
                 const num = parseFloat(value);
 
                 if (isNaN(num)) {
-                    // reset to last valid value
                     this.value = actualValues.interestRate.toFixed(2);
                     return;
                 }
 
-                // Clamp and update
-                const clamped = Math.min(Math.max(num, 1), 10); // between 1% and 10%
+                const clamped = Math.min(Math.max(num, 1), 10);
                 actualValues.interestRate = clamped;
                 this.value = clamped.toFixed(2);
                 manualRateChanged = true;
                 updateMortgageCalculations();
             });
 
-
-            elements.interestRateInput.addEventListener('blur', function () {
-                const value = this.value.replace(/,/g, '');
-                if (value === '' || isNaN(parseFloat(value))) {
-                    this.value = actualValues.interestRate.toFixed(2);
-                    return;
-                }
-                actualValues.interestRate = parseFloat(value);
-                this.value = actualValues.interestRate.toFixed(2);
-            });
-
-            // Residency status buttons - FIXED to set max loan position
             document.querySelectorAll('.status-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
 
-                    // Only auto-set rate if user hasn't manually changed it
                     if (!manualRateChanged) {
                         actualValues.interestRate = parseFloat(this.getAttribute('data-rate'));
                     }
@@ -1216,7 +1169,6 @@
                 });
             });
 
-            // Input field synchronization
             function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
                 if (!inputElement) return;
 
@@ -1269,14 +1221,11 @@
                 });
             }
 
-            // Setup input synchronization
             setupInputSync(elements.propertyPriceInput, 'propertyPrice', false, 100000, 200000000);
             setupInputSync(elements.downPaymentInput, 'downPayment', false, 0, 200000000);
             setupInputSync(elements.loanAmountInput, 'loanAmount', false, 0, 200000000);
             setupInputSync(elements.loanPeriodInput, 'loanPeriod', true, 1, 30);
-            // setupInputSync(elements.interestRateInput, 'interestRate', false, 0, 20);
 
-            // Upfront costs toggle
             const viewUpfrontButton = document.getElementById('view-upfront-costs');
             if (viewUpfrontButton) {
                 viewUpfrontButton.addEventListener('click', function () {
@@ -1289,14 +1238,9 @@
                 });
             }
 
-            // Initialize - set to max loan position for default residency (UAE Resident)
             setToMaxLoanPosition();
             updateMortgageCalculations();
         }
-
-        // ROI CALCULATOR (unchanged)
-        // ROI CALCULATOR - EXACT FIX
-        // Replace your entire setupROICalculator() function with this code
 
         function setupROICalculator() {
             const elements = {
@@ -1335,21 +1279,18 @@
                 const annualExpenses = actualROIValues.annualExpenses;
                 const holdingPeriod = actualROIValues.holdingPeriod;
 
-                // Update input displays
                 if (elements.purchasePriceInput) elements.purchasePriceInput.value = formatNumber(purchasePrice);
                 if (elements.currentValueInput) elements.currentValueInput.value = formatNumber(currentValue);
                 if (elements.annualRentInput) elements.annualRentInput.value = formatNumber(annualRent);
                 if (elements.annualExpensesInput) elements.annualExpensesInput.value = formatNumber(annualExpenses);
                 if (elements.holdingPeriodInput) elements.holdingPeriodInput.value = holdingPeriod;
 
-                // Update slider values
                 if (elements.purchasePrice) elements.purchasePrice.value = purchasePrice;
                 if (elements.currentValue) elements.currentValue.value = currentValue;
                 if (elements.annualRent) elements.annualRent.value = annualRent;
                 if (elements.annualExpenses) elements.annualExpenses.value = annualExpenses;
                 if (elements.holdingPeriod) elements.holdingPeriod.value = holdingPeriod;
 
-                // Calculate ROI
                 const capitalAppreciation = currentValue - purchasePrice;
                 const netAnnualRent = annualRent - annualExpenses;
                 const totalRentalIncome = netAnnualRent * holdingPeriod;
@@ -1357,12 +1298,10 @@
                 const totalROI = (totalReturn / purchasePrice) * 100;
                 const annualROI = holdingPeriod > 0 ? totalROI / holdingPeriod : 0;
 
-                // Update displays
                 if (elements.totalROIDisplay) elements.totalROIDisplay.textContent = totalROI.toFixed(2) + '%';
                 if (elements.annualROIDisplay) elements.annualROIDisplay.textContent = annualROI.toFixed(2) + '%';
             }
 
-            // ========== THIS IS THE FIX - Input field synchronization ==========
             function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
                 if (!inputElement) return;
 
@@ -1398,9 +1337,7 @@
                     calculateROI();
                 });
             }
-            // ========== END OF FIX ==========
 
-            // Add slider event listeners
             if (elements.purchasePrice) {
                 elements.purchasePrice.addEventListener('input', function () {
                     actualROIValues.purchasePrice = parseFloat(this.value);
@@ -1436,15 +1373,12 @@
                 });
             }
 
-            // ========== CALL THE FIX - Setup input synchronization ==========
             setupInputSync(elements.purchasePriceInput, 'purchasePrice', false, 500000, 10000000);
             setupInputSync(elements.currentValueInput, 'currentValue', false, 500000, 15000000);
             setupInputSync(elements.annualRentInput, 'annualRent', false, 30000, 800000);
             setupInputSync(elements.annualExpensesInput, 'annualExpenses', false, 5000, 100000);
             setupInputSync(elements.holdingPeriodInput, 'holdingPeriod', true, 1, 20);
-            // ========== END ==========
 
-            // Initialize
             calculateROI();
         }
 
@@ -1521,12 +1455,12 @@
                 const target = +counter.getAttribute("data-target");
                 let count = +counter.innerText;
 
-                const speed = 300; // higher = slower (more time to reach target)
+                const speed = 300;
                 const increment = Math.max(1, Math.ceil(target / speed));
 
                 if (count < target) {
                     counter.innerText = count + increment;
-                    setTimeout(updateCount, 50); // slower updates
+                    setTimeout(updateCount, 50);
                 } else {
                     counter.innerText = target;
                 }

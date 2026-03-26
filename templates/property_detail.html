@@ -61,7 +61,7 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
     <!-- Left Panel -->
     <div class="left-panel">
         <!-- Hero Section -->
-      <section class="property-hero">
+     <section class="property-hero">
     <div class="hero-gallery">
         {% if property.property_images|length > 0 %}
             <img id="heroImage" src="{{ property.property_images.0.image|default:property.cover }}" alt="{{ property.title.en }}" class="hero-image"
@@ -447,8 +447,8 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
             const location = mapContainer.dataset.location;
             
             const mapSrc = (lat && lng) 
-                ? https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed
-                : https://maps.google.com/maps?q=${encodeURIComponent(location)}&z=15&output=embed;
+                 ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+                 : `https://maps.google.com/maps?q=${encodeURIComponent(location)}&z=15&output=embed`;
             
             mapContainer.innerHTML = `
                 <iframe 
@@ -594,7 +594,7 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
         if (!propertySlug || propertySlug === 'None' || propertySlug.trim() === '') {
             propertySlug = 'property';
         }
-        const url = /property/${propertySlug}-${propertyId}/unit/${unitId}/;
+          const url = `/property/${propertySlug}-${propertyId}/unit/${unitId}/`;
         window.location.href = url;
     }
 
@@ -711,14 +711,10 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
     // ✅ FIX 3: Error handler tries cover before placeholder
     const heroImage = document.getElementById('heroImage');
     if (heroImage) {
-        heroImage.addEventListener('error', function() {
-            const cover = "{{ property.cover|escapejs }}";
-            if (this.src !== cover && cover) {
-                this.src = cover;
-            } else {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+CjxyZWN0IHg9IjM1MCIgeT0iMjUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U4YjRhMCIgcng9IjUwIi8+CjwvU3ZnPgo=';
-            }
-        });
+       heroImage.addEventListener('error', function() {
+    this.onerror = null; // prevent infinite loop
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+CjxyZWN0IHg9IjM1MCIgeT0iMjUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U4YjRhMCIgcng9IjUwIi8+CjwvU3ZnPgo=';
+});
 
         heroImage.addEventListener('contextmenu', function(e) {
             e.preventDefault();
