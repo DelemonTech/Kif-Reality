@@ -357,7 +357,7 @@
         const grid = document.querySelector('.properties-grid');
         grid.innerHTML = `<p>Loading Featured Properties...</p>`;
 
-        const MICROSERVICE_API = "{{ MICROSERVICE_API }}";
+       const MICROSERVICE_API = "http://127.0.0.1:8000/api";
 
         const API_URL = `${MICROSERVICE_API}/properties/filter/`;
         console.log(API_URL);
@@ -425,7 +425,7 @@
     // ✅ Load cities function
     function loadCitiesFromAPI() {
 
-        const MICROSERVICE_API = "{{ MICROSERVICE_API }}";
+       const MICROSERVICE_API = "http://127.0.0.1:8000/api";
 
         API_URL = `${MICROSERVICE_API}/cities/`;
         console.log("Cities:",API_URL);

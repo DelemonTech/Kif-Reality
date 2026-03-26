@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from . import views
 
@@ -28,7 +28,7 @@ urlpatterns = [
     path('property/<int:property_id>/', views.property_redirect, name='property_old'),
 
     # path('property/<int:pk>/', views.property_detail, name='property_detail'),
-    path('property/<slug:slug>-<int:pk>/', views.property_detail, name='property_detail'),  # ✅ slug-id format
+    re_path(r'^property/(?P<slug>[\w-]+)-(?P<pk>\d+)/$', views.property_detail, name='property_detail'),  # ✅ slug-id format
     # path('property/<int:property_id>/unit/<int:unit_id>/', views.unit_detail, name='unit_detail'),
      # Unit detail
     path('property/<slug:property_slug>-<int:property_id>/unit/<int:unit_id>/', views.unit_detail, name='unit_detail'),

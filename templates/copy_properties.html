@@ -1258,7 +1258,7 @@
     console.log('🏠 Initial filters being sent:', filters);
 
     // Make API call to get initial properties
-    fetch('https://offplan.market/api/properties/filter/', {
+    fetch('https://microservice.x-opp.com/api/properties/filter/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -2043,7 +2043,7 @@
             console.log('🔍 Sending filters:', filters);
 
             // Make API call and return Promise to external API
-            return fetch('https://offplan.market/api/properties/filter/', {
+            return fetch('https://microservice.x-opp.com/api/properties/filter/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2301,7 +2301,7 @@
 
         // Call external API with page as query parameter and current filters in body
         const currentFilters = getCurrentFilters();
-        fetch(`https://offplan.market/api/properties/filter/?page=${page}`, {
+        fetch(`https://microservice.x-opp.com/api/properties/filter/?page=${page}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
