@@ -670,19 +670,6 @@ def unit_detail(request, property_slug, property_id, unit_id):
     })
 
 
-def extract_page_number(url):
-    """Helper to extract page number from URL"""
-    if not url:
-        return None
-    try:
-        from urllib.parse import urlparse, parse_qs
-        parsed = urlparse(url)
-        page = parse_qs(parsed.query).get('page', [None])[0]
-        return page
-    except:
-        return None
-
-
 def model1(request):
     return render(request, 'model1.html')
 
@@ -1113,7 +1100,8 @@ def cities_api(request):
 
 
 # ─────────────────────────────────────────────
-# ✅ FIXED: developers_api — fallback to developers_from_properties when microservice is down
+# ✅ FIXED: developers_api — unwraps nested response { data: { data: [...] } }
+#    and falls back gracefully when microservice is down
 # ─────────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["GET"])
@@ -1123,17 +1111,39 @@ def developers_api(request):
         result = PropertyService.get_developers()
 
         if result['success'] and result['data']:
-            return JsonResponse({
-                'status': True,
-                'data': result['data']
-            }, json_dumps_params={'ensure_ascii': False})
+            raw = result['data']
 
-        # ✅ Fallback: microservice is down, reuse local developers logic (DB → hardcoded)
+            # ✅ Unwrap nested response structure:
+            # The microservice returns { status: true, data: { status: true, data: [...] } }
+            # We need to drill into raw['data'] to get the actual array.
+            if isinstance(raw, dict):
+                inner = raw.get('data')
+                if isinstance(inner, list):
+                    # Pattern: { data: [...] }
+                    developers_list = inner
+                elif isinstance(inner, dict):
+                    # Pattern: { data: { data: [...] } }
+                    developers_list = inner.get('data', [])
+                else:
+                    developers_list = []
+            elif isinstance(raw, list):
+                # Already a flat list
+                developers_list = raw
+            else:
+                developers_list = []
+
+            if developers_list:
+                return JsonResponse({
+                    'status': True,
+                    'data': developers_list
+                }, json_dumps_params={'ensure_ascii': False})
+
+        # ✅ Fallback: microservice is down or returned empty
         return developers_from_properties(request)
 
     except Exception as e:
         print(f"Developers API error: {e}")
-        return developers_from_properties(request)  # always fall back, never 400
+        return developers_from_properties(request)  # always fall back, never 500
 
 
 # Landing pages
@@ -1208,7 +1218,7 @@ def developers(request):
 
 @require_http_methods(["GET"])
 def developers_from_properties(request):
-    """Get developers - tries API first, falls back to DB, then hardcoded list"""
+    """Get developers - tries DB first, falls back to microservice, then hardcoded list"""
     from .models import Property
 
     # Try DB first
@@ -1226,7 +1236,22 @@ def developers_from_properties(request):
     # Fallback: try the microservice developers API
     result = PropertyService.get_developers()
     if result['success'] and result['data']:
-        return JsonResponse({'status': True, 'data': result['data']}, json_dumps_params={'ensure_ascii': False})
+        raw = result['data']
+        if isinstance(raw, dict):
+            inner = raw.get('data')
+            if isinstance(inner, list):
+                developers_list = inner
+            elif isinstance(inner, dict):
+                developers_list = inner.get('data', [])
+            else:
+                developers_list = []
+        elif isinstance(raw, list):
+            developers_list = raw
+        else:
+            developers_list = []
+
+        if developers_list:
+            return JsonResponse({'status': True, 'data': developers_list}, json_dumps_params={'ensure_ascii': False})
 
     # Hardcoded fallback — top UAE developers
     fallback = [
