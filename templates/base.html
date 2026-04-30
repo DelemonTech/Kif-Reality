@@ -1459,6 +1459,13 @@
             </li>
 
             <li>
+                <a href="{% url 'developers' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'developers' %}active{% endif %}">
+                    Developers
+                </a>
+            </li>
+
+            <li>
                 <a href="{% url 'properties' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'properties' %}active{% endif %}">
                     Properties
@@ -1548,6 +1555,15 @@
                         <span>Home</span>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="{% url 'developers' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'developers' %}active{% endif %}">
+                        <i class="fas fa-building-columns"></i>
+                        <span>Developers</span>
+                    </a>
+                </li>
+                
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" id="calculatorDropdown">
                         <i class="fas fa-calculator"></i> <!-- calculator icon -->

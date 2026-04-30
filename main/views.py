@@ -1,30 +1,28 @@
+# ✅ Use utf8_json_response as JsonResponse throughout — auto-sets ensure_ascii=False
+# Do NOT re-import django.http.JsonResponse anywhere below (it would override this)
 from .utils import utf8_json_response as JsonResponse
-from django.shortcuts import render, redirect
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
-from django.http import HttpResponse
-from urllib.parse import urlparse, parse_qs
-from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from .models import Contact, ContactMessage
-import json
-import requests
-from django.utils.text import slugify
-from .services import PropertyService
-from django.shortcuts import get_object_or_404
+from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.contrib import messages
 from django.utils import timezone
-from .models import BlogPost, Category, Tag, Newsletter, Comment
-from .forms import NewsletterForm, CommentForm
-from django.core.cache import cache
+from django.utils.text import slugify
 from django.utils.html import strip_tags
+from urllib.parse import urlparse, parse_qs
+
+from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment
+from .forms import NewsletterForm, CommentForm
+from .services import PropertyService
+
+import json
+import requests
 import re
 import os
 from dotenv import load_dotenv
@@ -53,25 +51,27 @@ def _fix_image_url(path):
         return path
     # Relative path — prepend base URL
     return f"{MEDIA_BASE_URL}{path}"
+
+
 def blog_list(request):
     """Display blog list page with pagination and filtering"""
     posts = BlogPost.objects.filter(status='published').select_related(
         'category', 'author'
     ).prefetch_related('tags').order_by('-published_at')
-    
+
     # Get featured post
     featured_post = posts.filter(is_featured=True).first()
-    
+
     # Filter by category if specified
     category_slug = request.GET.get('category')
     if category_slug:
         posts = posts.filter(category__slug=category_slug)
-    
+
     # Filter by tag if specified
     tag_slug = request.GET.get('tag')
     if tag_slug:
         posts = posts.filter(tags__slug=tag_slug)
-    
+
     # Search functionality
     search_query = request.GET.get('q')
     if search_query:
@@ -81,26 +81,26 @@ def blog_list(request):
             Q(content__icontains=search_query) |
             Q(tags__name__icontains=search_query)
         ).distinct()
-    
+
     # Exclude featured post from the paginated list
     if featured_post:
         posts = posts.exclude(id=featured_post.id)
-    
+
     # Pagination
     paginator = Paginator(posts, 6)  # 6 posts per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     # Sidebar data
     categories = Category.objects.annotate(
         posts_count=Count('posts', filter=Q(posts__status='published'))
     ).filter(posts_count__gt=0)
-    
+
     recent_posts = BlogPost.objects.filter(status='published').order_by('-published_at')[:3]
     popular_tags = Tag.objects.annotate(
         posts_count=Count('posts', filter=Q(posts__status='published'))
     ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
-    
+
     context = {
         'featured_post': featured_post,
         'page_obj': page_obj,
@@ -112,7 +112,7 @@ def blog_list(request):
         'tag_slug': tag_slug,
         'newsletter_form': NewsletterForm(),
     }
-    
+
     return render(request, 'blogs.html', context)
 
 
@@ -123,23 +123,23 @@ def blog_detail(request, slug):
         slug=slug,
         status='published'
     )
-    
+
     # Increment view count
     post.increment_views()
-    
+
     # Get approved comments
     comments = post.comments.filter(is_approved=True).order_by('-created_at')
-    
+
     # Related posts
     related_posts = BlogPost.objects.filter(
         category=post.category,
         status='published'
     ).exclude(id=post.id)[:3]
-    
+
     # Initialize comment form
     comment_form = CommentForm()
     comment_success = False
-    
+
     # Handle comment form submission
     if request.method == 'POST':
         # Check if it's a comment submission
@@ -153,35 +153,35 @@ def blog_detail(request, slug):
                     comment.post = post
                     # Save to database
                     comment.save()
-                    
+
                     # Set success flag
                     comment_success = True
-                    
+
                     # Add success message
                     messages.success(
-                        request, 
+                        request,
                         'Thank you for your comment! It has been submitted and is awaiting approval.'
                     )
-                    
+
                     # Reset form after successful submission
                     comment_form = CommentForm()
-                    
+
                     # Redirect to prevent re-submission on refresh
                     return redirect('blog_detail', slug=slug)
-                    
+
                 except Exception as e:
                     print(f"Error saving comment: {e}")
                     messages.error(
-                        request, 
+                        request,
                         'Sorry, there was an error submitting your comment. Please try again.'
                     )
             else:
                 # Form has validation errors
                 messages.error(
-                    request, 
+                    request,
                     'Please correct the errors in your comment form.'
                 )
-    
+
     context = {
         'post': post,
         'comments': comments,
@@ -189,7 +189,7 @@ def blog_detail(request, slug):
         'comment_form': comment_form,
         'comment_success': comment_success,
     }
-    
+
     return render(request, 'blog_detail.html', context)
 
 
@@ -200,11 +200,11 @@ def blog_category(request, slug):
         category=category,
         status='published'
     ).select_related('author').prefetch_related('tags')
-    
+
     paginator = Paginator(posts, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'category': category,
         'page_obj': page_obj,
@@ -212,7 +212,7 @@ def blog_category(request, slug):
             posts_count=Count('posts', filter=Q(posts__status='published'))
         ).filter(posts_count__gt=0),
     }
-    
+
     return render(request, 'blogs.html', context)
 
 
@@ -223,11 +223,11 @@ def blog_tag(request, slug):
         tags=tag,
         status='published'
     ).select_related('category', 'author').prefetch_related('tags')
-    
+
     paginator = Paginator(posts, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'tag': tag,
         'page_obj': page_obj,
@@ -235,7 +235,7 @@ def blog_tag(request, slug):
             posts_count=Count('posts', filter=Q(posts__status='published'))
         ).filter(posts_count__gt=0).order_by('-posts_count')[:10],
     }
-    
+
     return render(request, 'blogs.html', context)
 
 
@@ -250,7 +250,7 @@ def newsletter_subscribe(request):
                 email=email,
                 defaults={'is_active': True}
             )
-            
+
             if created:
                 return JsonResponse({
                     'success': True,
@@ -285,7 +285,7 @@ def blog_search(request):
     """Handle blog search functionality"""
     query = request.GET.get('q', '').strip()
     posts = BlogPost.objects.none()
-    
+
     if query:
         posts = BlogPost.objects.filter(
             Q(title__icontains=query) |
@@ -295,11 +295,11 @@ def blog_search(request):
             Q(category__name__icontains=query),
             status='published'
         ).distinct().select_related('category', 'author').prefetch_related('tags')
-    
+
     paginator = Paginator(posts, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'page_obj': page_obj,
         'search_query': query,
@@ -311,7 +311,7 @@ def blog_search(request):
             posts_count=Count('posts', filter=Q(posts__status='published'))
         ).filter(posts_count__gt=0).order_by('-posts_count')[:10],
     }
-    
+
     return render(request, 'blog_search.html', context)
 
 
@@ -358,25 +358,25 @@ def property_redirect(request, property_id):
     Redirect old /property/ID/ URLs to new /property/slug-ID/ format
     """
     url = f"{API_BASE}/{property_id}"
-    
+
     try:
         resp = requests.get(url, timeout=8)
-        
+
         if resp.status_code == 200:
             data = resp.json()
-            
+
             if data.get("status"):
                 prop = data.get("data") or {}
-                
+
                 title_data = prop.get('title', {})
                 title = title_data.get('en', 'property') if isinstance(title_data, dict) else (title_data or 'property')
                 slug = prop.get('slug') or slugify(title)
-                
+
                 return redirect('property_detail', slug=slug, pk=property_id, permanent=True)
-    
+
     except requests.RequestException:
         pass
-    
+
     return redirect('property_detail', slug='property', pk=property_id, permanent=True)
 
 
@@ -447,16 +447,16 @@ def property_detail(request, slug, pk):
         desc = prop['description']
         if isinstance(desc, dict) and 'en' in desc:
             raw_html = desc['en']
-            
+
             raw_html = re.sub(r'style\s*=\s*["\'][^"\']*["\']?', '', raw_html, flags=re.IGNORECASE | re.DOTALL)
             raw_html = re.sub(r'(color-scheme|forced-color-adjust|font-family|position-anchor)[^>]*', '', raw_html, flags=re.IGNORECASE)
-            
+
             clean_text = strip_tags(raw_html)
             clean_text = re.sub(r'<\s*p[^a-zA-Z0-9>]*', '', clean_text)
             clean_text = re.sub(r'\s+', ' ', clean_text).strip()
             clean_text = re.sub(r'unset[;:\s]+', '', clean_text)
             clean_text = re.sub(r'(color-scheme|forced-color-adjust|mask|math-depth|position|appearance)[:\s]+[^;]*;?', '', clean_text)
-            
+
             sentences = re.split(r'(?<=[.!?])\s+', clean_text)
             paragraphs = []
             for i in range(0, len(sentences), 3):
@@ -464,7 +464,7 @@ def property_detail(request, slug, pk):
                 para_text = ' '.join(para_sentences).strip()
                 if para_text:
                     paragraphs.append(f'<p>{para_text}</p>')
-            
+
             prop['description']['en'] = '\n'.join(paragraphs) if paragraphs else '<p>No description available.</p>'
 
     # Get title and correct slug
@@ -1076,6 +1076,9 @@ def submit_comment_ajax(request, slug):
         }, json_dumps_params={'ensure_ascii': False})
 
 
+# ─────────────────────────────────────────────
+# ✅ FIXED: cities_api — fallback to hardcoded UAE cities when microservice is down
+# ─────────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["GET"])
 def cities_api(request):
@@ -1083,18 +1086,35 @@ def cities_api(request):
     try:
         result = PropertyService.get_cities()
 
-        if result['success']:
+        if result['success'] and result['data']:
             return JsonResponse({
                 'status': True,
                 'data': result['data']
             }, json_dumps_params={'ensure_ascii': False})
-        else:
-            return JsonResponse({'status': False, 'error': result['error']}, status=400, json_dumps_params={'ensure_ascii': False})
+
+        # ✅ Fallback: microservice is down, return hardcoded UAE cities
+        fallback = [
+            {'id': 1, 'name': 'Dubai', 'districts': []},
+            {'id': 2, 'name': 'Abu Dhabi', 'districts': []},
+            {'id': 3, 'name': 'Sharjah', 'districts': []},
+            {'id': 4, 'name': 'Ajman', 'districts': []},
+            {'id': 5, 'name': 'Ras Al Khaimah', 'districts': []},
+            {'id': 6, 'name': 'Fujairah', 'districts': []},
+            {'id': 7, 'name': 'Umm Al Quwain', 'districts': []},
+        ]
+        return JsonResponse({
+            'status': True,
+            'data': fallback
+        }, json_dumps_params={'ensure_ascii': False})
 
     except Exception as e:
+        print(f"Cities API error: {e}")
         return JsonResponse({'status': False, 'error': str(e)}, status=500, json_dumps_params={'ensure_ascii': False})
 
 
+# ─────────────────────────────────────────────
+# ✅ FIXED: developers_api — fallback to developers_from_properties when microservice is down
+# ─────────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["GET"])
 def developers_api(request):
@@ -1102,16 +1122,18 @@ def developers_api(request):
     try:
         result = PropertyService.get_developers()
 
-        if result['success']:
+        if result['success'] and result['data']:
             return JsonResponse({
                 'status': True,
                 'data': result['data']
             }, json_dumps_params={'ensure_ascii': False})
-        else:
-            return JsonResponse({'status': False, 'error': result['error']}, status=400, json_dumps_params={'ensure_ascii': False})
+
+        # ✅ Fallback: microservice is down, reuse local developers logic (DB → hardcoded)
+        return developers_from_properties(request)
 
     except Exception as e:
-        return JsonResponse({'status': False, 'error': str(e)}, status=500, json_dumps_params={'ensure_ascii': False})
+        print(f"Developers API error: {e}")
+        return developers_from_properties(request)  # always fall back, never 400
 
 
 # Landing pages
@@ -1173,3 +1195,55 @@ def custom_404(request, exception):
 def preview_404(request):
     """Preview the 404 page during development"""
     return render(request, '404.html', status=404)
+
+def developers(request):
+    if request.GET.get('name'):
+        return render(request, 'developer_detail.html', {
+            'MICROSERVICE_API': settings.MICROSERVICE_API,
+        })
+    return render(request, 'developers.html', {
+        'MICROSERVICE_API': settings.MICROSERVICE_API,
+    })
+
+
+@require_http_methods(["GET"])
+def developers_from_properties(request):
+    """Get developers - tries API first, falls back to DB, then hardcoded list"""
+    from .models import Property
+
+    # Try DB first
+    qs = (Property.objects
+          .exclude(developer='')
+          .exclude(developer__isnull=True)
+          .values_list('developer', flat=True)
+          .distinct()
+          .order_by('developer'))
+
+    if qs.exists():
+        data = [{'name': d} for d in qs]
+        return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
+
+    # Fallback: try the microservice developers API
+    result = PropertyService.get_developers()
+    if result['success'] and result['data']:
+        return JsonResponse({'status': True, 'data': result['data']}, json_dumps_params={'ensure_ascii': False})
+
+    # Hardcoded fallback — top UAE developers
+    fallback = [
+        {'name': 'Emaar Properties'},
+        {'name': 'DAMAC Properties'},
+        {'name': 'Nakheel'},
+        {'name': 'Meraas'},
+        {'name': 'Dubai Properties'},
+        {'name': 'Sobha Realty'},
+        {'name': 'Aldar Properties'},
+        {'name': 'Azizi Developments'},
+        {'name': 'Binghatti Developers'},
+        {'name': 'Omniyat'},
+        {'name': 'Select Group'},
+        {'name': 'Ellington Properties'},
+        {'name': 'Tiger Properties'},
+        {'name': 'Danube Properties'},
+        {'name': 'Object 1'},
+    ]
+    return JsonResponse({'status': True, 'data': fallback}, json_dumps_params={'ensure_ascii': False})
