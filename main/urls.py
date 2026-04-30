@@ -4,14 +4,6 @@ from . import views
 
 
 
-
-
-
-
-
-
-
-
 urlpatterns = [
     path('', views.index, name='index'),
 
@@ -49,8 +41,8 @@ urlpatterns = [
     path('api/search/', views.search_properties_api, name='search_properties_api'),
     path('api/properties/filter/', views.filter_properties_api, name='filter_properties_api'),
     path('cities/', views.cities_api, name='cities_api'),  # Cities API for React frontend
-    path('developers/', views.developers_api, name='developers_api'),  # Developers API for React frontend
-
+    path('api/developers/', views.developers_api, name='developers_api'),
+    path('api/developers-local/', views.developers_from_properties, name='developers_local'),
     
     path('contact/', views.contact_view, name='contact'),
     path('contact/submit/', views.contact_submit, name='contact_submit'),
@@ -77,5 +69,6 @@ urlpatterns = [
     path('warehouses-for-sale',views.warehouse, name='warehouses-for-sale'),
     path('plots-for-sale',views.plots, name='plots-for-sale'),
     path('mansions-for-sale',views.mansions, name='mansions-for-sale'),
+    path('developers/', views.developers, name='developers'),
+    
 ]
-
