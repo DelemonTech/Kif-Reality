@@ -1014,9 +1014,15 @@ def send_notification_email(contact):
     - Timeline: {contact.get_timeline_display() if contact.timeline else 'Not specified'}
     
     In the meantime, feel free to reach out directly:
+<<<<<<< HEAD
+    📞 +971 567655599
+    📧 info@kifrealty.com
+    💬 WhatsApp: https://wa.me/971567655599
+=======
     📞 +971 569599966
     📧 info@kifrealty.com
     💬 WhatsApp: https://wa.me/971569599966
+>>>>>>> ccd8cf64dc9ae2fe852abc09cc0d179e584a06c8
     
     Best regards,
     KIF Realty Team
