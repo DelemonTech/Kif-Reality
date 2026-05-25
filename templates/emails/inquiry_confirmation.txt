@@ -16,6 +16,7 @@ What Happens Next?
 - Our team will provide detailed property information
 
 Contact Information:
+
 Phone: {% if inquiry.property.contact_phone %}{{ inquiry.property.contact_phone }}{% else %}+971 567655599{% endif %}
 Email: {% if inquiry.property.contact_email %}{{ inquiry.property.contact_email }}{% else %}info@kifrealty.com{% endif %}
 WhatsApp: +971 567655599
