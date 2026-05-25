@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSIDIAN - Luxury Real Estate Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --obsidian-black: #0a0a0a;
+            --charcoal-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --soft-gray: #404040;
+            --rose-gold: #e8b4a0;
+            --bright-gold: #f4d03f;
+            --copper: #cd7f32;
+            --cream: #f5f1eb;
+            --text-light: #ffffff;
+            --text-muted: #b0b0b0;
+            --accent-gradient: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--obsidian-black);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 80%, rgba(232, 180, 160, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(244, 208, 63, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(205, 127, 50, 0.05) 0%, transparent 50%);
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            opacity: 0.1;
+            animation: float 15s ease-in-out infinite;
+            filter: blur(2px);
+        }
+
+        .orb-1 { width: 300px; height: 300px; top: 10%; left: 70%; animation-delay: 0s; }
+        .orb-2 { width: 200px; height: 200px; top: 70%; left: 20%; animation-delay: 5s; }
+        .orb-3 { width: 150px; height: 150px; top: 30%; left: 10%; animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-50px) scale(1.1); }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(232, 180, 160, 0.2);
+            padding: 1.5rem 0;
+            z-index: 1000;
+            transition: all 0.4s ease;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 3rem;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-menu a::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--rose-gold);
+        }
+
+        .nav-menu a:hover::before {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 1000px;
+            padding: 2rem;
+            z-index: 2;
+        }
+
+        .hero-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: var(--rose-gold);
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 5.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, var(--text-light), var(--rose-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-luxury {
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            padding: 1.3rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-luxury::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-luxury:hover::before {
+            left: 100%;
+        }
+
+        .btn-luxury:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(232, 180, 160, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--rose-gold);
+            padding: 1.3rem 3rem;
+            border: 2px solid var(--rose-gold);
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .btn-outline:hover {
+            background: var(--rose-gold);
+            color: var(--obsidian-black);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(232, 180, 160, 0.3);
+        }
+
+        /* Featured Properties */
+        .properties {
+            padding: 10rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 7rem;
+        }
+
+        .section-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 8rem;
+            font-weight: 300;
+            color: rgba(232, 180, 160, 0.1);
+            position: absolute;
+            top: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.8rem;
+            font-weight: 400;
+            color: var(--rose-gold);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Properties Grid */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 3rem;
+            margin-top: 5rem;
+        }
+
+        .property-card {
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(232, 180, 160, 0.1);
+        }
+
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            border-radius: 20px;
+        }
+
+        .property-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .property-card:hover {
+            transform: translateY(-15px) rotateX(5deg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(232, 180, 160, 0.3);
+        }
+
+        .property-image {
+            height: 300px;
+            background: linear-gradient(45deg, var(--medium-gray), var(--soft-gray));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-image i {
+            font-size: 4rem;
+            color: var(--text-muted);
+            opacity: 0.3;
+            transition: all 0.4s ease;
+        }
+
+        .property-card:hover .property-image i {
+            transform: scale(1.2) rotate(10deg);
+            color: var(--rose-gold);
+            opacity: 0.6;
+        }
+
+        .property-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .property-content {
+            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .property-price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .property-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .property-location {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .property-features {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .feature i {
+            color: var(--rose-gold);
+        }
+
+        .property-btn {
+            background: transparent;
+            border: 2px solid var(--rose-gold);
+            color: var(--rose-gold);
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .property-btn:hover {
+            background: var(--rose-gold);
+            color: var(--obsidian-black);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .section-title {
+                font-size: 2.8rem;
+            }
+
+            .properties-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .properties {
+                padding: 8rem 1.5rem;
+            }
+
+            .nav-container {
+                padding: 0 1.5rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-luxury,
+            .btn-outline {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">OBSIDIAN</a>
+            <ul class="nav-menu">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#properties">Collection</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <p class="hero-tagline">Where luxury meets sophistication</p>
+            <h1 class="hero-title">Exceptional Properties</h1>
+            <p class="hero-subtitle">Discover an exclusive collection of the world's most prestigious real estate, curated for those who demand nothing but perfection</p>
+            <div class="hero-cta">
+                <a href="#properties" class="btn-luxury">View Collection</a>
+                <a href="#contact" class="btn-outline">Private Viewing</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section class="properties" id="properties">
+        <div class="section-header">
+            <div class="section-number">01</div>
+            <h2 class="section-title">Signature Collection</h2>
+            <p class="section-description">Each property represents the pinnacle of luxury living, meticulously selected for their architectural significance and investment potential</p>
+        </div>
+
+        <div class="properties-grid">
+            <div class="property-card">
+                <div class="property-image">
+                    <i class="fas fa-crown"></i>
+                    <div class="property-badge">Exclusive</div>
+                </div>
+                <div class="property-content">
+                    <div class="property-price">$25,000,000</div>
+                    <h3 class="property-title">Manhattan Crown Penthouse</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Fifth Avenue, New York
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i>
+                            <span>6 Beds</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i>
+                            <span>8 Baths</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>12,000 sq ft</span>
+                        </div>
+                    </div>
+                    <button class="property-btn">View Details</button>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <i class="fas fa-gem"></i>
+                    <div class="property-badge">New</div>
+                </div>
+                <div class="property-content">
+                    <div class="property-price">$18,500,000</div>
+                    <h3 class="property-title">Beverly Hills Diamond Estate</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Beverly Hills, California
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i>
+                            <span>8 Beds</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i>
+                            <span>10 Baths</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>15,500 sq ft</span>
+                        </div>
+                    </div>
+                    <button class="property-btn">View Details</button>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <i class="fas fa-water"></i>
+                    <div class="property-badge">Waterfront</div>
+                </div>
+                <div class="property-content">
+                    <div class="property-price">$32,000,000</div>
+                    <h3 class="property-title">Malibu Ocean Palace</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Malibu, California
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i>
+                            <span>10 Beds</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i>
+                            <span>12 Baths</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>20,000 sq ft</span>
+                        </div>
+                    </div>
+                    <button class="property-btn">View Details</button>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <i class="fas fa-mountain"></i>
+                    <div class="property-badge">Resort</div>
+                </div>
+                <div class="property-content">
+                    <div class="property-price">$14,200,000</div>
+                    <h3 class="property-title">Aspen Alpine Sanctuary</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Aspen, Colorado
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i>
+                            <span>7 Beds</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i>
+                            <span>9 Baths</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>11,800 sq ft</span>
+                        </div>
+                    </div>
+                    <button class="property-btn">View Details</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'rgba(10, 10, 10, 0.98)';
+                navbar.style.borderBottomColor = 'rgba(232, 180, 160, 0.3)';
+            } else {
+                navbar.style.background = 'rgba(10, 10, 10, 0.95)';
+                navbar.style.borderBottomColor = 'rgba(232, 180, 160, 0.2)';
+            }
+        });
+
+        // Property card animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0) rotateX(0)';
+                    }, index * 200);
+                }
+            });
+        }, observerOptions);
+
+        // Initialize property cards
+        document.querySelectorAll('.property-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px) rotateX(-10deg)';
+            card.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            cardObserver.observe(card);
+        });
+
+        // Enhanced hover effects
+        document.querySelectorAll('.property-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-20px) rotateX(8deg) scale(1.02)';
+                this.querySelector('.property-image i').style.transform = 'scale(1.3) rotate(15deg)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) rotateX(0) scale(1)';
+                this.querySelector('.property-image i').style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+
+        // Floating orbs random movement
+        document.querySelectorAll('.floating-orb').forEach(orb => {
+            setInterval(() => {
+                const randomX = Math.random() * 100;
+                const randomY = Math.random() * 100;
+                orb.style.left = randomX + '%';
+                orb.style.top = randomY + '%';
+            }, Math.random() * 20000 + 15000);
+        });
+
+        // Button click effects
+        document.querySelectorAll('.property-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(232, 180, 160, 0.6)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.pointerEvents = 'none';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add ripple keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            const rate = scrolled * -0.5;
+            hero.style.transform = `translateY(${rate}px)`;
+        });
+
+        // Dynamic text animation
+        const heroTitle = document.querySelector('.hero-title');
+        const text = heroTitle.textContent;
+        heroTitle.innerHTML = '';
+        
+        text.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.style.animationDelay = `${index * 0.1}s`;
+            span.style.animation = 'fadeInUp 0.8s ease forwards';
+            span.style.opacity = '0';
+            heroTitle.appendChild(span);
+        });
+
+        // Add fadeInUp animation
+        const fadeStyle = document.createElement('style');
+        fadeStyle.textContent = `
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(fadeStyle);
+    </script>
+</body>
+</html>

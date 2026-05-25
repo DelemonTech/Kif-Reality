@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms & Conditions | KIF Realty - Legal Terms of Service{% endblock %}
+
+{% block description %}
+Read KIF Realty's Terms and Conditions for using our real estate services in Dubai. Understand your rights and obligations when browsing properties and engaging our services.
+{% endblock %}
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/terms-and-conditions/">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* Terms & Conditions Page - OBSIDIAN Style */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Page Header */
+.page-header {
+    padding: 8rem 3rem 4rem;
+    background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.05;
+}
+
+.header-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.header-content h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.header-content p {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    opacity: 0.9;
+}
+
+/* Terms Section */
+.terms-section {
+    padding: 6rem 2rem;
+    background: linear-gradient(135deg, var(--charcoal-gray), var(--obsidian-black));
+    position: relative;
+    z-index: 1;
+}
+
+.terms-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.03;
+    z-index: 0;
+}
+
+.terms-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border-radius: 25px;
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    padding: 4rem 3.5rem;
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+.effective-date {
+    text-align: center;
+    color: var(--rose-gold);
+    margin-bottom: 3rem;
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+.terms-container h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--rose-gold);
+    margin-top: 3rem;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+}
+
+.terms-container h2:first-of-type {
+    margin-top: 0;
+}
+
+.terms-container h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--gold-accent);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.terms-container p {
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+.terms-container strong {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.terms-container ul {
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+    list-style: none;
+    color: var(--text-muted);
+}
+
+.terms-container ul li {
+    margin-bottom: 1rem;
+    position: relative;
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.terms-container ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--rose-gold);
+    font-weight: 700;
+}
+
+.terms-container a {
+    color: var(--rose-gold);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.terms-container a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--rose-gold);
+    transition: width 0.3s ease;
+}
+
+.terms-container a:hover::after {
+    width: 100%;
+}
+
+.terms-container a:hover {
+    color: var(--gold-accent);
+}
+
+.company-details {
+    background: rgba(232, 180, 160, 0.05);
+    border-left: 3px solid var(--rose-gold);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 10px;
+}
+
+.company-details p {
+    margin-bottom: 0.5rem;
+}
+
+.highlight-box {
+    background: rgba(244, 208, 63, 0.05);
+    border: 1px solid rgba(244, 208, 63, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.highlight-box p {
+    margin-bottom: 0.5rem;
+}
+
+/* Floating Contact Button */
+.floating-contact {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.floating-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--obsidian-black);
+    text-decoration: none;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.4);
+    transition: all 0.3s ease;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(232, 180, 160, 0.6);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .page-header {
+        padding: 6rem 2rem 3rem;
+    }
+    
+    .header-content h1 {
+        font-size: 3rem;
+    }
+    
+    .header-content p {
+        font-size: 1.2rem;
+    }
+    
+    .terms-section {
+        padding: 3rem 1.5rem;
+    }
+    
+    .terms-container {
+        padding: 2.5rem 2rem;
+    }
+    
+    .terms-container h2 {
+        font-size: 1.6rem;
+    }
+    
+    .terms-container h3 {
+        font-size: 1.3rem;
+    }
+    
+    .floating-contact {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-content h1 {
+        font-size: 2.3rem;
+    }
+    
+    .terms-container {
+        padding: 2rem 1.5rem;
+    }
+    
+    .terms-container h2 {
+        font-size: 1.4rem;
+        margin-top: 2rem;
+    }
+    
+    .terms-container h3 {
+        font-size: 1.2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="header-content">
+        <h1>Terms & Conditions</h1>
+        <p>Please read these terms and conditions carefully before using our real estate services.</p>
+    </div>
+</section>
+
+<!-- Terms & Conditions Content -->
+<section class="terms-section">
+    <div class="terms-container">
+        <p class="effective-date"><strong>Last Updated:</strong> November 7, 2025</p>
+
+        <h2>1. Agreement to Terms</h2>
+        <p>Welcome to KIF Realty. By accessing our website at <a href="https://kifrealty.com" target="_blank" rel="noopener">https://kifrealty.com</a> or using our real estate services, you agree to be bound by these Terms and Conditions and our Privacy Policy. If you disagree with any part of these terms, you may not access our services.</p>
+        
+        <div class="company-details">
+            <p><strong>KIF Realty Real Estate</strong></p>
+            <p>Office No. 19, 31st Floor, API World Tower, Sheikh Zayed Road, Dubai, UAE</p>
+            <p>📞 <a href="tel:+971567655599">+971 567655599</a></p>
+            <p>✉️ <a href="mailto:info@kifrealty.com">info@kifrealty.com</a></p>
+            <p>🌐 <a href="https://kifrealty.com/" target="_blank" rel="noopener">https://kifrealty.com</a></p>
+        </div>
+
+        <h2>2. Definitions</h2>
+        <p>For the purposes of these Terms and Conditions:</p>
+        <ul>
+            <li><strong>"Company"</strong> (referred to as either "the Company", "We", "Us" or "Our") refers to KIF Realty Real Estate.</li>
+            <li><strong>"Service"</strong> refers to the Website and all real estate services provided by KIF Realty.</li>
+            <li><strong>"You"</strong> means the individual accessing or using the Service, or the company on behalf of which such individual is accessing the Service.</li>
+            <li><strong>"Property Listings"</strong> refers to all residential, commercial, and off-plan properties displayed on our website.</li>
+            <li><strong>"Third-party Services"</strong> refers to services or content provided by third parties through our platform.</li>
+        </ul>
+
+        <h2>3. User Eligibility</h2>
+        <p>You must be at least 18 years old to use our Service. By using our Service, you represent and warrant that you meet this age requirement and have the legal capacity to enter into binding agreements.</p>
+
+        <h2>4. Property Listings and Information</h2>
+        
+        <h3>4.1 Accuracy of Information</h3>
+        <p>While we strive to provide accurate and up-to-date property information, KIF Realty does not guarantee the completeness, accuracy, or reliability of any property listings, descriptions, prices, images, or specifications. Property details may change without notice.</p>
+
+        <h3>4.2 No Guarantee of Availability</h3>
+        <p>Properties listed on our website may be sold, rented, or removed from the market at any time without prior notice. We are not responsible if a property you are interested in becomes unavailable.</p>
+
+        <h3>4.3 Property Verification</h3>
+        <p>You are responsible for independently verifying all property details, conducting due diligence, and inspecting properties before making any purchase or rental decision. We recommend engaging qualified professionals for property inspections and legal reviews.</p>
+
+        <div class="highlight-box">
+            <p><strong>Important Notice:</strong> KIF Realty acts as a real estate broker and intermediary. We do not own the properties listed on our website and are not responsible for the condition, legal status, or suitability of any property.</p>
+        </div>
+
+        <h2>5. Broker Role and Responsibilities</h2>
+        
+        <h3>5.1 Intermediary Services</h3>
+        <p>KIF Realty provides real estate brokerage services connecting buyers, sellers, landlords, and tenants. We facilitate property transactions but do not guarantee any specific outcome or transaction completion.</p>
+
+        <h3>5.2 RERA Compliance</h3>
+        <p>KIF Realty operates in compliance with the Real Estate Regulatory Agency (RERA) regulations in Dubai, UAE. All our agents are RERA-certified professionals.</p>
+
+        <h3>5.3 No Legal or Financial Advice</h3>
+        <p>Information provided by KIF Realty is for general guidance only and should not be construed as legal, financial, tax, or investment advice. You should consult qualified professionals before making any real estate decisions.</p>
+
+        <h2>6. Commission and Fees</h2>
+        
+        <h3>6.1 Brokerage Commission</h3>
+        <p>KIF Realty charges standard brokerage commission as per RERA regulations and industry practice in Dubai. Commission rates will be disclosed to you before engaging our services and are typically:</p>
+        <ul>
+            <li>Sales transactions: 2% of the property value (typically paid by the seller)</li>
+            <li>Rental transactions: 5% of the annual rent (typically paid by the landlord)</li>
+            <li>Off-plan purchases: As per developer agreement</li>
+        </ul>
+
+        <h3>6.2 Payment Terms</h3>
+        <p>Commission is payable upon successful completion of the transaction. Specific payment terms will be outlined in your service agreement.</p>
+
+        <h2>7. User Conduct and Obligations</h2>
+        <p>When using our Service, you agree NOT to:</p>
+        <ul>
+            <li>Provide false, misleading, or inaccurate information</li>
+            <li>Submit fraudulent inquiries or waste our agents' time with no genuine interest</li>
+            <li>Circumvent our services by directly contacting property owners or developers to avoid commission</li>
+            <li>Copy, reproduce, or misuse property images, descriptions, or other content from our website</li>
+            <li>Use our Service for any illegal purpose or to violate any UAE laws</li>
+            <li>Harass, abuse, or harm our staff, agents, or other users</li>
+            <li>Attempt to gain unauthorized access to our systems or data</li>
+        </ul>
+
+        <h2>8. Intellectual Property Rights</h2>
+        
+        <h3>8.1 Our Content</h3>
+        <p>All content on our website, including property photographs, descriptions, logos, graphics, and text, is the property of KIF Realty or licensed to us. You may not reproduce, distribute, or use our content without written permission.</p>
+
+        <h3>8.2 Trademarks</h3>
+        <p>The KIF Realty name, logo, and all related marks are trademarks of KIF Realty Real Estate. Unauthorized use of our trademarks is strictly prohibited.</p>
+
+        <h2>9. Third-Party Links and Services</h2>
+        <p>Our Service may contain links to third-party websites (such as developer websites, mortgage providers, or property portals). We are not responsible for the content, privacy practices, or terms of these external sites. You access third-party websites at your own risk.</p>
+
+        <h2>10. Data Protection and Privacy</h2>
+        <p>Your use of our Service is also governed by our Privacy Policy. We collect and process your personal data in accordance with UAE data protection laws. Please review our <a href="{% url 'privacy-policy' %}">Privacy Policy</a> for details on how we handle your information.</p>
+
+        <h2>11. Disclaimers and Warranties</h2>
+        
+        <h3>11.1 Service "As Is"</h3>
+        <p>Our Service is provided on an "as is" and "as available" basis without any warranties of any kind, either express or implied. We do not warrant that:</p>
+        <ul>
+            <li>The Service will be uninterrupted, secure, or error-free</li>
+            <li>All property information will be accurate or current</li>
+            <li>Any property transaction will be completed successfully</li>
+            <li>The Service will meet your specific requirements</li>
+        </ul>
+
+        <h3>11.2 Investment Risk</h3>
+        <div class="highlight-box">
+            <p><strong>Investment Disclaimer:</strong> Real estate investments carry inherent risks. Property values can fluctuate, and past performance is not indicative of future results. You should carefully consider your financial situation and consult professionals before investing.</p>
+        </div>
+
+        <h2>12. Limitation of Liability</h2>
+        <p>To the maximum extent permitted by UAE law, KIF Realty shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:</p>
+        <ul>
+            <li>Loss of profits or revenue</li>
+            <li>Loss of opportunity or investment returns</li>
+            <li>Property value depreciation</li>
+            <li>Losses arising from inaccurate property information</li>
+            <li>Damages resulting from third-party services or websites</li>
+        </ul>
+        <p>Our total liability shall not exceed the amount of commission paid to us for the specific transaction in question.</p>
+
+        <h2>13. Indemnification</h2>
+        <p>You agree to indemnify and hold harmless KIF Realty, its officers, employees, and agents from any claims, damages, losses, or expenses (including legal fees) arising from:</p>
+        <ul>
+            <li>Your violation of these Terms and Conditions</li>
+            <li>Your violation of any rights of another party</li>
+            <li>Your misuse of our Service</li>
+            <li>Your breach of any UAE laws or regulations</li>
+        </ul>
+
+        <h2>14. Termination</h2>
+        <p>We reserve the right to terminate or suspend your access to our Service immediately, without prior notice or liability, for any reason, including:</p>
+        <ul>
+            <li>Breach of these Terms and Conditions</li>
+            <li>Fraudulent or illegal activity</li>
+            <li>Abusive behavior toward our staff or agents</li>
+            <li>Misuse of our platform or services</li>
+        </ul>
+        <p>Upon termination, your right to use the Service will cease immediately.</p>
+
+        <h2>15. Governing Law and Jurisdiction</h2>
+        <p>These Terms and Conditions are governed by and construed in accordance with the laws of the United Arab Emirates and the Emirate of Dubai. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts of Dubai, UAE.</p>
+
+        <h2>16. Dispute Resolution</h2>
+        
+        <h3>16.1 Negotiation</h3>
+        <p>In the event of any dispute, both parties agree to first attempt to resolve the matter through good-faith negotiation.</p>
+
+        <h3>16.2 RERA Mediation</h3>
+        <p>For disputes related to real estate transactions, parties may seek mediation through RERA's dispute resolution services.</p>
+
+        <h3>16.3 Legal Action</h3>
+        <p>If disputes cannot be resolved through negotiation or mediation, either party may pursue legal action in the courts of Dubai, UAE.</p>
+
+        <h2>17. Changes to These Terms</h2>
+        <p>We reserve the right to modify or replace these Terms and Conditions at any time at our sole discretion. Material changes will be communicated by:</p>
+        <ul>
+            <li>Posting a notice on our website homepage for at least 30 days</li>
+            <li>Updating the "Last Updated" date at the top of this page</li>
+            <li>Sending email notification to registered users (where applicable)</li>
+        </ul>
+        <p>Your continued use of our Service after any changes constitutes acceptance of the revised Terms.</p>
+
+        <h2>18. Severability</h2>
+        <p>If any provision of these Terms is found to be unenforceable or invalid under UAE law, that provision will be limited or eliminated to the minimum extent necessary, and the remaining provisions will remain in full force and effect.</p>
+
+        <h2>19. Entire Agreement</h2>
+        <p>These Terms and Conditions, together with our Privacy Policy, constitute the entire agreement between you and KIF Realty regarding the use of our Service and supersede all prior agreements and understandings.</p>
+
+        <h2>20. Language</h2>
+        <p>These Terms and Conditions may be translated into multiple languages. In case of any conflict or inconsistency between the English version and any translation, the English version shall prevail.</p>
+
+        <h2>21. Contact Information</h2>
+        <p>If you have any questions, concerns, or feedback about these Terms and Conditions, please contact us:</p>
+        
+        <div class="company-details">
+            <p><strong>KIF Realty Real Estate</strong></p>
+            <p><strong>Address:</strong> Office No. 19, 31st Floor, API World Tower, Sheikh Zayed Road, Dubai, UAE</p>
+            <p><strong>Phone:</strong> <a href="tel:+971567655599">+971 567655599</a></p>
+            <p><strong>Email:</strong> <a href="mailto:info@kifrealty.com">info@kifrealty.com</a></p>
+            <p><strong>Website:</strong> <a href="https://kifrealty.com/" target="_blank" rel="noopener">https://kifrealty.com</a></p>
+            <p><strong>Business Hours:</strong> Sunday - Thursday, 9:00 AM - 7:00 PM (GST)</p>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>Acknowledgment:</strong> By using KIF Realty's services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.</p>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}

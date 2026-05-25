@@ -1,0 +1,832 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ developer_name }} | KIF Realty – Dubai Developer Properties{% endblock %}
+
+{% block description %}Browse all properties by {{ developer_name }} available through KIF Realty. Luxury apartments, villas and off-plan projects in Dubai.{% endblock %}
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/developers/?name={{ developer_name|urlencode }}">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* ── Hero ── */
+.dd-hero {
+    padding: 9rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(232,180,160,0.07) 0%, var(--obsidian-black) 65%);
+}
+.dd-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(90deg, rgba(232,180,160,0.025) 0px, rgba(232,180,160,0.025) 1px, transparent 1px, transparent 100px),
+        repeating-linear-gradient(0deg,  rgba(232,180,160,0.025) 0px, rgba(232,180,160,0.025) 1px, transparent 1px, transparent 100px);
+    pointer-events: none;
+}
+.dd-hero-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+.dd-logo-wrap {
+    width: 140px;
+    height: 140px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,180,160,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.1s forwards;
+}
+.dd-logo-wrap img {
+    max-width: 110px;
+    max-height: 110px;
+    object-fit: contain;
+    filter: brightness(1.05);
+}
+.dd-logo-initial {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+}
+.dd-hero-text {
+    flex: 1;
+    min-width: 260px;
+}
+.dd-breadcrumb {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.15s forwards;
+}
+.dd-breadcrumb a {
+    color: var(--rose-gold);
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.dd-breadcrumb a:hover { opacity: 0.75; }
+.dd-breadcrumb span { margin: 0 0.5rem; opacity: 0.4; }
+.dd-hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    font-weight: 400;
+    line-height: 1.1;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.2s forwards;
+}
+.dd-hero-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 540px;
+    margin-bottom: 1.6rem;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.3s forwards;
+}
+.dd-hero-tags {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.4s forwards;
+}
+.dd-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid rgba(232,180,160,0.2);
+    color: var(--text-muted);
+    background: rgba(232,180,160,0.04);
+}
+.dd-tag.highlight {
+    border-color: rgba(232,180,160,0.4);
+    color: var(--rose-gold);
+    background: rgba(232,180,160,0.08);
+}
+
+/* ── Stats Bar ── */
+.dd-stats-bar {
+    max-width: 1320px;
+    margin: 2.5rem auto 0;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(232,180,160,0.1);
+    border-radius: 14px;
+    background: rgba(26,26,26,0.6);
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.5s forwards;
+}
+.dd-stat-item {
+    flex: 1;
+    text-align: center;
+    padding: 1.4rem 1rem;
+    border-right: 1px solid rgba(232,180,160,0.07);
+    position: relative;
+}
+.dd-stat-item:last-child { border-right: none; }
+.dd-stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    display: block;
+}
+.dd-stat-lbl {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    display: block;
+}
+
+/* ── Toolbar ── */
+.dd-toolbar {
+    max-width: 1320px;
+    margin: 3rem auto 2rem;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.dd-search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+.dd-search-wrap i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--rose-gold);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+#propSearch {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,180,160,0.2);
+    border-radius: 40px;
+    padding: 0.7rem 1.2rem 0.7rem 2.6rem;
+    color: var(--text-light);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+#propSearch::placeholder { color: var(--text-muted); }
+#propSearch:focus { border-color: rgba(232,180,160,0.45); }
+
+.dd-filter-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,180,160,0.2);
+    border-radius: 40px;
+    padding: 0.7rem 2.2rem 0.7rem 1.2rem;
+    color: var(--text-muted);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23e8b4a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    transition: border-color 0.3s;
+}
+.dd-filter-select:focus { border-color: rgba(232,180,160,0.45); }
+.dd-filter-select option { background: #1a1a1a; color: #fff; }
+
+.dd-result-count {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: auto;
+}
+.dd-result-count span { color: var(--rose-gold); font-weight: 600; }
+
+/* ── Properties Grid ── */
+.dd-section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+}
+.dd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.6rem;
+}
+
+/* ── Property Card ── */
+.dd-prop-card {
+    background: linear-gradient(145deg, rgba(26,26,26,0.9), rgba(15,15,15,0.95));
+    border: 1px solid rgba(232,180,160,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    opacity: 0;
+    animation: fadeUp 0.45s forwards;
+}
+.dd-prop-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(232,180,160,0.28);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    text-decoration: none;
+}
+.dd-prop-img {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    background: rgba(26,26,26,0.8);
+}
+.dd-prop-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.dd-prop-card:hover .dd-prop-img img { transform: scale(1.06); }
+.dd-prop-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(26,26,26,0.8), rgba(42,42,42,0.6));
+    font-size: 2.5rem;
+    color: rgba(232,180,160,0.2);
+}
+.dd-prop-badge {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    background: rgba(10,10,10,0.85);
+    border: 1px solid rgba(232,180,160,0.25);
+    color: var(--rose-gold);
+    backdrop-filter: blur(6px);
+}
+.dd-prop-body {
+    padding: 1.3rem 1.4rem 1.5rem;
+}
+.dd-prop-type {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    margin-bottom: 0.4rem;
+}
+.dd-prop-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+}
+.dd-prop-location {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+.dd-prop-location i { color: var(--rose-gold); font-size: 0.7rem; }
+.dd-prop-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin-bottom: 1rem;
+}
+.dd-prop-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.dd-prop-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+.dd-prop-price-lbl {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+.dd-prop-arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(232,180,160,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--rose-gold);
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+.dd-prop-card:hover .dd-prop-arrow {
+    background: rgba(232,180,160,0.1);
+    border-color: rgba(232,180,160,0.4);
+    transform: translateX(3px);
+}
+
+/* ── Skeleton ── */
+.dd-skeleton {
+    background: linear-gradient(145deg, rgba(26,26,26,0.9), rgba(15,15,15,0.95));
+    border: 1px solid rgba(232,180,160,0.06);
+    border-radius: 16px;
+    overflow: hidden;
+}
+.sk-img  { height: 200px; }
+.sk-body2 { padding: 1.3rem 1.4rem; }
+.sk-line { height: 14px; border-radius: 4px; margin-bottom: 0.7rem; }
+.sk-line.wide  { width: 80%; }
+.sk-line.mid   { width: 55%; }
+.sk-line.short { width: 35%; }
+.skeleton-block {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.09) 50%,
+        rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Empty / Error ── */
+.dd-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 5rem 2rem;
+}
+.dd-empty-icon { font-size: 3rem; color: rgba(232,180,160,0.25); margin-bottom: 1rem; }
+.dd-empty h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.dd-empty p { color: var(--text-muted); font-size: 0.88rem; opacity: 0.7; }
+
+/* ── CTA ── */
+.dd-cta {
+    background: linear-gradient(135deg, rgba(26,26,26,0.8), rgba(10,10,10,0.95));
+    border: 1px solid rgba(232,180,160,0.12);
+    border-radius: 20px;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    max-width: 1320px;
+    margin: 0 auto 5rem;
+    position: relative;
+    overflow: hidden;
+}
+.dd-cta::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(232,180,160,0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+.dd-cta h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+}
+.dd-cta p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.8rem; font-weight: 300; }
+.btn-gf {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 2.2rem;
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 40px;
+    color: var(--obsidian-black);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    margin: 0.3rem;
+}
+.btn-gf:hover { filter: brightness(1.1); transform: translateY(-2px); color: var(--obsidian-black); text-decoration: none; }
+.btn-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 2.2rem;
+    border: 1px solid rgba(232,180,160,0.35);
+    border-radius: 40px;
+    color: var(--rose-gold);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s;
+    margin: 0.3rem;
+}
+.btn-go:hover { background: rgba(232,180,160,0.08); border-color: rgba(232,180,160,0.5); color: var(--rose-gold); text-decoration: none; transform: translateY(-2px); }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .dd-hero { padding: 8rem 1.5rem 3rem; }
+    .dd-logo-wrap { width: 100px; height: 100px; }
+    .dd-stats-bar { flex-wrap: wrap; margin: 2rem 1.5rem 0; }
+    .dd-stat-item { min-width: 45%; border-right: none; border-bottom: 1px solid rgba(232,180,160,0.07); }
+    .dd-toolbar { padding: 0 1.5rem; margin: 2rem auto 1.5rem; }
+    .dd-section { padding: 0 1.5rem 4rem; }
+    .dd-grid { grid-template-columns: 1fr; }
+    .dd-cta { margin: 0 1.5rem 4rem; padding: 2.5rem 1.5rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero — populated by JS -->
+<section class="dd-hero">
+    <div class="dd-hero-inner">
+        <div class="dd-logo-wrap" id="ddLogoWrap">
+            <div class="dd-logo-initial" id="ddLogoInitial">—</div>
+        </div>
+        <div class="dd-hero-text">
+            <p class="dd-breadcrumb">
+                <a href="{% url 'developers' %}">Developers</a>
+                <span>/</span>
+                <span id="ddBreadName">Loading…</span>
+            </p>
+            <h1 class="dd-hero-name" id="ddHeroName">Loading…</h1>
+            <p class="dd-hero-sub" id="ddHeroSub">Fetching properties from this developer…</p>
+            <div class="dd-hero-tags" id="ddHeroTags"></div>
+        </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="dd-stats-bar" id="ddStatsBar" style="display:none;">
+        <div class="dd-stat-item">
+            <span class="dd-stat-num" id="statProps">—</span>
+            <span class="dd-stat-lbl">Properties</span>
+        </div>
+        <div class="dd-stat-item">
+            <span class="dd-stat-num" id="statMinPrice">—</span>
+            <span class="dd-stat-lbl">Starting Price (AED)</span>
+        </div>
+        <div class="dd-stat-item">
+            <span class="dd-stat-num" id="statCities">—</span>
+            <span class="dd-stat-lbl">Cities</span>
+        </div>
+        <div class="dd-stat-item">
+            <span class="dd-stat-num" id="statTypes">—</span>
+            <span class="dd-stat-lbl">Property Types</span>
+        </div>
+    </div>
+</section>
+
+<!-- Toolbar -->
+<div class="dd-toolbar">
+    <div class="dd-search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" id="propSearch" placeholder="Search properties…">
+    </div>
+    <select class="dd-filter-select" id="propSort">
+        <option value="">Sort by</option>
+        <option value="price_asc">Price ↑</option>
+        <option value="price_desc">Price ↓</option>
+        <option value="az">Name A→Z</option>
+    </select>
+    <select class="dd-filter-select" id="propTypeFilter">
+        <option value="">All Types</option>
+        <option value="Residential">Residential</option>
+        <option value="Commercial">Commercial</option>
+    </select>
+    <p class="dd-result-count">Showing <span id="propCount">—</span> properties</p>
+</div>
+
+<!-- Grid -->
+<div class="dd-section">
+    <div class="dd-grid" id="propGrid">
+        {% for i in "123456"|make_list %}
+        <div class="dd-skeleton">
+            <div class="skeleton-block sk-img"></div>
+            <div class="sk-body2">
+                <div class="skeleton-block sk-line wide"></div>
+                <div class="skeleton-block sk-line mid"></div>
+                <div class="skeleton-block sk-line short"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- CTA -->
+<div style="padding:0 2rem;">
+    <div class="dd-cta">
+        <h2 id="ddCtaTitle">Interested in this Developer?</h2>
+        <p>Our RERA-certified advisors will help you find the right unit and secure the best deal.</p>
+        <a href="{% url 'contact' %}" class="btn-gf"><i class="bi bi-chat-dots"></i> Speak to an Advisor</a>
+        <a href="{% url 'developers' %}" class="btn-go"><i class="bi bi-arrow-left"></i> All Developers</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    /* ── Read developer name from URL ── */
+    const params     = new URLSearchParams(window.location.search);
+    const devName    = params.get('name') || '';
+    const devNameEnc = encodeURIComponent(devName);
+
+    if (!devName) {
+        window.location.href = "{% url 'developers' %}";
+        return;
+    }
+
+    /* ── DOM refs ── */
+    const ddLogoWrap   = document.getElementById('ddLogoWrap');
+    const ddLogoInit   = document.getElementById('ddLogoInitial');
+    const ddBreadName  = document.getElementById('ddBreadName');
+    const ddHeroName   = document.getElementById('ddHeroName');
+    const ddHeroSub    = document.getElementById('ddHeroSub');
+    const ddHeroTags   = document.getElementById('ddHeroTags');
+    const ddStatsBar   = document.getElementById('ddStatsBar');
+    const statProps    = document.getElementById('statProps');
+    const statMinPrice = document.getElementById('statMinPrice');
+    const statCities   = document.getElementById('statCities');
+    const statTypes    = document.getElementById('statTypes');
+    const propGrid     = document.getElementById('propGrid');
+    const propCount    = document.getElementById('propCount');
+    const propSearch   = document.getElementById('propSearch');
+    const propSort     = document.getElementById('propSort');
+    const propTypeFilter = document.getElementById('propTypeFilter');
+    const ddCtaTitle   = document.getElementById('ddCtaTitle');
+
+    /* ── Update page meta ── */
+    document.title = `${devName} | KIF Realty – Dubai Developer Properties`;
+    ddBreadName.textContent = devName;
+    ddHeroName.textContent  = devName;
+    ddLogoInit.textContent  = devName[0] || '?';
+    ddCtaTitle.textContent  = `Interested in ${devName}?`;
+    ddHeroSub.textContent   = `Explore all available properties developed by ${devName} — available exclusively through KIF Realty's curated network.`;
+
+    /* ── Try loading developer logo from listing API ── */
+    async function loadDevLogo() {
+        try {
+            const res  = await fetch('/api/developers/');
+            const json = await res.json();
+            const list = json.data || json;
+            if (!Array.isArray(list)) return;
+            const match = list.find(d => {
+                const n = d.name?.en || d.name || d.developer_name || '';
+                return n.toLowerCase() === devName.toLowerCase();
+            });
+            if (match) {
+                const logo = match.logo || match.image || match.logo_url || '';
+                if (logo) {
+                    ddLogoWrap.innerHTML = `<img src="${escHtml(logo)}" alt="${escHtml(devName)} logo" onerror="this.parentElement.innerHTML='<div class=\\'dd-logo-initial\\'>${escHtml(devName[0])}</div>'">`;
+                }
+                /* Hero tags from API data */
+                const location = match.city || match.location || 'Dubai, UAE';
+                ddHeroTags.innerHTML = `
+                    <span class="dd-tag highlight"><i class="bi bi-geo-alt-fill"></i> ${escHtml(location)}</span>
+                    <span class="dd-tag">RERA Approved</span>
+                    <span class="dd-tag">KIF Partner</span>`;
+            }
+        } catch (e) { /* silent */ }
+    }
+
+    /* ── Fetch properties for this developer ── */
+    let allProps = [];
+    let filtered = [];
+
+    async function loadProperties() {
+        try {
+            const res  = await fetch('/api/properties/filter/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+                body: JSON.stringify({ developer: devName })
+            });
+            const json = await res.json();
+            if (json.status && json.data?.results) {
+                allProps = json.data.results;
+            } else {
+                allProps = [];
+            }
+        } catch (e) {
+            allProps = [];
+        }
+        updateStats();
+        render();
+    }
+
+    /* ── Stats ── */
+    function updateStats() {
+        if (!allProps.length) return;
+        ddStatsBar.style.display = 'flex';
+        statProps.textContent = allProps.length;
+
+        const prices = allProps.map(p => p.low_price || p.price).filter(Boolean).map(Number).filter(n => n > 0);
+        statMinPrice.textContent = prices.length
+            ? (Math.min(...prices) / 1e6).toFixed(1) + 'M'
+            : '—';
+
+        const cities = [...new Set(allProps.map(p => p.city?.en || p.city).filter(Boolean))];
+        statCities.textContent = cities.length || '—';
+
+        const types = [...new Set(allProps.map(p => p.property_type).filter(Boolean))];
+        statTypes.textContent = types.length || '—';
+
+        /* Hero tags fallback */
+        if (!ddHeroTags.children.length) {
+            const city = cities[0] || 'Dubai';
+            ddHeroTags.innerHTML = `
+                <span class="dd-tag highlight"><i class="bi bi-geo-alt-fill"></i> ${escHtml(city)}</span>
+                <span class="dd-tag">${allProps.length} Properties</span>
+                <span class="dd-tag">RERA Approved</span>`;
+        }
+    }
+
+    /* ── Render ── */
+    function render() {
+        const query  = propSearch.value.trim().toLowerCase();
+        const sort   = propSort.value;
+        const type   = propTypeFilter.value;
+
+        filtered = allProps.filter(p => {
+            const title = getTitle(p).toLowerCase();
+            const loc   = getLocation(p).toLowerCase();
+            const matchQ = !query || title.includes(query) || loc.includes(query);
+            const matchT = !type  || (p.property_type || '').toLowerCase() === type.toLowerCase();
+            return matchQ && matchT;
+        });
+
+        if (sort === 'price_asc')  filtered.sort((a,b) => (+(a.low_price||a.price||0)) - (+(b.low_price||b.price||0)));
+        if (sort === 'price_desc') filtered.sort((a,b) => (+(b.low_price||b.price||0)) - (+(a.low_price||a.price||0)));
+        if (sort === 'az')         filtered.sort((a,b) => getTitle(a).localeCompare(getTitle(b)));
+
+        propGrid.innerHTML = '';
+        propCount.textContent = filtered.length;
+
+        if (!filtered.length) {
+            propGrid.innerHTML = `
+              <div class="dd-empty">
+                <div class="dd-empty-icon"><i class="bi bi-buildings"></i></div>
+                <h3>${query ? 'No matches found' : 'No properties found'}</h3>
+                <p>${query ? 'Try a different search term.' : 'Properties from this developer may not be available right now.'}</p>
+              </div>`;
+            return;
+        }
+
+        filtered.forEach((prop, idx) => {
+            propGrid.appendChild(buildCard(prop, idx));
+        });
+    }
+
+    /* ── Build property card ── */
+    function buildCard(prop, idx) {
+        const title    = getTitle(prop);
+        const location = getLocation(prop);
+        const price    = prop.low_price || prop.price;
+        const priceStr = price ? 'AED ' + Number(price).toLocaleString() : 'Price on Request';
+        const img      = prop.cover || prop.image || '';
+        const type     = prop.property_type || '';
+        const status   = prop.sales_status?.en || prop.sales_status || '';
+
+        /* Build detail URL */
+        const propId   = prop.id;
+        const slug     = (title || 'property').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        const href     = propId ? `/property/${slug}-${propId}/` : `/properties/?developer=${devNameEnc}`;
+
+        const a = document.createElement('a');
+        a.className = 'dd-prop-card';
+        a.href = href;
+        a.style.animationDelay = `${Math.min(idx * 0.05, 0.6)}s`;
+
+        const imgHtml = img
+            ? `<img src="${escHtml(img)}" alt="${escHtml(title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'dd-prop-img-placeholder\\'><i class=\\'bi bi-building\\'></i></div>'">`
+            : `<div class="dd-prop-img-placeholder"><i class="bi bi-building"></i></div>`;
+
+        const badgeHtml = status ? `<span class="dd-prop-badge">${escHtml(status)}</span>` : '';
+
+        a.innerHTML = `
+          <div class="dd-prop-img">${imgHtml}${badgeHtml}</div>
+          <div class="dd-prop-body">
+            ${type ? `<div class="dd-prop-type">${escHtml(type)}</div>` : ''}
+            <div class="dd-prop-title">${escHtml(title)}</div>
+            <div class="dd-prop-location"><i class="bi bi-geo-alt-fill"></i>${escHtml(location)}</div>
+            <div class="dd-prop-divider"></div>
+            <div class="dd-prop-meta">
+              <div>
+                <div class="dd-prop-price">${escHtml(priceStr)}</div>
+                <div class="dd-prop-price-lbl">Starting From</div>
+              </div>
+              <div class="dd-prop-arrow"><i class="bi bi-arrow-right"></i></div>
+            </div>
+          </div>`;
+        return a;
+    }
+
+    /* ── Helpers ── */
+    function getTitle(p) {
+        if (!p) return 'Property';
+        return p.title?.en || p.title || 'Luxury Property';
+    }
+    function getLocation(p) {
+        if (!p) return 'Dubai, UAE';
+        const dist = p.district?.en || p.district || '';
+        const city = p.city?.en || p.city || 'Dubai';
+        return dist ? `${dist}, ${city}` : city;
+    }
+    function escHtml(str) {
+        return String(str||'')
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function getCsrf() {
+        return document.cookie.split(';').map(c=>c.trim())
+            .find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+    }
+
+    /* ── Events ── */
+    propSearch.addEventListener('input', render);
+    propSort.addEventListener('change', render);
+    propTypeFilter.addEventListener('change', render);
+
+    /* ── Boot ── */
+    loadDevLogo();
+    loadProperties();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>New Property Inquiry</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #d7b56d, #b8924a); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .property-info { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #d7b56d; }
+        .inquiry-details { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .btn { background: #d7b56d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; display: inline-block; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Property Inquiry</h1>
+            <p>KIF Realty - Exclusive Properties</p>
+        </div>
+        <div class="content">
+            <div class="property-info">
+                <h2>{{ inquiry.property.title }}</h2>
+                <p><strong>Location:</strong> {{ inquiry.property.district }}{% if inquiry.property.city %}, {{ inquiry.property.city }}{% endif %}</p>
+                <p><strong>Price:</strong> {{ inquiry.property.formatted_price }}</p>
+                <p><strong>Type:</strong> {{ inquiry.property.get_property_type_display }}</p>
+            </div>
+            
+            <div class="inquiry-details">
+                <h3>Inquiry Details</h3>
+                <p><strong>Name:</strong> {{ inquiry.name }}</p>
+                <p><strong>Email:</strong> {{ inquiry.email }}</p>
+                {% if inquiry.phone %}<p><strong>Phone:</strong> {{ inquiry.phone }}</p>{% endif %}
+                <p><strong>Inquiry Type:</strong> {{ inquiry.get_inquiry_type_display }}</p>
+                <p><strong>Preferred Contact:</strong> {{ inquiry.get_preferred_contact_method_display }}</p>
+                {% if inquiry.message %}
+                <p><strong>Message:</strong></p>
+                <p>{{ inquiry.message|linebreaks }}</p>
+                {% endif %}
+                {% if inquiry.budget_min or inquiry.budget_max %}
+                <p><strong>Budget Range:</strong> 
+                {% if inquiry.budget_min %}AED {{ inquiry.budget_min|floatformat:0 }}{% endif %}
+                {% if inquiry.budget_min and inquiry.budget_max %} - {% endif %}
+                {% if inquiry.budget_max %}AED {{ inquiry.budget_max|floatformat:0 }}{% endif %}
+                </p>
+                {% endif %}
+                <p><strong>Inquiry Date:</strong> {{ inquiry.created_at|date:"F d, Y at g:i A" }}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="mailto:{{ inquiry.email }}" class="btn">Reply to Client</a>
+                <a href="tel:{{ inquiry.phone }}" class="btn">Call Client</a>
+            </div>
+            
+            <p style="text-align: center; color: #666; font-size: 14px; margin-top: 30px;">
+                This inquiry was submitted through the KIF Realty exclusive properties website.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

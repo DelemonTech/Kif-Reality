@@ -1,0 +1,21 @@
+New Property Inquiry - KIF Realty
+
+Property: {{ inquiry.property.title }}
+Location: {{ inquiry.property.district }}{% if inquiry.property.city %}, {{ inquiry.property.city }}{% endif %}
+Price: {{ inquiry.property.formatted_price }}
+
+Client Details:
+Name: {{ inquiry.name }}
+Email: {{ inquiry.email }}
+{% if inquiry.phone %}Phone: {{ inquiry.phone }}{% endif %}
+Inquiry Type: {{ inquiry.get_inquiry_type_display }}
+Preferred Contact: {{ inquiry.get_preferred_contact_method_display }}
+
+{% if inquiry.message %}Message:
+{{ inquiry.message }}{% endif %}
+
+{% if inquiry.budget_min or inquiry.budget_max %}Budget Range: {% if inquiry.budget_min %}AED {{ inquiry.budget_min|floatformat:0 }}{% endif %}{% if inquiry.budget_min and inquiry.budget_max %} - {% endif %}{% if inquiry.budget_max %}AED {{ inquiry.budget_max|floatformat:0 }}{% endif %}{% endif %}
+
+Inquiry Date: {{ inquiry.created_at|date:"F d, Y at g:i A" }}
+
+Please respond to the client as soon as possible.

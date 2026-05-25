@@ -1,0 +1,29 @@
+Thank You for Your Inquiry - KIF Realty
+
+Dear {{ inquiry.name }},
+
+Thank you for your interest in our exclusive property: {{ inquiry.property.title }}
+
+Property Details:
+Location: {{ inquiry.property.district }}{% if inquiry.property.city %}, {{ inquiry.property.city }}{% endif %}
+Price: {{ inquiry.property.formatted_price }}
+Reference: KIF-{{ inquiry.property.id|slice:":8" }}
+
+What Happens Next?
+- Our property consultant will review your inquiry
+- You'll receive a call or email within 2-4 business hours  
+- We'll schedule a viewing at your convenience
+- Our team will provide detailed property information
+
+Contact Information:
+Phone: {% if inquiry.property.contact_phone %}{{ inquiry.property.contact_phone }}{% else %}+971 567655599{% endif %}
+Email: {% if inquiry.property.contact_email %}{{ inquiry.property.contact_email }}{% else %}info@kifrealty.com{% endif %}
+WhatsApp: +971 567655599
+
+
+
+Thank you for choosing KIF Realty for your property needs.
+We look forward to helping you find your perfect home.
+
+Best regards,
+KIF Realty Team
