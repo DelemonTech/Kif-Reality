@@ -1,0 +1,1619 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Properties in Dubai - KIF Realty
+{% endblock %}
+
+
+
+{% block description %}Browse a wide range of properties with KIF Realty. Find your dream home or investment opportunity in Dubai's prime locations. Start your property search today
+{% endblock %}
+
+<!-- properties.html -->
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/properties/">{% endblock %}
+
+<!-- Add in <head> section: -->
+<link rel="preconnect" href="https://microservice.x-opp.com">
+<link rel="dns-prefetch" href="https://microservice.x-opp.com">
+
+
+{% block extra_css %}
+<!-- <style> -->
+   <link rel="stylesheet" href="{% static 'css/properties_styles.css' %}">
+<!-- </style> -->
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Page Header -->
+<section class="properties-header">
+    <div class="header-content">
+        <h1>Signature Collection</h1>
+        <p>Discover exceptional real estate opportunities in prime locations</p>
+        <div class="total-count">
+            <i class="fas fa-gem me-2" aria-hidden="true"></i>
+            <strong id="totalCountDisplay">{{ total_count|default:"Loading..." }}</strong> Exclusive Properties
+            Available
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<section class="filters-section">
+    <div class="filters-container">
+        <form method="POST" class="filter-form" action="{% url 'properties' %}">
+            {% csrf_token %}
+
+            <!-- Property Type Toggle -->
+            <div class="property-type-section">
+                <label class="filter-label">Property Type</label>
+                <div class="property-type-toggle">
+                    <button type="button" class="property-type-btn active" data-type="residential" id="residentialBtn">
+                        Residential
+                    </button>
+                    <button type="button" class="property-type-btn" data-type="commercial" id="commercialBtn">
+                        Commercial
+                    </button>
+                </div>
+                <input type="hidden" name="property_type" id="propertyTypeInput" value="residential">
+            </div>
+
+            <!-- Main Filters Grid -->
+            <div class="main-filters">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-home filter-icon" aria-hidden="true"></i>
+                        Unit Type
+                    </label>
+                    <select name="unit_type" class="filter-select" id="unitTypeSelect">
+                        <option value="">All Types</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="villa">Villa</option>
+                        <option value="townhouse">Townhouse</option>
+                        <option value="penthouse">Penthouse</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-map-marker-alt filter-icon" aria-hidden="true"></i>
+                        City
+                    </label>
+                    <select name="city" class="filter-select" id="citySelect">
+                        <option value="">All Cities</option>
+                        <!-- Cities will be populated from API -->
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-building filter-icon" aria-hidden="true"></i>
+                        Neighborhood
+                    </label>
+                    <select name="district" class="filter-select" id="neighborhoodSelect">
+                        <option value="">Select Area</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-dollar-sign filter-icon" aria-hidden="true"></i>
+                        Price Range
+                    </label>
+                    <select name="price_range" class="filter-select" id="priceRangeSelect">
+                        <option value="">Any Price</option>
+                        <option value="0-1000000" data-min="0" data-max="1000000">Under 1M AED</option>
+                        <option value="1000000-2000000" data-min="1000000" data-max="2000000">1M - 2M AED</option>
+                        <option value="2000000-5000000" data-min="2000000" data-max="5000000">2M - 5M AED</option>
+                        <option value="5000000-10000000" data-min="5000000" data-max="10000000">5M - 10M AED</option>
+                        <option value="10000000+" data-min="10000000" data-max="">Above 10M AED</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <!-- Bedrooms Section (Only for Residential) -->
+            <div class="bedrooms-section" id="bedroomsSection">
+                <label class="filter-label">
+                    <i class="fas fa-bed filter-icon" aria-hidden="true"></i>
+                    Bedrooms
+                </label>
+                <div class="bedrooms-grid">
+                    <button type="button" class="bedroom-btn" data-bedrooms="1">1</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="2">2</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="3">3</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="4">4</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="5">5</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="6+">6+</button>
+                </div>
+                <input type="hidden" name="bedrooms" id="bedroomsInput" value="">
+            </div>
+
+            <!-- Advanced Filters Toggle -->
+            <div class="advanced-filters-toggle">
+                <button type="button" class="advanced-toggle-btn" id="advancedToggle">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                    Advanced Filters
+                    <i class="fas fa-chevron-down" id="advancedIcon" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <!-- Advanced Filters Content -->
+            <div class="advanced-filters-content" id="advancedContent">
+                <div class="advanced-filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-calendar filter-icon" aria-hidden="true"></i>
+                            Delivery Year
+                        </label>
+                        <select name="delivery_year" class="filter-select">
+                            <option value="">Any Year</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-building filter-icon" aria-hidden="true"></i>
+                            Developer
+                        </label>
+                        <select name="developer" class="filter-select" id="developerSelect">
+                            <option value="">All Developers</option>
+                            <!-- Developers will be populated from API -->
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-search filter-icon" aria-hidden="true"></i>
+                            Project Name
+                        </label>
+                        <input type="text" name="project_name" class="filter-input"
+                            placeholder="Search by project name">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-tag filter-icon" aria-hidden="true"></i>
+                            Property Status
+                        </label>
+                        <select name="property_status" class="filter-select">
+                            <option value="">Any Status</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Off Plan">Off Plan</option>
+                            <option value="Under Construction">Under Construction</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Price Range Sliders -->
+                <div class="range-sliders">
+                    <div class="range-group">
+                        <label class="filter-label">
+                            <i class="fas fa-coins filter-icon" aria-hidden="true"></i>
+                            Price Range (AED)
+                        </label>
+                        <div class="range-inputs">
+                            <input type="range" id="minPriceRange" min="0" max="100000000" value="0"
+                                class="range-slider">
+                            <input type="range" id="maxPriceRange" min="0" max="100000000" value="100000000"
+                                class="range-slider">
+                        </div>
+                        <div class="range-display">
+                            <span id="minPriceDisplay">0 AED</span>
+                            <span id="maxPriceDisplay">100M AED</span>
+                        </div>
+                        <input type="hidden" name="min_price" id="minPriceInput" value="0">
+                        <input type="hidden" name="max_price" id="maxPriceInput" value="100000000">
+                    </div>
+
+                    <div class="range-group">
+                        <label class="filter-label">
+                            <i class="fas fa-ruler-combined filter-icon" aria-hidden="true"></i>
+                            Area Range (sq ft)
+                        </label>
+                        <div class="range-inputs">
+                            <input type="range" id="minAreaRange" min="0" max="50000" value="0" class="range-slider">
+                            <input type="range" id="maxAreaRange" min="0" max="50000" value="50000"
+                                class="range-slider">
+                        </div>
+                        <div class="range-display">
+                            <span id="minAreaDisplay">0 sq ft</span>
+                            <span id="maxAreaDisplay">50,000 sq ft</span>
+                        </div>
+                        <input type="hidden" name="min_area" id="minAreaInput" value="0">
+                        <input type="hidden" name="max_area" id="maxAreaInput" value="50000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="filter-actions">
+                <button type="button" class="reset-btn" onclick="resetFilters()">
+                    <i class="fas fa-refresh" aria-hidden="true"></i>
+                    Reset Filters
+                </button>
+                <button type="submit" class="search-btn" id="searchBtn">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    Search Properties
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Properties Grid -->
+<section class="properties-section">
+    {% if properties_error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        {{ properties_error }}
+    </div>
+    {% endif %}
+
+    <div class="properties-grid">
+        <!-- Properties will be loaded dynamically from API -->
+        <div class="no-properties">
+            <div class="no-properties-icon">
+                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            </div>
+            <h4>Loading Properties...</h4>
+            <p>Please wait while we fetch the latest properties for you.</p>
+        </div>
+    </div>
+
+    <!-- Dynamic Pagination (will be populated by JavaScript) -->
+    <div class="pagination-section" id="dynamicPagination" style="display: none;"></div>
+</section>
+
+{% block extra_js %}
+<script>
+
+    // ============================================================
+    // SINGLE DECLARATION of MICROSERVICE_API — do not redeclare
+    // ============================================================
+    const MICROSERVICE_API = "http://127.0.0.1:8000/api";
+
+    // Cache constants
+    const CACHE_KEY = 'properties_cache';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    function getCachedData(key) {
+        try {
+            const cached = localStorage.getItem(key);
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < CACHE_DURATION) {
+                    return data;
+                }
+            }
+        } catch (e) {
+            console.error('Cache error:', e);
+        }
+        return null;
+    }
+
+    function setCachedData(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify({
+                data,
+                timestamp: Date.now()
+            }));
+        } catch (e) {
+            console.error('Cache save error:', e);
+        }
+    }
+
+    // Global helper function for CSRF token - must be defined first
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    (function () {
+        // Enhanced Filter Functionality - Wrapped in IIFE to prevent variable conflicts
+
+        // Use a more specific global check to prevent double initialization
+        if (window.filterSystemInitialized) {
+            console.log('⚠️ Filter system already initialized, skipping...');
+            return;
+        }
+
+        window.filterSystemInitialized = true;
+        console.log('✅ Initializing filter system...');
+
+        // Load properties first, then cities/developers
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('📋 DOMContentLoaded fired');
+
+            // Initialize filters WITHOUT loading cities/developers yet
+            initializeFiltersQuick();
+            setupEventListeners();
+
+            // Load properties immediately (most important)
+            loadInitialProperties();
+
+            // Load cities and developers AFTER properties (less important)
+            setTimeout(() => {
+                loadCitiesFromAPI();
+                loadDevelopersFromAPI();
+            }, 500); // Delay by 500ms
+        });
+
+
+        function initializeFilters() {
+            console.log('🔧 Initializing filters...');
+
+            // Check for city and district in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const cityParam = urlParams.get('city');
+            const districtParam = urlParams.get('district');
+
+            if (cityParam || districtParam) {
+                console.log('🏙️ URL parameters found - City:', cityParam, 'District:', districtParam);
+
+                setTimeout(() => {
+                    if (cityParam) {
+                        const citySelect = document.getElementById('citySelect');
+                        if (citySelect) {
+                            citySelect.value = cityParam;
+                            console.log('🏙️ City dropdown set to:', cityParam);
+
+                            updateNeighborhoods(cityParam);
+
+                            if (districtParam) {
+                                setTimeout(() => {
+                                    const districtSelect = document.getElementById('neighborhoodSelect');
+                                    if (districtSelect) {
+                                        districtSelect.value = districtParam;
+                                        console.log('🏘️ District dropdown set to:', districtParam);
+                                    }
+                                }, 500);
+                            }
+                        }
+                    }
+                }, 1500);
+            }
+
+            const propertyTypeInput = document.getElementById('propertyTypeInput');
+            if (propertyTypeInput) {
+                propertyTypeInput.value = 'residential';
+            }
+
+            updatePropertyType('residential');
+
+            const residentialBtn = document.getElementById('residentialBtn');
+            const commercialBtn = document.getElementById('commercialBtn');
+
+            if (residentialBtn && commercialBtn) {
+                residentialBtn.classList.add('active');
+                commercialBtn.classList.remove('active');
+                console.log('🏠 Set residential as default property type');
+            }
+
+            updatePriceRange();
+            updateAreaRange();
+
+            loadCitiesFromAPI();
+            loadDevelopersFromAPI();
+        }
+
+        function initializeFiltersQuick() {
+            console.log('🔧 Quick initializing filters...');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const cityParam = urlParams.get('city');
+            const districtParam = urlParams.get('district');
+
+            const propertyTypeInput = document.getElementById('propertyTypeInput');
+            if (propertyTypeInput) {
+                propertyTypeInput.value = 'residential';
+            }
+
+            updatePropertyType('residential');
+
+            const residentialBtn = document.getElementById('residentialBtn');
+            const commercialBtn = document.getElementById('commercialBtn');
+
+            if (residentialBtn && commercialBtn) {
+                residentialBtn.classList.add('active');
+                commercialBtn.classList.remove('active');
+            }
+
+            updatePriceRange();
+            updateAreaRange();
+        }
+
+        function loadInitialProperties() {
+            console.log('🏠 Loading initial properties from API...');
+
+            // Check cache first
+            const cached = getCachedData(CACHE_KEY);
+            if (cached && !window.location.search) {
+                console.log('✅ Using cached properties');
+                updatePropertiesGrid(cached.properties);
+                updatePagination(cached.pagination);
+                updateTotalCount(cached.totalCount);
+                return;
+            }
+
+            // Show loading state
+            const propertiesGrid = document.querySelector('.properties-grid');
+            if (propertiesGrid) {
+                propertiesGrid.innerHTML = `
+                    <div class="no-properties">
+                        <div class="no-properties-icon">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        </div>
+                        <h4>Loading Properties...</h4>
+                        <p>Please wait while we fetch the latest properties for you.</p>
+                    </div>
+                `;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const cityParam = urlParams.get('city');
+            const districtParam = urlParams.get('district');
+
+            const filters = {};
+            filters.property_type = 'Residential';
+            filters.limit = 12;
+            filters.page = 1;
+
+            if (cityParam) {
+                filters.city = cityParam;
+                console.log('🏙️ Filtering by city from URL:', cityParam);
+            }
+
+            if (districtParam) {
+                filters.district = districtParam;
+                console.log('🏘️ Filtering by district from URL:', districtParam);
+            }
+
+            console.log('🏠 Initial filters being sent:', filters);
+
+            // Use the top-level MICROSERVICE_API constant (no redeclaration)
+            const API_URL = `${MICROSERVICE_API}/properties/filter/`;
+            console.log("filter:", API_URL);
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filters)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('🏠 Initial properties API response:', result);
+
+                if (result?.status && result?.data) {
+                    const propertiesData = result.data;
+                    const properties = propertiesData.results || [];
+
+                    console.log('🏠 Found', properties.length, 'initial properties');
+                    console.log('🏠 Total count:', propertiesData.count);
+
+                    if (!cityParam && !districtParam) {
+                        setCachedData(CACHE_KEY, {
+                            properties,
+                            pagination: propertiesData,
+                            totalCount: propertiesData.count
+                        });
+                    }
+
+                    updatePropertiesGrid(properties);
+                    updatePagination(propertiesData);
+
+                    if (propertiesData.count !== undefined) {
+                        updateTotalCount(propertiesData.count);
+                    }
+                } else {
+                    console.error('❌ Initial properties API error');
+                    updatePropertiesGrid([]);
+                    updatePagination({ count: 0, current_page: 1, last_page: 1 });
+                    updateTotalCount(0);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Initial properties error:', error);
+                if (propertiesGrid) {
+                    propertiesGrid.innerHTML = `
+                        <div class="no-properties">
+                            <div class="no-properties-icon">
+                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            </div>
+                            <h4>Error Loading Properties</h4>
+                            <p>We encountered an error while loading properties. Please try refreshing the page.</p>
+                            <button onclick="loadInitialProperties()" class="btn-primary-custom" style="display: inline-flex;">
+                                <i class="fas fa-refresh me-2" aria-hidden="true"></i>
+                                Try Again
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Expose loadInitialProperties globally so the "Try Again" button can call it
+        window.loadInitialProperties = loadInitialProperties;
+
+        function setupEventListeners() {
+            // Property type toggle
+            document.querySelectorAll('.property-type-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const type = this.dataset.type;
+                    updatePropertyType(type);
+                });
+            });
+
+            // Bedrooms
+            document.querySelectorAll('.bedroom-btn').forEach(btn => {
+                console.log('🛏️ Setting up bedroom button:', btn.dataset.bedrooms);
+
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                newBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const bedrooms = this.dataset.bedrooms;
+                    console.log('🛏️ Bedroom button clicked:', bedrooms);
+                    updateBedroomSelection(bedrooms);
+                });
+            });
+
+            // Advanced filters toggle
+            const advancedToggle = document.getElementById('advancedToggle');
+            console.log('🔽 Setting up advanced toggle - element found:', !!advancedToggle);
+            if (advancedToggle) {
+                advancedToggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔽 Advanced toggle clicked');
+                    toggleAdvancedFilters();
+                });
+                console.log('✅ Advanced toggle event listener attached');
+            } else {
+                console.error('❌ Advanced toggle button not found!');
+            }
+
+            // Form submission
+            const filterForm = document.querySelector('.filter-form');
+            if (filterForm) {
+                filterForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    const searchBtn = document.getElementById('searchBtn');
+
+                    if (searchBtn.classList.contains('loading')) {
+                        console.log('🔍 Search already in progress, ignoring...');
+                        return;
+                    }
+
+                    console.log('🔍 Form submitted - starting search...');
+                    const originalText = searchBtn.innerHTML;
+
+                    searchBtn.classList.add('loading');
+                    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Searching...';
+                    searchBtn.disabled = true;
+
+                    handleSearch().finally(() => {
+                        searchBtn.classList.remove('loading');
+                        searchBtn.innerHTML = originalText;
+                        searchBtn.disabled = false;
+                    });
+                });
+            }
+
+            // City change handler
+            document.getElementById('citySelect').addEventListener('change', function () {
+                updateNeighborhoods(this.value);
+            });
+
+            // Range slider event listeners
+            const minPriceRange = document.getElementById('minPriceRange');
+            const maxPriceRange = document.getElementById('maxPriceRange');
+            const minAreaRange = document.getElementById('minAreaRange');
+            const maxAreaRange = document.getElementById('maxAreaRange');
+
+            if (minPriceRange && maxPriceRange) {
+                minPriceRange.addEventListener('input', updatePriceRange);
+                maxPriceRange.addEventListener('input', updatePriceRange);
+            }
+
+            if (minAreaRange && maxAreaRange) {
+                minAreaRange.addEventListener('input', updateAreaRange);
+                maxAreaRange.addEventListener('input', updateAreaRange);
+            }
+        }
+
+        function updatePropertyTypeVisual(type) {
+            const residentialBtn = document.getElementById('residentialBtn');
+            const commercialBtn = document.getElementById('commercialBtn');
+
+            if (residentialBtn && commercialBtn) {
+                if (type === 'residential') {
+                    residentialBtn.classList.add('active');
+                    commercialBtn.classList.remove('active');
+                } else {
+                    residentialBtn.classList.remove('active');
+                    commercialBtn.classList.add('active');
+                }
+            }
+
+            updateUnitTypeOptions(type);
+        }
+
+        function updatePropertyType(type) {
+            updatePropertyTypeVisual(type);
+
+            const propertyTypeInput = document.getElementById('propertyTypeInput');
+            if (propertyTypeInput) {
+                propertyTypeInput.value = type;
+            }
+        }
+
+        function updateUnitTypeOptions(type) {
+            const unitTypeSelect = document.getElementById('unitTypeSelect');
+            const currentValue = unitTypeSelect ? unitTypeSelect.value : '';
+            if (unitTypeSelect) {
+                unitTypeSelect.innerHTML = '<option value="">All Types</option>';
+            }
+
+            const bedroomsSection = document.getElementById('bedroomsSection');
+
+            if (type === 'commercial') {
+                const commercialOptions = [
+                    { value: 'office', text: 'Office' },
+                    { value: 'shop', text: 'Shop' },
+                    { value: 'warehouse', text: 'Warehouse' },
+                    { value: 'retail', text: 'Retail Space' },
+                    { value: 'showroom', text: 'Showroom' },
+                    { value: 'restaurant', text: 'Restaurant' }
+                ];
+
+                commercialOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.text;
+                    if (currentValue === option.value) optionElement.selected = true;
+                    if (unitTypeSelect) unitTypeSelect.appendChild(optionElement);
+                });
+
+                if (bedroomsSection) bedroomsSection.style.display = 'none';
+            } else {
+                const residentialOptions = [
+                    { value: 'apartment', text: 'Apartment' },
+                    { value: 'villa', text: 'Villa' },
+                    { value: 'townhouse', text: 'Townhouse' },
+                    { value: 'penthouse', text: 'Penthouse' },
+                    { value: 'studio', text: 'Studio' },
+                    { value: 'duplex', text: 'Duplex' }
+                ];
+
+                residentialOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.text;
+                    if (currentValue === option.value) optionElement.selected = true;
+                    if (unitTypeSelect) unitTypeSelect.appendChild(optionElement);
+                });
+
+                if (bedroomsSection) bedroomsSection.style.display = 'block';
+            }
+        }
+
+        function updateBedroomSelection(bedrooms) {
+            document.querySelectorAll('.bedroom-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const bedroomsInput = document.getElementById('bedroomsInput');
+            if (bedroomsInput) {
+                if (bedroomsInput.value === bedrooms) {
+                    bedroomsInput.value = '';
+                    console.log('🛏️ Deselected bedrooms');
+                } else {
+                    bedroomsInput.value = bedrooms;
+                    const selectedBtn = document.querySelector(`[data-bedrooms="${bedrooms}"]`);
+                    if (selectedBtn) selectedBtn.classList.add('active');
+                    console.log('🛏️ Selected bedrooms:', bedrooms);
+                }
+            }
+        }
+
+        function toggleAdvancedFilters() {
+            console.log('🔽 toggleAdvancedFilters called');
+            const content = document.getElementById('advancedContent');
+            const icon = document.getElementById('advancedIcon');
+
+            if (!content || !icon) {
+                console.error('❌ Advanced filter elements not found!');
+                return;
+            }
+
+            const isOpen = content.classList.contains('open');
+
+            if (isOpen) {
+                content.classList.remove('open');
+                content.style.maxHeight = '0px';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                console.log('🔽 CLOSING advanced filters');
+            } else {
+                content.classList.add('open');
+                content.style.maxHeight = '2000px';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                console.log('🔽 OPENING advanced filters');
+            }
+        }
+
+        function updatePriceRange() {
+            const minRange = document.getElementById('minPriceRange');
+            const maxRange = document.getElementById('maxPriceRange');
+            const minDisplay = document.getElementById('minPriceDisplay');
+            const maxDisplay = document.getElementById('maxPriceDisplay');
+            const minInput = document.getElementById('minPriceInput');
+            const maxInput = document.getElementById('maxPriceInput');
+
+            if (!minRange || !maxRange) return;
+
+            let minVal = parseInt(minRange.value);
+            let maxVal = parseInt(maxRange.value);
+
+            if (minVal >= maxVal) {
+                minVal = maxVal - 100000;
+                minRange.value = minVal;
+            }
+
+            if (minDisplay) minDisplay.textContent = formatCurrency(minVal);
+            if (maxDisplay) maxDisplay.textContent = formatCurrency(maxVal);
+            if (minInput) minInput.value = minVal;
+            if (maxInput) maxInput.value = maxVal;
+        }
+
+        function updateAreaRange() {
+            const minRange = document.getElementById('minAreaRange');
+            const maxRange = document.getElementById('maxAreaRange');
+            const minDisplay = document.getElementById('minAreaDisplay');
+            const maxDisplay = document.getElementById('maxAreaDisplay');
+            const minInput = document.getElementById('minAreaInput');
+            const maxInput = document.getElementById('maxAreaInput');
+
+            if (!minRange || !maxRange) return;
+
+            let minVal = parseInt(minRange.value);
+            let maxVal = parseInt(maxRange.value);
+
+            if (minVal >= maxVal) {
+                minVal = maxVal - 100;
+                minRange.value = minVal;
+            }
+
+            if (minDisplay) minDisplay.textContent = minVal.toLocaleString() + ' sq ft';
+            if (maxDisplay) maxDisplay.textContent = maxVal.toLocaleString() + ' sq ft';
+            if (minInput) minInput.value = minVal;
+            if (maxInput) maxInput.value = maxVal;
+        }
+
+        function formatCurrency(num) {
+            if (num === 0) return '0 AED';
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M AED';
+            if (num >= 1000) return (num / 1000).toFixed(0) + 'K AED';
+            return num.toLocaleString() + ' AED';
+        }
+
+        // Global variable to store cities data
+        let citiesData = [];
+
+        // Global variable to store developers data
+        let developersData = [];
+
+        function loadCitiesFromAPI() {
+            fetch('/cities/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result && result.data && result.data.status && result.data.data) {
+                        citiesData = result.data.data;
+                        populateCitiesDropdown();
+                    } else {
+                        console.error('Failed to load cities:', result.error || 'Invalid response structure');
+                        citiesData = [];
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading cities:', error);
+                    citiesData = [];
+                });
+        }
+
+        function populateCitiesDropdown() {
+            const citySelect = document.getElementById('citySelect');
+
+            if (!citySelect) {
+                console.error('❌ City select element not found');
+                return;
+            }
+
+            if (!citiesData.length) {
+                console.error('❌ No cities data available');
+                return;
+            }
+
+            citySelect.innerHTML = '<option value="">All Cities</option>';
+
+            const uniqueCities = new Map();
+            citiesData.forEach(city => {
+                if (city.name && city.name.en) {
+                    uniqueCities.set(city.name.en, city);
+                }
+            });
+
+            uniqueCities.forEach((city, cityName) => {
+                const option = document.createElement('option');
+                option.value = cityName;
+                option.textContent = cityName;
+                citySelect.appendChild(option);
+            });
+        }
+
+        function loadDevelopersFromAPI() {
+            console.log('🏗️ Loading developers from API...');
+
+            // Use the top-level MICROSERVICE_API constant (no redeclaration)
+            const API_URL = `${MICROSERVICE_API}/developers/`;
+
+            fetch(API_URL)
+                .then(response => {
+                    console.log('🏗️ Developers API response status:', response.status);
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('🏗️ Developers API response:', result);
+
+                    let developers = null;
+
+                    if (result && Array.isArray(result)) {
+                        developers = result;
+                    } else if (result && result.data && Array.isArray(result.data)) {
+                        developers = result.data;
+                    } else if (result && result.status && result.data && Array.isArray(result.data)) {
+                        developers = result.data;
+                    }
+
+                    if (developers && developers.length > 0) {
+                        developersData = developers;
+                        console.log('🏗️ Developers data loaded:', developersData);
+                        populateDevelopersDropdown();
+                    } else {
+                        console.error('Failed to load developers - no valid data found');
+                        developersData = [];
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading developers:', error);
+                    developersData = [];
+                });
+        }
+
+        function populateDevelopersDropdown() {
+            const developerSelect = document.getElementById('developerSelect');
+
+            if (!developerSelect) {
+                console.error('❌ Developer select element not found');
+                return;
+            }
+
+            if (!developersData.length) {
+                console.error('❌ No developers data available');
+                return;
+            }
+
+            developerSelect.innerHTML = '<option value="">All Developers</option>';
+
+            const uniqueDevelopers = new Map();
+            developersData.forEach(developer => {
+                let developerName = null;
+
+                if (typeof developer === 'string') {
+                    developerName = developer;
+                } else if (developer && developer.name) {
+                    developerName = developer.name;
+                } else if (developer && developer.title) {
+                    developerName = developer.title;
+                } else if (developer && developer.id) {
+                    developerName = developer.id;
+                }
+
+                if (developerName) {
+                    uniqueDevelopers.set(developerName, developer);
+                }
+            });
+
+            const sortedDevelopers = Array.from(uniqueDevelopers.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+            sortedDevelopers.forEach(([developerName, developer]) => {
+                const option = document.createElement('option');
+                option.value = developerName;
+                option.textContent = developerName;
+                developerSelect.appendChild(option);
+            });
+
+            console.log('🏗️ Developers dropdown populated with', uniqueDevelopers.size, 'developers');
+        }
+
+        function updateNeighborhoods(cityName) {
+            console.log('🏘️ Updating neighborhoods for city:', cityName);
+            const neighborhoodSelect = document.getElementById('neighborhoodSelect');
+
+            if (!neighborhoodSelect) {
+                console.error('❌ Neighborhood select element not found');
+                return;
+            }
+
+            const currentValue = neighborhoodSelect.value;
+            neighborhoodSelect.innerHTML = '<option value="">Select Area</option>';
+
+            if (!cityName || !citiesData.length) {
+                console.log('🏘️ No city selected or no cities data available');
+                return;
+            }
+
+            const matchingCities = citiesData.filter(city => city.name && city.name.en === cityName);
+            console.log('🏘️ Found', matchingCities.length, 'matching cities for', cityName);
+
+            if (matchingCities.length === 0) return;
+
+            const allDistricts = new Map();
+
+            matchingCities.forEach(city => {
+                if (city.districts && city.districts.length > 0) {
+                    city.districts.forEach(district => {
+                        if (district.name && district.name.en) {
+                            allDistricts.set(district.name.en, district);
+                        }
+                    });
+                }
+            });
+
+            if (allDistricts.size > 0) {
+                const sortedDistricts = Array.from(allDistricts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+                sortedDistricts.forEach(([districtName, district]) => {
+                    const option = document.createElement('option');
+                    option.value = districtName;
+                    option.textContent = districtName;
+                    if (currentValue === option.value) option.selected = true;
+                    neighborhoodSelect.appendChild(option);
+                });
+
+                console.log('🏘️ Neighborhoods dropdown populated with', allDistricts.size, 'districts');
+            } else {
+                console.log('🏘️ No districts found for city:', cityName);
+            }
+        }
+
+        function resetFilters() {
+            const filterForm = document.querySelector('.filter-form');
+            if (filterForm) filterForm.reset();
+
+            updatePropertyType('residential');
+
+            document.querySelectorAll('.bedroom-btn').forEach(btn => btn.classList.remove('active'));
+            const bedroomsInput = document.getElementById('bedroomsInput');
+            if (bedroomsInput) bedroomsInput.value = '';
+
+            const minPriceRange = document.getElementById('minPriceRange');
+            const maxPriceRange = document.getElementById('maxPriceRange');
+            const minAreaRange = document.getElementById('minAreaRange');
+            const maxAreaRange = document.getElementById('maxAreaRange');
+
+            if (minPriceRange) minPriceRange.value = 0;
+            if (maxPriceRange) maxPriceRange.value = 100000000;
+            if (minAreaRange) minAreaRange.value = 0;
+            if (maxAreaRange) maxAreaRange.value = 50000;
+
+            updatePriceRange();
+            updateAreaRange();
+
+            const neighborhoodSelect = document.getElementById('neighborhoodSelect');
+            if (neighborhoodSelect) {
+                neighborhoodSelect.innerHTML = '<option value="">Select Area</option>';
+            }
+
+            loadCitiesFromAPI();
+            loadDevelopersFromAPI();
+
+            const content = document.getElementById('advancedContent');
+            const icon = document.getElementById('advancedIcon');
+            if (content && icon) {
+                content.classList.remove('open');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+
+            const resetBtn = document.querySelector('.reset-btn');
+            if (resetBtn) {
+                const originalText = resetBtn.innerHTML;
+                resetBtn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> Reset Complete';
+                setTimeout(() => {
+                    resetBtn.innerHTML = originalText;
+                }, 1500);
+            }
+        }
+
+        // Debounce search to prevent multiple rapid calls
+        let searchTimeout = null;
+
+        function handleSearch() {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            return new Promise((resolve) => {
+                searchTimeout = setTimeout(() => {
+                    performSearch().then(resolve).catch(resolve);
+                }, 100);
+            });
+        }
+
+        function performSearch() {
+            const filterForm = document.querySelector('.filter-form');
+            const formData = new FormData(filterForm);
+
+            const propertyTypeValue = formData.get('property_type') || 'residential';
+            let propertyTypeText = 'Residential';
+            if (propertyTypeValue === 'commercial') {
+                propertyTypeText = 'Commercial';
+            }
+
+            console.log('🔍 Frontend property type being sent:', {
+                formValue: propertyTypeValue,
+                apiValue: propertyTypeText
+            });
+
+            const filters = {};
+            filters.property_type = propertyTypeText;
+            filters.limit = 12;
+            filters.page = 1;
+
+            const city = formData.get('city');
+            if (city && city.trim()) filters.city = city.trim();
+
+            const district = formData.get('district');
+            if (district && district.trim()) filters.district = district.trim();
+
+            const unitType = formData.get('unit_type');
+            if (unitType && unitType.trim()) filters.unit_type = unitType.trim();
+
+            if (propertyTypeText === 'Residential') {
+                const rooms = formData.get('bedrooms');
+                if (rooms && rooms.trim()) filters.rooms = rooms.trim();
+            }
+
+            const deliveryYear = formData.get('delivery_year');
+            if (deliveryYear && deliveryYear.trim() && deliveryYear !== '0') {
+                filters.delivery_year = parseInt(deliveryYear);
+            }
+
+            const minPrice = parseInt(formData.get('min_price')) || 0;
+            const maxPrice = parseInt(formData.get('max_price')) || 100000000;
+            if (minPrice > 0) filters.low_price = minPrice;
+            if (maxPrice < 100000000) filters.max_price = maxPrice;
+
+            const minArea = parseInt(formData.get('min_area')) || 0;
+            const maxArea = parseInt(formData.get('max_area')) || 50000;
+            if (minArea > 0) filters.min_area = minArea;
+            if (maxArea < 50000) filters.max_area = maxArea;
+
+            const title = formData.get('project_name');
+            if (title && title.trim()) filters.title = title.trim();
+
+            const developer = formData.get('developer');
+            if (developer && developer.trim()) filters.developer = developer.trim();
+
+            const propertyStatus = formData.get('property_status');
+            if (propertyStatus && propertyStatus.trim() && propertyStatus !== 'Total') {
+                filters.property_status = propertyStatus.trim();
+            }
+
+            console.log('🔍 Sending filters:', filters);
+
+            // Use the top-level MICROSERVICE_API constant (no redeclaration)
+            const API_URL = `${MICROSERVICE_API}/properties/filter/`;
+
+            return fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filters)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('🏠 Properties API response:', result);
+
+                    if (result?.status && result?.data) {
+                        const propertiesData = result.data;
+                        const properties = propertiesData.results || [];
+
+                        console.log('🏠 Found', properties.length, 'properties');
+                        console.log('🏠 Total count:', propertiesData.count);
+
+                        updatePropertiesGrid(properties);
+                        updatePagination(propertiesData);
+
+                        if (propertiesData.count !== undefined) {
+                            updateTotalCount(propertiesData.count);
+                        }
+                    } else {
+                        console.error('❌ Properties API error:', result?.error || result?.message || 'No properties found');
+                        updatePropertiesGrid([]);
+                        updatePagination({ count: 0, current_page: 1, last_page: 1 });
+                        updateTotalCount(0);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Search error:', error);
+                    showError('An error occurred while searching properties');
+                    throw error;
+                });
+        }
+
+        // Global function to update properties grid
+        window.updatePropertiesGrid = function (properties) {
+            const propertiesGrid = document.querySelector('.properties-grid');
+            if (!propertiesGrid) return;
+
+            if (properties.length === 0) {
+                propertiesGrid.innerHTML = `
+                    <div class="no-properties">
+                        <div class="no-properties-icon">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                        </div>
+                        <h4>No Properties Found</h4>
+                        <p>We couldn't find any properties matching your criteria. Try adjusting your search filters or explore our complete collection of luxury properties.</p>
+                        <a href="{% url 'properties' %}" class="btn-primary-custom" style="display: inline-flex;">
+                            <i class="fas fa-refresh me-2" aria-hidden="true"></i>
+                            View All Properties
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            const propertiesHTML = properties.map(property => {
+                let propertyTypeText = property.property_type || 'Residential';
+
+                if (propertyTypeText === 3 || propertyTypeText === '3') {
+                    propertyTypeText = 'Commercial';
+                } else if (propertyTypeText === 20 || propertyTypeText === '20') {
+                    propertyTypeText = 'Residential';
+                }
+
+                const title = property.title?.en || property.title || 'Luxury Property';
+
+                const cityName = property.city?.name?.en || property.city?.name || '';
+                const districtName = property.district?.name?.en || property.district?.name || '';
+                const location = districtName ? `${districtName}, ${cityName}` : cityName || 'Premium Location, Dubai';
+
+                const price = property.low_price ? `AED ${property.low_price.toLocaleString()}` : 'Contact for Price';
+                const area = property.min_area ? `${property.min_area.toLocaleString()} sq ft` : 'N/A';
+
+                const image = property.cover || property.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                const optimizedImage = image.includes('?')
+                    ? `${image}&w=400&h=300&q=80`
+                    : `${image}?w=400&h=300&q=80`;
+
+                const slug = property.slug || 'property';
+                const propertyUrl = `/property/${slug}-${property.id}/`;
+
+                return `
+                    <div class="property-card">
+                        <div class="property-image" style="background-image: url('${optimizedImage}'); background-size: cover;">
+                            <div class="price-tag">Available</div>
+                            <div class="property-type-badge">${propertyTypeText}</div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="property-title">${title}</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                ${location}
+                            </div>
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-coins" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="feature-text">${price}</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-ruler-combined" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="feature-text">${area}</div>
+                                </div>
+                            </div>
+                            <div class="property-actions">
+                                <a href="${propertyUrl}" class="btn-primary-custom">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    View Details
+                                </a>
+                                <a href="{% url 'contact' %}" class="btn-outline-primary">
+                                    <i class="fas fa-phone" aria-hidden="true"></i>
+                                    Contact Agent
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            propertiesGrid.innerHTML = propertiesHTML;
+        }
+
+        // Global function to update total count
+        window.updateTotalCount = function (count) {
+            const totalCountElement = document.getElementById('totalCountDisplay');
+            if (totalCountElement) {
+                totalCountElement.textContent = count;
+            }
+        };
+
+        // Global function to show error messages
+        window.showError = function (message) {
+            const propertiesSection = document.querySelector('.properties-section');
+            if (!propertiesSection) return;
+
+            const errorHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    ${message}
+                </div>
+            `;
+
+            propertiesSection.insertAdjacentHTML('afterbegin', errorHTML);
+
+            setTimeout(() => {
+                const errorAlert = propertiesSection.querySelector('.alert-danger');
+                if (errorAlert) errorAlert.remove();
+            }, 5000);
+        };
+
+    })(); // End of IIFE
+
+    // Pagination function that calls the external API directly
+    window.goToPageByUrl = function (url) {
+        console.log('📄 Going to page by URL:', url);
+
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading...';
+            searchBtn.disabled = true;
+        }
+
+        const currentFilters = getCurrentFilters();
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentFilters)
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log('📄 External API response:', result);
+
+                if (result.status && result.data) {
+                    const propertiesData = result.data;
+                    const properties = propertiesData.results || [];
+
+                    window.updatePropertiesGrid(properties);
+                    window.updatePagination(propertiesData);
+
+                    if (propertiesData.count !== undefined) {
+                        window.updateTotalCount(propertiesData.count);
+                    }
+
+                    scrollToProperties();
+                } else {
+                    console.error('❌ External API error:', result?.error || 'Unknown error');
+                    window.showError('Failed to load page. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('❌ External API call error:', error);
+                window.showError('An error occurred while loading the page.');
+            })
+            .finally(() => {
+                const searchBtn = document.getElementById('searchBtn');
+                if (searchBtn) {
+                    searchBtn.classList.remove('loading');
+                    searchBtn.innerHTML = '<i class="fas fa-search" aria-hidden="true"></i> Search Properties';
+                    searchBtn.disabled = false;
+                }
+            });
+    }
+
+    // Simplified pagination function for page numbers
+    window.goToPage = function (page) {
+        console.log('📄 Going to page:', page);
+
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading...';
+            searchBtn.disabled = true;
+        }
+
+        const currentFilters = getCurrentFilters();
+
+        // Use the top-level MICROSERVICE_API constant (no redeclaration)
+        const API_URL = `${MICROSERVICE_API}/properties/filter/?page=${page}`;
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentFilters)
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log('📄 External API pagination response:', result);
+
+                if (result.status && result.data) {
+                    const propertiesData = result.data;
+                    const properties = propertiesData.results || [];
+
+                    window.updatePropertiesGrid(properties);
+                    window.updatePagination(propertiesData);
+
+                    if (propertiesData.count !== undefined) {
+                        window.updateTotalCount(propertiesData.count);
+                    }
+
+                    scrollToProperties();
+                } else {
+                    console.error('❌ External API pagination error:', result?.error || 'Unknown error');
+                    window.showError('Failed to load page. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('❌ External API pagination error:', error);
+                window.showError('An error occurred while loading the page.');
+            })
+            .finally(() => {
+                const searchBtn = document.getElementById('searchBtn');
+                if (searchBtn) {
+                    searchBtn.classList.remove('loading');
+                    searchBtn.innerHTML = '<i class="fas fa-search" aria-hidden="true"></i> Search Properties';
+                    searchBtn.disabled = false;
+                }
+            });
+    }
+
+    function getCurrentFilters() {
+        const filterForm = document.querySelector('.filter-form');
+        const formData = new FormData(filterForm);
+
+        const propertyTypeValue = formData.get('property_type') || 'residential';
+        let propertyTypeText = 'Residential';
+        if (propertyTypeValue === 'commercial') {
+            propertyTypeText = 'Commercial';
+        }
+
+        const filters = {};
+        filters.property_type = propertyTypeText;
+        filters.limit = 12;
+
+        const city = formData.get('city');
+        if (city && city.trim()) filters.city = city.trim();
+
+        const district = formData.get('district');
+        if (district && district.trim()) filters.district = district.trim();
+
+        const unitType = formData.get('unit_type');
+        if (unitType && unitType.trim()) filters.unit_type = unitType.trim();
+
+        if (propertyTypeText === 'Residential') {
+            const rooms = formData.get('bedrooms');
+            if (rooms && rooms.trim()) filters.rooms = rooms.trim();
+        }
+
+        const deliveryYear = formData.get('delivery_year');
+        if (deliveryYear && deliveryYear.trim() && deliveryYear !== '0') {
+            filters.delivery_year = parseInt(deliveryYear);
+        }
+
+        const minPrice = parseInt(formData.get('min_price')) || 0;
+        const maxPrice = parseInt(formData.get('max_price')) || 100000000;
+        if (minPrice > 0) filters.low_price = minPrice;
+        if (maxPrice < 100000000) filters.max_price = maxPrice;
+
+        const minArea = parseInt(formData.get('min_area')) || 0;
+        const maxArea = parseInt(formData.get('max_area')) || 50000;
+        if (minArea > 0) filters.min_area = minArea;
+        if (maxArea < 50000) filters.max_area = maxArea;
+
+        const title = formData.get('project_name');
+        if (title && title.trim()) filters.title = title.trim();
+
+        const developer = formData.get('developer');
+        if (developer && developer.trim()) filters.developer = developer.trim();
+
+        const propertyStatus = formData.get('property_status');
+        if (propertyStatus && propertyStatus.trim() && propertyStatus !== 'Total') {
+            filters.property_status = propertyStatus.trim();
+        }
+
+        return filters;
+    }
+
+    function showLoadingState() {
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading...';
+            searchBtn.disabled = true;
+        }
+
+        const propertiesGrid = document.querySelector('.properties-grid');
+        if (propertiesGrid) {
+            propertiesGrid.innerHTML = `
+                <div class="no-properties">
+                    <div class="no-properties-icon">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                    </div>
+                    <h4>Loading Properties...</h4>
+                    <p>Please wait while we fetch the properties.</p>
+                </div>
+            `;
+        }
+    }
+
+    function hideLoadingState() {
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.classList.remove('loading');
+            searchBtn.innerHTML = '<i class="fas fa-search" aria-hidden="true"></i> Search Properties';
+            searchBtn.disabled = false;
+        }
+    }
+
+    function scrollToProperties() {
+        const propertiesSection = document.querySelector('.properties-section');
+        if (propertiesSection) {
+            propertiesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    window.updatePagination = function (data) {
+        console.log('📄 Updating pagination with data:', data);
+
+        const paginationSection = document.querySelector('#dynamicPagination');
+        if (!paginationSection) {
+            console.log('📄 No dynamic pagination section found');
+            return;
+        }
+
+        const totalCount = data.count || 0;
+        const currentPage = data.current_page || 1;
+        const nextUrl = data.next_page_url;
+        const previousUrl = data.previous_page_url;
+        const perPage = 12;
+        const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
+
+        if (totalPages <= 1) {
+            paginationSection.style.display = 'none';
+            return;
+        }
+
+        paginationSection.style.display = 'flex';
+
+        let paginationHTML = '<div class="pagination-nav">';
+
+        if (previousUrl) {
+            paginationHTML += `
+                <button type="button" class="nav-btn" onclick="goToPageByUrl('${previousUrl}')">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    Previous
+                </button>
+            `;
+        } else {
+            paginationHTML += `
+                <button type="button" class="nav-btn" disabled>
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    Previous
+                </button>
+            `;
+        }
+
+        if (totalPages > 1) {
+            const maxPagesToShow = 5;
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button type="button" class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += '<span class="page-btn">...</span>';
+                }
+                paginationHTML += `
+                    <button type="button" class="page-btn" onclick="goToPage(${totalPages})">
+                        ${totalPages}
+                    </button>
+                `;
+            }
+        }
+
+        if (nextUrl) {
+            paginationHTML += `
+                <button type="button" class="nav-btn" onclick="goToPageByUrl('${nextUrl}')">
+                    Next
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+            `;
+        } else {
+            paginationHTML += `
+                <button type="button" class="nav-btn" disabled>
+                    Next
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+            `;
+        }
+
+        paginationHTML += '</div>';
+
+        if (totalCount > 0) {
+            paginationHTML += `
+                <div class="pagination-info">
+                    <span>Showing page ${currentPage} of ${totalPages} (${totalCount} properties)</span>
+                </div>
+            `;
+        }
+
+        paginationSection.innerHTML = paginationHTML;
+    }
+
+    document.getElementById("priceRangeSelect").addEventListener("change", function () {
+        const selected = this.options[this.selectedIndex];
+        const min = selected.getAttribute("data-min");
+        const max = selected.getAttribute("data-max");
+
+        document.getElementById("minPriceInput").value = min || "";
+        document.getElementById("maxPriceInput").value = max || "";
+
+        console.log("Selected range:", min, "-", max);
+    });
+
+</script>
+{% endblock %}
+
+{% endblock %}

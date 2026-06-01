@@ -1,0 +1,1337 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Contact KIF Realty | Dubai Real Estate Experts{% endblock %}
+
+<meta name="description" content="{% block description %}Get in touch with KIF Realty for expert real estate advice and services. Reach out today for all your property investment needs in Dubai.
+{% endblock %}">
+
+<!-- contact.html -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/contact/">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Messages Container */
+.messages-container {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+.alert {
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.alert-success {
+    border-color: rgba(76, 175, 80, 0.3);
+    background: linear-gradient(145deg, rgba(76, 175, 80, 0.1), var(--charcoal-gray));
+}
+
+.alert-error {
+    border-color: rgba(244, 67, 54, 0.3);
+    background: linear-gradient(145deg, rgba(244, 67, 54, 0.1), var(--charcoal-gray));
+}
+
+.close-alert {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-alert:hover {
+    color: var(--rose-gold);
+}
+
+/* Page Header */
+.page-header {
+    padding: 8rem 3rem 4rem;
+    background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.05;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.header-content h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.header-content p {
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+}
+
+/* Contact Section */
+.contact-section {
+    padding: 1rem 1rem;
+    background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+    position: relative;
+}
+
+.contact-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.02;
+}
+
+.contact-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Contact Info */
+.contact-info {
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    border-radius: 25px;
+    padding: 1.2rem;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.03;
+}
+
+.contact-info > * {
+    position: relative;
+    z-index: 1;
+}
+
+.contact-info h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.contact-item {
+    display: flex;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    background: rgba(232, 180, 160, 0.05);
+    transform: translateX(10px);
+}
+
+.contact-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+}
+
+.contact-icon i {
+    font-size: 1.5rem;
+    color: var(--obsidian-black);
+}
+
+.contact-details h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.contact-details p {
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 300;
+    align-items: center;
+}
+
+.contact-details a {
+    color: var(--rose-gold);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    align-items: center;
+}
+
+.contact-details a:hover {
+    color: var(--gold-accent);
+    align-items: center;
+}
+
+/* Office Hours */
+.office-hours {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+    border: 1px solid rgba(232, 180, 160, 0.1);
+}
+
+.office-hours h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--rose-gold);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.hours-grid {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.hours-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(232, 180, 160, 0.1);
+    color: var(--text-muted);
+    font-weight: 300;
+}
+
+.hours-item:last-child {
+    border-bottom: none;
+}
+
+.hours-item span:first-child {
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+/* Contact Form */
+.contact-form-container {
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    border-radius: 25px;
+    padding: 3rem;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.03;
+}
+
+.form-content {
+    position: relative;
+    z-index: 1;
+}
+
+.form-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 2rem;
+    letter-spacing: -0.01em;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-light);
+    margin-bottom: 0.8rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 12px;
+    color: var(--text-light);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.1);
+    box-shadow: 0 0 0 3px rgba(232, 180, 160, 0.1);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM DROPDOWN — replaces native <select>
+   ───────────────────────────────────────────── */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Hide the real <select> but keep it accessible for form submission */
+.custom-select-wrapper select {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+}
+
+.custom-select-trigger {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 12px;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    user-select: none;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.custom-select-trigger::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8B4A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.custom-select-wrapper.open .custom-select-trigger::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-select-trigger:hover,
+.custom-select-wrapper.open .custom-select-trigger {
+    border-color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.08);
+}
+
+.custom-select-trigger.placeholder-active {
+    color: #888;
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid rgba(232, 180, 160, 0.3);
+    border-radius: 12px;
+    z-index: 9999;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+
+.custom-select-wrapper.open .custom-select-dropdown {
+    max-height: 280px;
+    opacity: 1;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling */
+.custom-select-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-select-dropdown::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+.custom-select-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(232, 180, 160, 0.3);
+    border-radius: 4px;
+}
+
+.custom-select-option {
+    padding: 0.9rem 1.2rem;
+    color: #cccccc;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.custom-select-option:last-child {
+    border-bottom: none;
+}
+
+.custom-select-option:hover {
+    background: rgba(232, 180, 160, 0.12);
+    color: #E8B4A0;
+    padding-left: 1.6rem;
+}
+
+.custom-select-option.selected {
+    background: rgba(232, 180, 160, 0.15);
+    color: #E8B4A0;
+    font-weight: 500;
+}
+
+.custom-select-option.placeholder-option {
+    color: #666;
+    font-style: italic;
+}
+
+/* Focus state for accessibility */
+.custom-select-trigger:focus {
+    outline: 2px solid var(--rose-gold);
+    outline-offset: 2px;
+}
+
+/* Property Interest Checkboxes */
+.property-interest {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 0.8rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.8rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(232, 180, 160, 0.1);
+}
+
+.checkbox-group:hover {
+    background: rgba(232, 180, 160, 0.05);
+    border-color: rgba(232, 180, 160, 0.2);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.8rem;
+    accent-color: var(--rose-gold);
+}
+
+.checkbox-group span {
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+/* Submit Button */
+.submit-btn {
+    background: var(--accent-gradient);
+    color: var(--obsidian-black);
+    padding: 1.3rem 3rem;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.submit-btn:hover::before {
+    left: 100%;
+}
+
+.submit-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(232, 180, 160, 0.6);
+}
+
+.submit-btn i {
+    margin-right: 0.8rem;
+}
+
+/* Map Section */
+.our-location-section {
+  text-align: center;
+  background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+  padding: 4rem 1rem;
+  border-radius: 1rem;
+  margin: 2rem 0;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.our-location-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--accent-gradient);
+  opacity: 0.02;
+  z-index: 0;
+}
+
+.our-location-section * {
+  position: relative;
+  z-index: 1;
+}
+
+.our-location-section .section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  color: var(--rose-gold, #E8B4A0);
+  margin-bottom: 0.5rem;
+}
+
+.our-location-section .section-subtitle {
+  color: var(--text-muted, #ccc);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.location-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.location-icon i {
+  color: var(--rose-gold, #E8B4A0);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.location-icon p {
+  color: var(--text-light, #f8f8f8);
+  font-size: 1rem;
+}
+
+.toggle-map-btn {
+  background: linear-gradient(135deg, #E8B4A0 0%, #F4D03F 100%);
+  color: #0B0C0F;
+  border: none;
+  padding: 1.3rem 2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.toggle-map-btn:hover {
+  box-shadow: 0 8px 25px rgba(232, 180, 160, 0.4);
+  transform: translateY(-3px);
+}
+
+.map-wrapper {
+  width: 100%;
+  max-width: 900px;
+  overflow: hidden;
+  transition: max-height 0.6s ease, opacity 0.4s ease;
+  border-radius: 15px;
+  opacity: 1;
+  max-height: 500px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.map-wrapper.closed {
+  max-height: 0;
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .map-wrapper {
+    max-width: 100%;
+    max-height: 350px;
+  }
+  .toggle-map-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .our-location-section .section-title {
+    font-size: 2rem;
+  }
+  .our-location-section .section-subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 2rem 2rem;
+    background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+    position: relative;
+}
+
+.faq-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.02;
+}
+
+.faq-section .section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.faq-section .section-title h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: var(--rose-gold);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.faq-section .section-title p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-weight: 300;
+}
+
+.faq-container {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.faq-item {
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    border-radius: 15px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    border-color: rgba(232, 180, 160, 0.3);
+}
+
+.faq-question {
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.faq-question:hover {
+    background: rgba(232, 180, 160, 0.05);
+}
+
+.faq-question i {
+    color: var(--rose-gold);
+    transition: transform 0.3s ease;
+}
+
+.faq-item.active .faq-question i {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    padding: 0 2rem 2rem;
+    display: none;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+}
+
+.faq-item.active .faq-answer {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Floating Contact Button */
+.floating-contact {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.floating-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--obsidian-black);
+    text-decoration: none;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.4);
+    transition: all 0.3s ease;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(232, 180, 160, 0.6);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced focus states for accessibility */
+.form-group input:focus,
+.form-group textarea:focus,
+.submit-btn:focus {
+    outline: 2px solid var(--rose-gold);
+    outline-offset: 2px;
+}
+
+/* Loading state for form submission */
+.submit-btn.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--obsidian-black);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 992px) {
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+    .header-content h1 { font-size: 3.2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .property-interest { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .page-header { margin-top: -10%; }
+    .header-content h1 { font-size: 3.5rem; }
+    .contact-section, .map-section, .faq-section { padding: 1.5rem 1.5rem; }
+    .contact-info, .contact-form-container { padding: 1rem; }
+    .faq-section .section-title h2, .map-section .section-title h2 { font-size: 2.2rem; }
+    .contact-info h2, .form-content h2 { font-size: 2rem; }
+}
+
+@media (max-width: 480px) {
+    .header-content h1 { font-size: 2rem; }
+    .contact-item { flex-direction: column; text-align: center; }
+    .contact-icon { margin: 0 auto 1rem; }
+    .floating-contact { bottom: 20px; right: 20px; }
+    .floating-btn { width: 50px; height: 50px; font-size: 1.3rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Display Messages -->
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <button type="button" class="close-alert">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="header-content">
+            <h1>Contact Our Experts</h1>
+            <p>Get personalized consultation for your Dubai real estate investment journey</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="contact-container">
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p style="margin-bottom: 2rem; color: #666; font-size: 1.1rem;">Ready to invest in Dubai real estate? Our RERA-certified experts are here to guide you through luxury villas, off-plan properties, and high-ROI investment opportunities.</p>
+
+                <div class="contact-item">
+                    <div class="contact-icon"><i class="fas fa-phone"></i></div>
+                    <div class="contact-details">
+                        <h3>Call Us</h3>
+
+                        <p><a href="tel:+971567655599">+971567655599</a></p>
+                        <p style="font-size: 0.9rem; margin-top: 0.3rem;">Available 24/7 for consultations</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon"><i class="fab fa-whatsapp"></i></div>
+                    <div class="contact-details">
+                        <h3>WhatsApp</h3>
+
+                        <p><a href="https://wa.me/971567655599" target="_blank" rel="noopener">+971567655599</a></p>
+                        <p style="font-size: 0.9rem; margin-top: 0.3rem;">Quick property inquiries</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="contact-details">
+                        <h3>Email Us</h3>
+                        <p><a href="mailto:info@kifrealty.com">info@kifrealty.com</a></p>
+                        <p style="font-size: 0.9rem; margin-top: 0.3rem;">Detailed property portfolios</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="contact-details">
+                        <h3>Visit Our Office</h3>
+                        <p>Office No - 19, 31st floor, API World Tower, Sheikh Zayed Road, Dubai, UAE</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.3rem;">Schedule an appointment</p>
+                    </div>
+                </div>
+
+                <!-- Office Hours -->
+                <div class="office-hours">
+                    <div class="office-hours-content">
+                        <h3>Office Hours</h3>
+                        <div class="hours-grid">
+                            <div class="hours-item">
+                                <span>Monday - Thursday</span>
+                                <span>9:00 AM - 7:00 PM</span>
+                            </div>
+                            <div class="hours-item">
+                                <span>Friday</span>
+                                <span>9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="hours-item">
+                                <span>Saturday</span>
+                                <span>10:00 AM - 6:00 PM</span>
+                            </div>
+                            <div class="hours-item">
+                                <span>Sunday</span>
+                                <span>By Appointment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form-container">
+                <div class="form-content">
+                    <h2>Request Consultation</h2>
+                    <form id="contactForm" method="POST" action="{% url 'contact_submit' %}">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+                        </div>
+
+                        <!-- Investment Budget - Custom Dropdown -->
+                        <div class="form-group">
+                            <label>Investment Budget (AED)</label>
+                            <div class="custom-select-wrapper" data-name="investmentBudget">
+                                <select name="investmentBudget" id="investmentBudget">
+                                    <option value="500k-1m">500K - 1M AED</option>
+                                    <option value="1m-2m">1M - 2M AED</option>
+                                    <option value="2m-5m">2M - 5M AED</option>
+                                    <option value="5m-10m">5M - 10M AED</option>
+                                    <option value="10m+">10M+ AED</option>
+                                </select>
+                                <div class="custom-select-trigger placeholder-active" tabindex="0">Select Budget Range</div>
+                                <div class="custom-select-dropdown">
+                                    
+                                    <div class="custom-select-option" data-value="500k-1m">500K - 1M AED</div>
+                                    <div class="custom-select-option" data-value="1m-2m">1M - 2M AED</div>
+                                    <div class="custom-select-option" data-value="2m-5m">2M - 5M AED</div>
+                                    <div class="custom-select-option" data-value="5m-10m">5M - 10M AED</div>
+                                    <div class="custom-select-option" data-value="10m+">10M+ AED</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Investment Type - Custom Dropdown -->
+                        <div class="form-group">
+                            <label>Investment Type</label>
+                            <div class="custom-select-wrapper" data-name="investmentType">
+                                <select name="investmentType" id="investmentType">
+                                    <option value="buy-to-live">Buy to Live</option>
+                                    <option value="buy-to-rent">Buy to Rent</option>
+                                    <option value="off-plan">Off-Plan Investment</option>
+                                    <option value="commercial">Commercial Property</option>
+                                    <option value="portfolio">Property Portfolio</option>
+                                </select>
+                                <div class="custom-select-trigger placeholder-active" tabindex="0">Select Investment Type</div>
+                                <div class="custom-select-dropdown">
+                                    <div class="custom-select-option" data-value="buy-to-live">Buy to Live</div>
+                                    <div class="custom-select-option" data-value="buy-to-rent">Buy to Rent</div>
+                                    <div class="custom-select-option" data-value="off-plan">Off-Plan Investment</div>
+                                    <div class="custom-select-option" data-value="commercial">Commercial Property</div>
+                                    <div class="custom-select-option" data-value="portfolio">Property Portfolio</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Interests -->
+                        <div class="form-group">
+                            <label>Property Interests (Select all that apply)</label>
+                            <div class="property-interest">
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="luxury-villa">
+                                    <span>Luxury Villas</span>
+                                </label>
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="penthouse">
+                                    <span>Penthouses</span>
+                                </label>
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="apartment">
+                                    <span>Apartments</span>
+                                </label>
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="townhouse">
+                                    <span>Townhouses</span>
+                                </label>
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="off-plan">
+                                    <span>Off-Plan Properties</span>
+                                </label>
+                                <label class="checkbox-group">
+                                    <input type="checkbox" name="propertyInterest" value="commercial">
+                                    <span>Commercial</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Preferred Location - Custom Dropdown -->
+                        <div class="form-group">
+                            <label>Preferred Location</label>
+                            <div class="custom-select-wrapper" data-name="preferredLocation">
+                                <select name="preferredLocation" id="preferredLocation">
+                                    <option value="">Select Preferred Location</option>
+                                    <option value="downtown-dubai">Downtown Dubai</option>
+                                    <option value="dubai-marina">Dubai Marina</option>
+                                    <option value="palm-jumeirah">Palm Jumeirah</option>
+                                    <option value="dubai-hills">Dubai Hills Estate</option>
+                                    <option value="business-bay">Business Bay</option>
+                                    <option value="jvc">Jumeirah Village Circle</option>
+                                    <option value="dubai-south">Dubai South</option>
+                                    <option value="palm-jebel-ali">Palm Jebel Ali</option>
+                                    <option value="other">Other / Multiple</option>
+                                </select>
+                                <div class="custom-select-trigger placeholder-active" tabindex="0">Select Preferred Location</div>
+                                <div class="custom-select-dropdown">
+                                    <div class="custom-select-option placeholder-option" data-value="">Select Preferred Location</div>
+                                    <div class="custom-select-option" data-value="downtown-dubai">Downtown Dubai</div>
+                                    <div class="custom-select-option" data-value="dubai-marina">Dubai Marina</div>
+                                    <div class="custom-select-option" data-value="palm-jumeirah">Palm Jumeirah</div>
+                                    <div class="custom-select-option" data-value="dubai-hills">Dubai Hills Estate</div>
+                                    <div class="custom-select-option" data-value="business-bay">Business Bay</div>
+                                    <div class="custom-select-option" data-value="jvc">Jumeirah Village Circle</div>
+                                    <div class="custom-select-option" data-value="dubai-south">Dubai South</div>
+                                    <div class="custom-select-option" data-value="palm-jebel-ali">Palm Jebel Ali</div>
+                                    <div class="custom-select-option" data-value="other">Other / Multiple</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Investment Timeline - Custom Dropdown -->
+                        <div class="form-group">
+                            <label>Investment Timeline</label>
+                            <div class="custom-select-wrapper" data-name="timeline">
+                                <select name="timeline" id="timeline">
+                                    <option value="">Select Timeline</option>
+                                    <option value="immediate">Immediate (This Month)</option>
+                                    <option value="3-months">Next 3 Months</option>
+                                    <option value="6-months">Next 6 Months</option>
+                                    <option value="1-year">Within 1 Year</option>
+                                    <option value="exploring">Just Exploring</option>
+                                </select>
+                                <div class="custom-select-trigger placeholder-active" tabindex="0">Select Timeline</div>
+                                <div class="custom-select-dropdown">
+                                    <div class="custom-select-option placeholder-option" data-value="">Select Timeline</div>
+                                    <div class="custom-select-option" data-value="immediate">Immediate (This Month)</div>
+                                    <div class="custom-select-option" data-value="3-months">Next 3 Months</div>
+                                    <div class="custom-select-option" data-value="6-months">Next 6 Months</div>
+                                    <div class="custom-select-option" data-value="1-year">Within 1 Year</div>
+                                    <div class="custom-select-option" data-value="exploring">Just Exploring</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Additional Requirements</label>
+                            <textarea id="message" name="message" placeholder="Tell us more about your specific requirements, preferred amenities, or any questions you have about Dubai real estate investment..."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i> Send Inquiry
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="our-location-section">
+        <h2 class="section-title">Our Location</h2>
+        <p class="section-subtitle">Visit our Dubai office for personalized real estate consultations</p>
+        <div class="location-content">
+            <div class="location-icon">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>Dubai Office Location</p>
+            </div>
+            <button id="toggleMapBtn" class="toggle-map-btn">
+                <i class="fas fa-map"></i> Show Map
+            </button>
+            <div id="mapWrapper" class="map-wrapper closed">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3609.338565855919!2d55.28089527538276!3d25.225519177692757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjXCsDEzJzMxLjkiTiA1NcKwMTcnMDAuNSJF!5e0!3m2!1sen!2sin!4v1763982525687!5m2!1sen!2sin"
+                    width="100%" height="450"
+                    style="border:0; border-radius: 15px;"
+                    allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <p>Quick answers to common Dubai real estate investment questions</p>
+        </div>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can foreigners buy property in Dubai?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, foreigners can buy freehold properties in designated areas of Dubai, including Downtown Dubai, Dubai Marina, Palm Jumeirah, and many other prime locations. KIF Realty specializes in guiding international investors through the entire purchase process.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is the average ROI for Dubai properties?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Dubai properties typically offer 5-8% rental yields, with some prime locations offering higher returns. Our ROI analysis team provides detailed calculations based on current market data, property type, and location to help you make informed investment decisions.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What are off-plan properties?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Off-plan properties are units sold before construction completion, often with flexible payment plans during construction. These typically offer lower prices and high appreciation potential. KIF Realty works with top developers to offer the best off-plan opportunities.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How long does the property buying process take?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>For ready properties, the process typically takes 2-4 weeks from offer acceptance to handover. Off-plan properties follow construction timelines. Our team manages all documentation, approvals, and legal processes to ensure smooth transactions.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Do you provide property management services?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, we offer comprehensive property management services including tenant sourcing, rent collection, maintenance coordination, and investment portfolio management. This ensures hassle-free ownership and optimized returns.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Contact Button -->
+    <div class="floating-contact">
+
+        <a href="https://wa.me/971567655599" target="_blank" rel="noopener" class="floating-btn">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Auto-hide alerts ──────────────────────────────────────
+        document.querySelectorAll('.alert').forEach(function (alert) {
+            const closeBtn = alert.querySelector('.close-alert');
+            if (closeBtn) closeBtn.addEventListener('click', () => alert.style.display = 'none');
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.style.display = 'none', 300);
+            }, 5000);
+        });
+
+        // ── Custom Dropdowns ──────────────────────────────────────
+        document.querySelectorAll('.custom-select-wrapper').forEach(function (wrapper) {
+            const trigger  = wrapper.querySelector('.custom-select-trigger');
+            const dropdown = wrapper.querySelector('.custom-select-dropdown');
+            const options  = wrapper.querySelectorAll('.custom-select-option');
+            const select   = wrapper.querySelector('select');
+
+            // Open / close on trigger click
+            trigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isOpen = wrapper.classList.contains('open');
+                // Close all other dropdowns first
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+                if (!isOpen) wrapper.classList.add('open');
+            });
+
+            // Keyboard accessibility
+            trigger.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    trigger.click();
+                }
+                if (e.key === 'Escape') wrapper.classList.remove('open');
+            });
+
+            // Option selection
+            options.forEach(function (option) {
+                option.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const value = option.getAttribute('data-value');
+                    const label = option.textContent;
+
+                    // Update trigger text
+                    trigger.textContent = label;
+                    if (value === '') {
+                        trigger.classList.add('placeholder-active');
+                    } else {
+                        trigger.classList.remove('placeholder-active');
+                    }
+
+                    // Highlight selected
+                    options.forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+
+                    // Sync hidden <select>
+                    select.value = value;
+
+                    // Close dropdown
+                    wrapper.classList.remove('open');
+                });
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function () {
+            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+        });
+
+        // ── FAQ Accordion ─────────────────────────────────────────
+        document.querySelectorAll('.faq-item').forEach(function (item) {
+            item.querySelector('.faq-question').addEventListener('click', function () {
+                document.querySelectorAll('.faq-item').forEach(i => { if (i !== item) i.classList.remove('active'); });
+                item.classList.toggle('active');
+            });
+        });
+
+        // ── Map Toggle ────────────────────────────────────────────
+        const toggleBtn = document.getElementById('toggleMapBtn');
+        const mapWrapper = document.getElementById('mapWrapper');
+        if (toggleBtn && mapWrapper) {
+            toggleBtn.addEventListener('click', () => {
+                mapWrapper.classList.toggle('closed');
+                toggleBtn.innerHTML = mapWrapper.classList.contains('closed')
+                    ? '<i class="fas fa-map"></i> Show Map'
+                    : '&times; Hide Map';
+            });
+        }
+
+    });
+    </script>
+
+{% endblock %}

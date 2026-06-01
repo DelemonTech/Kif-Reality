@@ -1,0 +1,2262 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}Retail Space for Rent in Dubai{% endblock %}
+
+<meta name="description" content="{% block description %}
+Explore Prime Retail Spaces in Dubai | Commercial Properties for Rent & Sale | High-Traffic Locations for Your Business | Invest in Dubai's Growing Retail Market{% endblock %}">
+
+<!-- canonical -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/retail-spaces">
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+<!-- Intl Tel Input CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
+
+<!-- CSS -->
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+        background-color: #030303;
+    }
+
+    .retail-section {
+        background: radial-gradient(120% 72% at 50% 100%, rgba(42, 60, 68, 0) 0, rgb(7 28 53 / 3%) 66.59%, rgb(7 28 53 / 44%) 99.98%),
+        linear-gradient(-90deg, rgba(7, 28, 53, .8) 10%, rgba(7, 28, 53, .14) 80.83%),
+        url("{% static 'images/k_hero_1.jpg' %}") center/cover no-repeat;
+        color: #fff;
+        padding: 100px 20px;
+        text-align: center;
+        position: relative;
+        height: auto;
+    }
+
+    .retail-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Add a soft bottom fade to separate next section */
+    .retail-section::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 200px;
+        /* increased fade height for smoother transition */
+        background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #030303 100%);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .retail-content {
+        position: relative;
+        margin: 0 auto;
+        z-index: 2;
+        max-width: 1200px;
+    }
+
+    .retail-content h1 {
+        font-size: 60px;
+        font-weight: 800;
+        line-height: 1.5;
+        margin-top: 3%;
+        letter-spacing: 1px;
+    }
+
+    .retail-content h1 span {
+        color: #eeb32b;
+        /* Gold */
+    }
+
+    .retail-content h3 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 15px 0 25px 0;
+        color: #fff;
+        letter-spacing: 1px;
+    }
+
+    .retail-content p {
+        font-size: 18px;
+        letter-spacing: 0.2px;
+        /* subtle spacing if you want a clean look */
+        line-height: 1.7;
+        /* improves readability */
+        color: #a3a3a3;
+        margin-bottom: 40px;
+    }
+
+    /* ===== Buttons ===== */
+    .retail-buttons_retail {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .retail-buttons_retail .btn-primary_retail,
+    .retail-buttons_retail .btn-secondary_retail {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        font-size: 14px;
+        min-width: 200px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    .retail-buttons_retail .btn-primary_retail {
+        background: #eeb32b;
+        color: #000;
+    }
+
+    .retail-buttons_retail .btn-secondary_retail {
+        background: transparent;
+        border: 2px solid #eeb32b;
+        color: #fff;
+
+    }
+
+    .retail-buttons_retail .btn-primary_retail:hover {
+        background: #d9a91f;
+    }
+
+    .retail-buttons_retail .btn-secondary_retail:hover {
+        background: #eeb32b;
+        color: #000;
+    }
+
+    /* ===== Stats Section ===== */
+    /* ===== Stats Section ===== */
+    .retail-stats {
+        display: flex;
+        justify-content: space-between;
+        /* evenly distribute */
+        gap: 20px;
+        /* reduce gap so it fits on small screens */
+        margin-top: 50px;
+        flex-wrap: nowrap;
+        /* 🚀 keep all stats in one line */
+        overflow-x: auto;
+        /* enable horizontal scroll on very small screens */
+        -webkit-overflow-scrolling: touch;
+        /* smooth scroll for mobile */
+    }
+
+    .retail-stats div {
+        flex: 1;
+        /* equal width for all */
+        text-align: center;
+        min-width: 120px;
+        /* prevent shrinking too much */
+    }
+
+    .retail-stats h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #eeb32b;
+    }
+
+    .retail-stats p {
+        font-size: 16px;
+        color: #a3a3a3;
+        letter-spacing: 0.2px;
+        /* subtle spacing if you want a clean look */
+        line-height: 1.7;
+        /* improves readability */
+    }
+
+    /* Add to your existing CSS */
+
+    /* ===== Animation Keyframes ===== */
+    @keyframes fadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== Apply Animations ===== */
+    .retail-content h1 {
+        animation: fadeUp 1s ease-out 0.3s forwards;
+        opacity: 0;
+    }
+
+    .retail-content h3 {
+        animation: fadeUp 1s ease-out 0.6s forwards;
+        opacity: 0;
+    }
+
+    .retail-content p {
+        animation: fadeUp 1s ease-out 0.9s forwards;
+        opacity: 0;
+    }
+
+    .retail-buttons_retail {
+        animation: fadeUp 1s ease-out 1.2s forwards;
+        opacity: 0;
+    }
+
+    .retail-stats {
+        animation: fadeUp 1s ease-out 1.5s forwards;
+        opacity: 0;
+    }
+
+
+
+    @media (max-width: 421px) {
+        .retail-stats h2 {
+            font-size: 1rem;
+            /* smaller heading */
+            font-weight: 500;
+        }
+
+        .retail-stats p {
+            font-size: 14px;
+            /* smaller text */
+        }
+
+        .retail-content h1 {
+            font-size: 36px;
+
+        }
+
+        .retail-stats {
+            gap: 5px;
+            /* reduce spacing between items */
+        }
+
+        .retail-stats div {
+            min-width: 50px;
+            /* slightly smaller boxes */
+        }
+    }
+
+    /* ===== RESPONSIVE MEDIA QUERIES ===== */
+    @media (max-width: 992px) {
+        .retail-content h1 {
+            font-size: 48px;
+        }
+
+        .retail-content h3 {
+            font-size: 22px;
+        }
+
+        .retail-content p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .retail-section {
+            padding: 60px 15px;
+        }
+
+        .retail-content h1 {
+            font-size: 40px;
+        }
+
+        .retail-content h3 {
+            font-size: 20px;
+        }
+
+        .retail-content p {
+            font-size: 15px;
+        }
+    }
+
+    @media (max-width: 492px) {
+        .retail-buttons_retail {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .retail-buttons_retail .btn-primary_retail,
+        .retail-buttons_retail .btn-secondary_retail {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .retail-section {
+            padding: 40px 10px;
+        }
+
+        .retail-content {
+            margin-top: 12%;
+        }
+
+        .retail-content h1 {
+            font-size: 36px;
+
+        }
+
+        .retail-content h3 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .retail-content p {
+            font-size: 14px;
+        }
+
+    }
+
+
+    /* Modal Overlay */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.75);
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    /* Modal Box */
+    .modal-content {
+        background-color: #111;
+        color: #fff;
+        border-radius: 6px;
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 450px;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+
+    }
+
+    .modal-content h2 {
+        margin-bottom: 10px;
+        color: #eeb32b;
+        font-size: 24px;
+        text-align: center;
+        line-height: 1.7;
+    }
+
+    .modal-content p {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #ccc;
+        line-height: 1.7;
+    }
+
+    .modal label {
+        color: #a3a3a3;
+        margin: 1%;
+    }
+
+
+    .modal-content input,
+    .modal-content select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        background-color: #000;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #a3a3a3;
+    }
+
+    .modal-content input:focus,
+    .modal-content select:focus {
+        border-color: #eeb32b;
+        outline: none;
+    }
+
+    .modal-content button {
+        width: 100%;
+        padding: 12px;
+        background-color: #eeb32b;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-transform: uppercase;
+    }
+
+    .modal-content button:hover {
+        background-color: #d9a91f;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 12px;
+        right: 20px;
+        font-size: 24px;
+        color: #eeb32b;
+        cursor: pointer;
+    }
+
+    /* Fade Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+        .modal-content {
+            padding: 20px 20px;
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+        }
+
+        .modal-content p {
+            font-size: 13px;
+        }
+    }
+
+    /* Fix for intl-tel-input layout inside modal */
+    .iti {
+        width: 100%;
+        display: block;
+        margin-bottom: 15px;
+
+    }
+
+    .iti input[type="tel"] {
+        width: 100% !important;
+        padding-left: 50px !important;
+        /* leave space for flag */
+        background-color: #000 !important;
+        border: 1px solid #444 !important;
+        border-radius: 6px !important;
+        color: #a3a3a3 !important;
+        height: 44px;
+        font-size: 14px;
+    }
+
+    .iti__flag-container {
+        background: #000;
+        border-right: 1px solid #444;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+
+    }
+
+    .iti__selected-flag {
+        padding: 0 10px;
+    }
+
+    .iti__country-list {
+        background-color: #111;
+        color: #fff;
+        border: 1px solid #333;
+        width: 100%;
+        min-width: 250px;
+        max-width: 300px;
+
+    }
+
+
+    .iti__country:hover {
+        background-color: #222;
+    }
+
+    @media (max-width: 500px) {
+        .iti__country-list {
+            width: 100% !important;
+            /* fits inside modal */
+            max-width: 280px;
+            /* optional safety cap */
+        }
+    }
+</style>
+
+<!-- Retail Spaces Section -->
+<section class="retail-section">
+    <div class="retail-content">
+        <h1 style="font-weight: 700;">Retail Space for Rent in <span>Dubai</span></h1>
+        <h3>Shops, Showrooms & Prime Locations</h3>
+        <p>
+            Dubai is one of the world's leading retail destinations — unlock exclusive spaces in <br>high-footfall areas delivering strong returns with KIF Realty.
+        </p>
+
+        <div class="retail-buttons_retail">
+            <a href="#location" class="btn-primary_retail">Explore Spaces</a>
+            <a href="#" class="btn-secondary_retail openModalBtn">Book Consultation</a>
+        </div>
+
+        <div class="retail-stats">
+            <div>
+                <h2>7–10%</h2>
+                <p>Average Rental Yields</p>
+            </div>
+            <div>
+                <h2>4+</h2>
+                <p>Prime Locations</p>
+            </div>
+            <div>
+                <h2>High</h2>
+                <p>Capital Appreciation</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- -------------------------------------------------------2 SECTION--------------------------------------------------------------- -->
+
+<!-- 📊 Graph Section -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+        --transition-bounce: all .4s cubic-bezier(.68, -.55, .265, 1.55);
+    }
+
+    .graph_section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 3s ease-out 1.5s backwards;
+
+    }
+
+    .graph_section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #fff;
+        letter-spacing: 1px;
+        line-height: 1.7;
+        animation: fadeUp 3s ease-out 1.5s backwards;
+    }
+
+    .graph_section h2 span {
+        color: #F7B600;
+    }
+
+    .graph_section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        max-width: 900px;
+        letter-spacing: 0.2px;
+        /* subtle spacing if you want a clean look */
+        line-height: 1.7;
+        /* improves readability */
+    }
+
+    .graph_container {
+        background-color: #0b0b0b;
+        border-radius: 6px;
+        padding: 25px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        max-width: 1100px;
+        width: 100%;
+        height: 450px;
+        /* Important when using maintainAspectRatio: false */
+        box-sizing: border-box;
+    }
+
+    canvas {
+        display: block;
+        max-width: 100%;
+        height: 100% !important;
+    }
+
+    @keyframes fadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Tweaks */
+    @media (max-width: 768px) {
+        .graph_section {
+            padding: 30px 20px;
+        }
+
+        .graph_section h2 {
+            font-size: 28px;
+        }
+
+        .graph_section p {
+            font-size: 16px;
+        }
+
+        .graph_container {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .graph_section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .graph_section {
+            padding: 30px 20px;
+        }
+
+        .graph_section p {
+            font-size: 14px;
+        }
+
+        .graph_container {
+            height: 250px;
+        }
+    }
+</style>
+
+<section class="graph_section">
+    <h2>Why Invest in <span>Dubai Retail Properties?</span></h2>
+    <p>
+        Over the past decade, retail properties in Dubai have significantly outperformed built-up
+        properties in ROI and capital appreciation. Retail space for rent in Dubai continues to see
+        strong demand driven by high consumer spending, global connectivity, and a business-friendly economy.
+    </p>
+
+    <div class="graph_container">
+        <canvas id="retailChart"></canvas>
+    </div>
+</section>
+
+<script>
+    const ctx = document.getElementById('retailChart').getContext('2d');
+    const retailChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+            datasets: [
+                {
+                    label: 'Retail Shops & Plots (60-100% ROI)',
+                    data: [100, 115, 130, 150, 165, 175, 190, 205, 225, 245, 270],
+                    borderColor: '#F7B600',
+                    backgroundColor: '#F7B600',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Built-up Retail Properties',
+                    data: [100, 108, 115, 120, 125, 130, 137, 145, 155, 165, 175],
+                    borderColor: '#AAAAAA',
+                    backgroundColor: '#AAAAAA',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#fff'
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#fff' },
+                    grid: { color: '#2a2a2a' }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#fff' },
+                    grid: { color: '#2a2a2a' }
+                }
+            }
+        }
+    });
+</script>
+
+<!-- ----------------------------------------------------------3 SECTION------------------------------------------------- -->
+
+<!-- ================= PRIME LOCATIONS SECTION ================= -->
+<style>
+    :root {
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 42 85% 55%;
+        --gradient-gold: linear-gradient(135deg, hsl(42 85% 55%), hsl(42 85% 65%));
+        --gradient-dark: linear-gradient(180deg, hsl(0 0% 0%), hsl(0 0% 3%));
+        --gradient-subtle: linear-gradient(180deg, hsl(0 0% 0% / 0), hsl(0 0% 5%));
+        --shadow-gold: 0 20px 50px -15px hsl(42 85% 55% / .35);
+        --shadow-glow: 0 0 40px hsl(42 85% 55% / .35);
+        --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        --transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+        --transition-bounce: all .4s cubic-bezier(.68, -.55, .265, 1.55);
+    }
+
+    .prime-locations {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+        animation: fadeUp 4s ease-out 3s backwards;
+    }
+
+    .prime-locations h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .prime-locations h2 span {
+        color: #F7B600;
+    }
+
+    .prime-locations p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .locations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .location-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 20px 20px 1px 20px;
+        text-align: center;
+        transition: var(--transition-smooth);
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+    }
+
+    .location-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .location-icon {
+        width: 55px;
+        height: 55px;
+        background: rgba(247, 182, 0, 0.1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        border: 1px solid #33280f;
+    }
+
+    .location-icon img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+
+    .location-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.7;
+    }
+
+    .location-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .location-card p {
+        font-size: 16px;
+        color: #bbb;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        text-align: center;
+    }
+
+    /* Responsive Typography */
+    @media (max-width: 768px) {
+        .prime-locations h2 {
+            font-size: 28px;
+        }
+
+        .prime-locations p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .prime-locations h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .location-card h3 {
+            font-size: 16px;
+        }
+
+        .location-card p {
+            font-size: 12px;
+        }
+
+        .location-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .prime-locations p {
+            font-size: 14px;
+        }
+
+        .location-icon img {
+            width: 24px;
+            height: 24px;
+        }
+    }
+</style>
+
+<section class="prime-locations" id="location">
+    <h2>Best Areas for <span>Retail Business in Dubai</span></h2>
+    <p>Selecting the right location plays a crucial role in business success. Discover top-performing retail zones in Dubai offering unmatched investment and business opportunities.</p>
+
+    <div class="locations-grid">
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Location Icon">
+            </div>
+            <h3>Downtown Dubai</h3>
+            <p>Perfect for luxury brands and flagship stores. Retail space for rent in Dubai Mall offers maximum exposure for global brands.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Location Icon">
+            </div>
+            <h3>Business Bay</h3>
+            <p>Ideal for startups and modern retail concepts. A growing hub for showrooms and lifestyle retail outlets.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Location Icon">
+            </div>
+            <h3>Dubai Marina & Jumeirah</h3>
+            <p>High demand for restaurant space and premium boutique retail. Community spaces here cater to daily consumer needs with stable long-term demand.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Location Icon">
+            </div>
+            <h3>Al Barsha & Sheikh Zayed Road</h3>
+            <p>Affordable yet high-demand retail spaces. Excellent for ground floor retail and fitted shop rentals with strong visibility.</p>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- -----------------------------------------4 SECTION ------------------------------------------------->
+<section class="roi-cards-custom">
+    <div class="container">
+        <div class="section-header">
+            <h2>Maximize <span>ROI</span> & Capital Appreciation</h2>
+            <p>Retail properties in Dubai deliver 7–10% rental yields — one of the most attractive commercial investments globally. The combination of high foot traffic, tourism, and business-friendly policies creates consistent income opportunities.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt=""></div>
+                <h3>7–10% Annual Rental Yields</h3>
+            </div>
+
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/turn.svg' %}" alt=""></div>
+                <h3>Tax-Free Rental Income</h3>
+            </div>
+
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/rent.svg' %}" alt=""></div>
+                <h3>Strong Tenant Demand</h3>
+            </div>
+
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/capital.svg' %}" alt=""></div>
+                <h3>Long-Term Capital Appreciation</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .roi-cards-custom {
+        background: #030303;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .roi-cards-custom .container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .roi-cards-custom .section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin: 0 0 10px;
+        letter-spacing: 1.7px;
+        letter-spacing: 1px;
+    }
+
+    .roi-cards-custom .section-header h2 span {
+        color: #F7B600;
+    }
+
+    .roi-cards-custom .section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 900px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .roi-cards-custom .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 10px;
+    }
+
+    .roi-cards-custom .card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 30px 20px;
+        transition: transform 0.3s ease;
+        cursor: default;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        transition: all .3s cubic-bezier(.4, 0, .2, 1);
+        box-shadow: 0 10px 30px -10px hsl(0 0% 0% / .5);
+    }
+
+    .roi-cards-custom .card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .roi-cards-custom .card .icon img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .roi-cards-custom .card h3 {
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        margin-top: 10px;
+        color: #a3a3a3;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 28px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 16px;
+        }
+
+        .roi-cards-custom {
+            padding: 50px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .roi-cards-custom .cards-grid {
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+
+<!-- ---------------------------------5 SECTION------------------------------ -->
+<style>
+    :root {
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 42 85% 55%;
+        --gradient-gold: linear-gradient(135deg, hsl(42 85% 55%), hsl(42 85% 65%));
+        --gradient-dark: linear-gradient(180deg, hsl(0 0% 0%), hsl(0 0% 3%));
+        --gradient-subtle: linear-gradient(180deg, hsl(0 0% 0% / 0), hsl(0 0% 5%));
+        --shadow-gold: 0 20px 50px -15px hsl(42 85% 55% / .35);
+        --shadow-glow: 0 0 40px hsl(42 85% 55% / .35);
+        --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        --transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+        --transition-bounce: all .4s cubic-bezier(.68, -.55, .265, 1.55);
+    }
+
+    .market-trends {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .market-trends h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .market-trends h2 span {
+        color: #F7B600;
+    }
+
+    .market-trends p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .trends-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: left;
+    }
+
+    .trend-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 20px 20px;
+        transition: var(--transition-smooth);
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+    }
+
+    .trend-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .trend-icon {
+        width: 55px;
+        height: 55px;
+        background: rgba(247, 182, 0, 0.1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        border: 1px solid #33280f;
+    }
+
+    .trend-icon img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+
+    .trend-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.7;
+        text-align: center;
+    }
+
+    .trend-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .trend-card ul {
+        list-style: none;
+        padding-left: 0;
+        color: #a3a3a3;
+        line-height: 1.7;
+        margin: 0;
+        text-align: left;
+        width: 100%;
+        letter-spacing: 0.2px;
+    }
+
+    .trend-card ul li {
+        position: relative;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        padding-left: 32px;
+        margin-bottom: 10px;
+    }
+
+    /* 🔸 Custom SVG Icon for Each List Item */
+    .trend-card ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: 18px;
+        height: 18px;
+        background: no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23F7B600' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='10 8 14 12 10 16'/></svg>");
+        opacity: 0.9;
+    }
+
+    /* Responsive Typography */
+    @media (max-width: 768px) {
+        .market-trends h2 {
+            font-size: 28px;
+        }
+
+        .market-trends p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .market-trends h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .trend-card h3 {
+            font-size: 16px;
+        }
+
+        .trend-card ul {
+            font-size: 14px;
+        }
+
+        .trend-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .trend-icon img {
+            width: 24px;
+            height: 24px;
+        }
+    }
+</style>
+
+<section class="market-trends">
+    <h2>Market <span>Trends</span></h2>
+    <p>Dubai's retail sector is evolving rapidly. Stay ahead with the latest trends and investor strategies shaping demand in the market.</p>
+
+    <div class="trends-grid">
+        <div class="trend-card">
+            <div class="trend-icon">
+                <img src="{% static 'images/demand.svg' %}" alt="Demand Icon" />
+            </div>
+            <h3>Increasing Demand For</h3>
+            <ul>
+                <li>Fitted retail shops for rent in Dubai</li>
+                <li>Experiential retail and F&amp;B lifestyle outlets</li>
+                <li>Ground floor retail units with maximum visibility</li>
+                <li>Community-based retail spaces in residential hubs</li>
+            </ul>
+        </div>
+
+        <div class="trend-card">
+            <div class="trend-icon">
+                <img src="{% static 'images/invester.svg' %}" alt="Investor Trends Icon" />
+            </div>
+            <h3>Investor Trends</h3>
+            <ul>
+                <li>Expansion of international brands into Dubai</li>
+                <li>Preference for prime locations with high footfall</li>
+                <li>Targeting retail units offering long-term rental growth potential</li>
+                <li>Growth of commercial space for rent in Dubai across emerging areas</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+<!-- ----------------------------------------------6 SECTION--------------------------------------- -->
+
+
+<style>
+    .kif-investor-section {
+        background: #030303;
+        color: #fff;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .kif-investor-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .kif-investor-section h2 span {
+        color: #ffb400;
+    }
+
+    .kif-investor-section .kif-subtitle {
+        font-size: 16px;
+        color: #a3a3a3;
+        max-width: 900px;
+        margin: 15px auto 45px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-points-box {
+        background: #080808;
+        border-radius: 6px;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 30px 25px;
+        text-align: left;
+        border: 1px solid #171717;
+        transition: transform 0.3s ease;
+        transition: all .3s cubic-bezier(.4, 0, .2, 1);
+        box-shadow: 0 10px 30px -10px hsl(0 0% 0% / .5);
+    }
+
+    .kif-points-box:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .kif-point {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 18px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 180, 0, 0.08);
+        border: 1px solid rgba(255, 180, 0, 0.3);
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        margin-right: 12px;
+    }
+
+    /* Responsive CSS for kif-investor-section */
+    @media (max-width: 992px) {
+        .kif-investor-section {
+            padding: 40px 20px;
+        }
+
+        .kif-investor-section h2 {
+            font-size: 32px;
+        }
+
+        .kif-investor-section .kif-subtitle {
+            font-size: 16px;
+            max-width: 700px;
+            margin-bottom: 35px;
+            letter-spacing: 1.7px;
+        }
+
+        .kif-points-box {
+            padding: 30px 20px;
+            max-width: 600px;
+        }
+
+        .kif-point {
+            font-size: 16px;
+            margin-bottom: 16px;
+            letter-spacing: 1.7px;
+        }
+
+        .kif-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .kif-investor-section {
+            padding: 35px 20px;
+        }
+
+        .kif-investor-section h2 {
+            font-size: 28px;
+        }
+
+        .kif-investor-section .kif-subtitle {
+            font-size: 16px;
+            max-width: 100%;
+            margin-bottom: 30px;
+            letter-spacing: 0.2px;
+        }
+
+
+        .kif-point {
+            font-size: 16px;
+            margin-bottom: 14px;
+            letter-spacing: 0.2px;
+        }
+
+        .kif-icon {
+            width: 28px;
+            height: 28px;
+            margin-right: 8px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kif-investor-section {
+            padding: 20px 20px;
+        }
+
+        .kif-investor-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .kif-investor-section .kif-subtitle {
+            font-size: 14px;
+            margin-bottom: 25px;
+
+        }
+
+        .kif-points-box {
+            padding: 20px 15px;
+            box-shadow: 0 6px 15px -6px hsl(0 0% 0% / .4);
+        }
+
+        .kif-point {
+            font-size: 14px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .kif-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 6px;
+        }
+    }
+</style>
+
+<section class="kif-investor-section">
+    <div class="container">
+
+        <h2>Buyer's & Investor's <span>Guide</span></h2>
+        <p class="kif-subtitle">
+            Investing in retail space in Dubai requires a strategic approach. Focus on high-demand areas,
+            long-term lease potential, and market trends — whether you're looking to rent for short-term ROI
+            or buy for long-term capital growth. Working with experienced consultants like KIF Realty
+            ensures better decision-making and access to exclusive retail opportunities.
+        </p>
+
+        <div class="kif-points-box">
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Retail shops for rent or sale — from small shop for rent in Dubai to large showrooms
+            </div>
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Showrooms in prime locations with maximum footfall and visibility
+            </div>
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Expert ROI guidance and understanding of the cost of retail space in Dubai
+            </div>
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Access to commercial space for rent in Dubai across all budgets and business types
+            </div>
+        </div>
+    </div>
+</section>
+
+<!------------------------------------ 7 section----------------------------------------- -->
+
+
+<section class="kif-why-choose">
+    <div class="kif-container">
+        <div class="kif-section-header">
+            <h2>Why Choose <span>KIF Realty</span></h2>
+            <p>Specializing in premium retail spaces, KIF Realty helps brands and investors succeed in Dubai's dynamic market. How can I find the best retail space in Dubai? Working with experts like KIF Realty ensures access to premium listings and strategic locations.</p>
+
+        </div>
+
+        <div class="kif-cards-grid">
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/shield.svg' %}" alt="Exclusive Retail Access">
+                </div>
+                <p>Access to exclusive retail space for rent in Dubai's most sought-after malls and communities, including retail space for rent in Dubai Mall.</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/hand.svg' %}" alt="Proven ROI">
+                </div>
+                <p>Advisory for restaurant operators and luxury brands expanding into the UAE market, with focus on high-footfall, high-demand areas.</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/demand.svg' %}" alt="End-to-End Support">
+                </div>
+                <p>Proven track record in securing high-value retail investments for clients worldwide, with guidance on matching location to your target audience.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+    .kif-why-choose {
+        background: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .kif-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .kif-section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .kif-section-header h2 span {
+        color: #F7B600;
+    }
+
+    .kif-section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 850px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 10px;
+    }
+
+    .kif-card {
+        background: #080808;
+        border-radius: 10px;
+        padding: 25px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+        text-align: center;
+    }
+
+    .kif-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(247, 182, 0, 0.6);
+        box-shadow: 0 10px 20px -6px rgba(247, 182, 0, 0.5);
+    }
+
+    .kif-card-icon img {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 15px;
+    }
+
+    .kif-card p {
+        color: #a3a3a3;
+        font-size: 16px;
+        line-height: 1.7;
+        letter-spacing: 0.2;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .kif-section-header h2 {
+            font-size: 28px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kif-section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .kif-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .kif-card {
+            padding: 15px 20px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+
+<!-- -------------------------------------------8 SECTION---------------------------------------- -->
+
+<!-- FAQ Section -->
+<style>
+    .faq-section {
+        background: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .faq-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .faq-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .faq-section h2 span {
+        color: #F7B600;
+    }
+
+    .faq-section .faq-subtitle {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .faq-item {
+        background: #080808;
+        border: 1px solid #171717;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        text-align: left;
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+    }
+
+    .faq-item:hover {
+        border-color: hsl(42 85% 55% / .4);
+    }
+
+    .faq-question {
+        padding: 18px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+    }
+
+    .faq-question span.faq-icon {
+        color: #F7B600;
+        font-size: 20px;
+        transition: transform 0.3s ease;
+        flex-shrink: 0;
+        margin-left: 10px;
+    }
+
+    .faq-answer {
+        display: none;
+        padding: 0 20px 18px;
+        font-size: 15px;
+        color: #a3a3a3;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .faq-item.open .faq-answer {
+        display: block;
+    }
+
+    .faq-item.open .faq-icon {
+        transform: rotate(45deg);
+    }
+
+    @media (max-width: 768px) {
+        .faq-section h2 { font-size: 28px; }
+    }
+
+    @media (max-width: 480px) {
+        .faq-section h2 { font-size: 26px; font-weight: 600; }
+        .faq-question { font-size: 14px; }
+        .faq-answer { font-size: 13px; }
+    }
+</style>
+
+<section class="faq-section">
+    <div class="faq-container">
+        <h2>Frequently Asked <span>Questions</span></h2>
+        <p class="faq-subtitle">Everything you need to know about retail space for rent in Dubai</p>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What is the average cost of retail space in Dubai?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Retail rental prices range from AED 80 to AED 1,000+ per sq. ft depending on location and demand. Community retail spaces average AED 80–300 per sq. ft, high-street retail AED 300–800 per sq. ft, and premium mall retail starts at AED 1,000+ per sq. ft.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Is retail space in Dubai a good investment?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Yes. Retail properties in Dubai offer high ROI (7–10% rental yields), strong tenant demand, tax-free rental income, and long-term capital appreciation — making them one of the most attractive commercial investments globally.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Which area is best for retail shops in Dubai?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Popular areas include Downtown Dubai (luxury brands), Business Bay (startups and modern retail), Dubai Marina (restaurants and lifestyle), and Al Barsha (affordable high-demand spaces). Each area offers unique advantages based on target audience and business type.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can foreigners rent retail properties in Dubai?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Yes, foreigners can lease or invest in retail properties in designated areas across Dubai. Our team at KIF Realty can guide you through the process seamlessly.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What businesses are most profitable in Dubai retail spaces?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Restaurants, fashion outlets, salons, and convenience stores consistently perform well. The growing F&amp;B sector, experiential retail, and international brand expansion are among the strongest drivers of demand.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How can I find the best retail space in Dubai?
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                Working with experts like KIF Realty ensures access to premium listings, strategic locations, and professional ROI guidance. Consider footfall, target market, accessibility, competition, and budget vs. ROI when selecting your space.
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll('.faq-question').forEach(function(question) {
+        question.addEventListener('click', function() {
+            const item = this.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+</script>
+
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-container">
+
+        <h2>Explore Retail Opportunities in <span>Dubai</span></h2>
+        <p>Explore retail shop for rent in Dubai, showroom for rent Dubai, commercial space for rent Dubai, and retail shop for sale in Dubai with KIF Realty today.</p>
+        <div class="cta-buttons_retail">
+            <a href="#location" class="btn-outline_contact_retail">Explore Spaces</a>
+            <a href="#consultationModal" class="btn-primary_contact_retail openModalBtn">Book Consultation</a>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* CTA Section */
+    .cta-section {
+        background: #030303;
+        color: #fff;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .cta-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .cta-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+    }
+
+    .cta-section h2 span {
+        color: #F7B600;
+    }
+
+    .cta-section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .cta-buttons_retail {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cta-buttons_retail .btn-primary_contact_retail,
+    .cta-buttons_retail .btn-outline_contact_retail {
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        min-width: 200px;
+        text-align: center;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .cta-buttons_retail .btn-primary_contact_retail {
+        background: #F7B600;
+        color: #000;
+    }
+
+    .cta-buttons_retail .btn-primary_contact_retail:hover {
+        background: #e6ac00;
+    }
+
+    .cta-buttons_retail .btn-outline_contact_retail {
+        background: transparent;
+        border: 2px solid #F7B600;
+        color: #fff;
+    }
+
+    .cta-buttons_retail .btn-outline_contact_retail:hover {
+        background: #F7B600;
+        color: #000;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .cta-section h2 {
+            font-size: 28px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+        }
+
+       
+    }
+
+    @media (max-width: 480px) {
+        .cta-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .cta-section p {
+            font-size: 14px;
+        }
+
+        .cta-section {
+            padding: 20px 20px;
+        }
+
+        .cta-buttons_retail {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cta-buttons_retail .btn-primary_contact_retail,
+        .cta-buttons_retail .btn-outline_contact_retail {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+    }
+</style>
+
+
+<!-- Modal -->
+<div id="consultationModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        <h2>Investment Consultation</h2>
+        <p>Fill in your details and our team will contact you within 24 hours.</p>
+
+
+        <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
+            <!-- Web3Forms Access Key -->
+            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+            <input type="hidden" name="subject" value="New Contact Form Submission">
+            <input type="hidden" name="replyto" value="{{ email }}" />
+            <input type="hidden" name="page_url" id="modal_page_url">
+
+            <input type="text" name="name" placeholder="Name" required>
+
+
+            <input type="email" name="email" placeholder="Email" required>
+
+
+            <input type="tel" id="phone" name="phone" placeholder="Phone" required>
+
+
+            <select name="area_of_interest" id="area_of_interest" required>
+                <option value="">Select Preferred Location</option>
+                <option value="Downtown Dubai">Downtown Dubai</option>
+                <option value="Business Bay">Business Bay</option>
+                <option value="Dubai Marina & Jumeirah">Dubai Marina & Jumeirah</option>
+                <option value="Al Barsha & Sheikh Zayed Road">Al Barsha & Sheikh Zayed Road</option>
+
+            </select>
+
+            <button type="submit">Submit Inquiry</button>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+<script>
+    const modal = document.getElementById("consultationModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const openModalBtn = document.querySelectorAll(".openModalBtn"); // ✅ Select all buttons with that class
+
+    // Open modal for any of the buttons
+    const openModalBtns = document.querySelectorAll(".openModalBtn");
+    openModalBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            modal.classList.add("active");
+            modal.style.display = "flex";
+            modal.setAttribute("aria-hidden", "false");
+        });
+    });
+
+
+    // Close modal
+    closeModalBtn.addEventListener("click", () => {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+    });
+
+    // Close modal on outside click
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModalBtn.click();
+        }
+    });
+
+    // Close modal on ESC key
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("active")) {
+            closeModalBtn.click();
+        }
+    });
+
+    // Initialize intl-tel-input
+    const phoneInput = document.querySelector("#phone");
+    if (phoneInput) {
+        window.intlTelInput(phoneInput, {
+            initialCountry: "ae",
+            utilsScript:
+                "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
+    }
+
+    //Auto-fill page URL
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlInput = document.getElementById("modal_page_url");
+        if (urlInput) {
+            urlInput.value = window.location.href;
+        }
+    });
+
+
+    // Handle form submission
+    document.getElementById("propertyForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+
+        fetch(this.action, {
+            method: "POST",
+            body: formData,
+            headers: { Accept: "application/json" },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Form submitted successfully. Our team will contact you soon!");
+                    modal.classList.remove("active");
+                    modal.style.display = "none";
+                    this.reset();
+                } else {
+                    alert("There was a problem submitting the form.");
+                }
+                submitBtn.disabled = false;
+            })
+            .catch((error) => {
+                console.error("Error submitting the form", error);
+                alert("Something went wrong. Please try again.");
+                submitBtn.disabled = false;
+            });
+    });
+</script>
+
+
+<!-- Auto popup form -->
+<div id="blogPopupForm" class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn2">&times;</span>
+    <h2>Find the Right Property – Contact Us Today!</h2>
+    <p>Fill in your details and we'll contact you shortly.</p>
+    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+      <input type="hidden" name="page_url" id="page_url">
+
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone" required>
+      <textarea name="message" placeholder="Message" required></textarea>
+
+      <button type="submit">Send</button>
+    </form>
+    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+</div>
+
+<style>
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.modal-content {
+    background-color: #111;
+    color: #fff;
+    border-radius: 6px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-bottom: 10px;
+    color: #eeb32b;
+    font-size: 24px;
+    line-height: 1.7;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #000!important;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #a3a3a3;
+}
+.modal-content input, .modal-content select {
+    background-color: #000!important;
+}
+.modal-content input:-webkit-autofill,
+.modal-content textarea:-webkit-autofill,
+.modal-content select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    outline: none;
+}
+
+.close-btn2 {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 24px;
+    color: #eeb32b;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.95);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+@media (max-width: 500px) {
+    .modal-content {
+        padding: 20px 20px;
+    }
+    .modal-content h2 { font-size: 20px; }
+    .modal-content p { font-size: 13px; }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById('blogPopupForm');
+    const closeBtn = document.querySelector('.close-btn2');
+    const form = document.getElementById('web3Form');
+    const formMessage = document.getElementById('formMessage');
+
+    function showPopup() { popup.style.display = 'flex'; }
+    function hidePopup() { 
+        popup.style.display = 'none';
+    }
+
+    document.getElementById('page_url').value = window.location.href;
+
+    // Auto show popup after 20s
+    setTimeout(showPopup, 20000);
+
+    closeBtn.addEventListener('click', hidePopup);
+    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
+    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
+
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
+
+        const formData = new FormData(form);
+        try {
+            const res = await fetch(form.action, { method: form.method, body: formData });
+            const data = await res.json();
+
+            if(data.success){
+                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
+                form.reset();
+                setTimeout(hidePopup, 2000);
+            } else {
+                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+            }
+        } catch (err) {
+            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
+        }
+    });
+});
+</script>
+
+
+{% endblock %}

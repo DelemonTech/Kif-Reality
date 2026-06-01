@@ -1,0 +1,1280 @@
+<!-- templates/properties/exclusive_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Exclusive Properties - KIF Realty{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Exclusive Properties Page - Simple Style */
+
+/* Header Section */
+.exclusive-header {
+    height: 60vh;
+    min-height: 500px;
+    background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: 80px;
+}
+
+.exclusive-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.05;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1000px;
+    padding: 2rem;
+    text-align: center;
+    color: white;
+}
+
+.header-content h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.header-content p {
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.8;
+    opacity: 0.9;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.exclusive-badge {
+    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    padding: 1.5rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--rose-gold);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+/* Filters Section */
+.filters-section {
+    background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.filters-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent-gradient);
+    opacity: 0.02;
+}
+
+.filters-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.filter-form {
+    background: rgba(42, 42, 42, 0.8);
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    border-radius: 20px;
+    padding: 3rem;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* Property Type Section */
+.property-type-section {
+    margin-bottom: 2.5rem;
+}
+
+.filter-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.property-type-toggle {
+    display: flex;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 0.5rem;
+    border: 1px solid rgba(232, 180, 160, 0.1);
+}
+
+.property-type-btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.property-type-btn:hover {
+    color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.1);
+}
+
+.property-type-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+}
+
+/* Main Filters Grid */
+.main-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.filter-group {
+    position: relative;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--rose-gold);
+    box-shadow: 0 0 0 3px rgba(232, 180, 160, 0.1);
+}
+
+.filter-select option {
+    background: var(--obsidian-black);
+    color: white;
+}
+
+/* Bedrooms Section */
+.bedrooms-section {
+    margin-bottom: 2.5rem;
+}
+
+.bedrooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 1rem;
+    max-width: 400px;
+}
+
+.bedroom-btn {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.bedroom-btn:hover {
+    color: var(--rose-gold);
+    border-color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.1);
+}
+
+.bedroom-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: var(--rose-gold);
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+}
+
+/* Advanced Filters */
+.advanced-filters-toggle {
+    margin-bottom: 2rem;
+}
+
+.advanced-toggle-btn {
+    width: 100%;
+    padding: 1.5rem 2rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 15px;
+    color: var(--rose-gold);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.advanced-toggle-btn:hover {
+    background: rgba(232, 180, 160, 0.1);
+    border-color: var(--rose-gold);
+}
+
+.advanced-filters-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(232, 180, 160, 0.1);
+}
+
+.advanced-filters-content.open {
+    max-height: 2000px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.advanced-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+/* Range Sliders */
+.range-group {
+    margin-bottom: 2rem;
+}
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.range-display {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.range-sliders {
+    position: relative;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 0 1rem;
+}
+
+.range-slider {
+    width: 100%;
+    height: 6px;
+    background: rgba(232, 180, 160, 0.2);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--rose-gold);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(232, 180, 160, 0.4);
+}
+
+.range-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--rose-gold);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 12px rgba(232, 180, 160, 0.4);
+}
+
+/* Action Buttons */
+.filter-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.reset-btn, .search-btn {
+    padding: 1rem 3rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.reset-btn {
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--text-muted);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+}
+
+.reset-btn:hover {
+    background: rgba(232, 180, 160, 0.1);
+    color: var(--rose-gold);
+    border-color: var(--rose-gold);
+}
+
+.search-btn {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(232, 180, 160, 0.4);
+}
+
+.search-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Properties Section */
+.properties-section {
+    padding: 6rem 0;
+    background: var(--obsidian-black);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    color: var(--rose-gold);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    opacity: 0.8;
+}
+
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.property-card {
+    background: rgba(42, 42, 42, 0.8);
+    border: 1px solid rgba(232, 180, 160, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.property-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    border-color: rgba(232, 180, 160, 0.3);
+}
+
+.property-image {
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.exclusive-tag {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.price-tag {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--rose-gold);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.property-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: #4CAF50;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.property-title {
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.property-location {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.property-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.feature-icon {
+    color: var(--rose-gold);
+    font-size: 1rem;
+}
+
+.property-description {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.property-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary-custom, .btn-outline-primary {
+    flex: 1;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: var(--rose-gold);
+    border: 1px solid var(--rose-gold);
+}
+
+.btn-outline-primary:hover {
+    background: var(--rose-gold);
+    color: white;
+}
+
+/* Pagination */
+.pagination-section {
+    margin-top: 4rem;
+    text-align: center;
+}
+
+.pagination-info {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.pagination-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-btn, .page-btn {
+    padding: 0.8rem 1.5rem;
+    background: rgba(42, 42, 42, 0.8);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 10px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover, .page-btn:hover {
+    background: rgba(232, 180, 160, 0.1);
+    color: var(--rose-gold);
+    border-color: var(--rose-gold);
+}
+
+.page-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: var(--rose-gold);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .filter-form {
+        padding: 2rem;
+    }
+    
+    .main-filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .properties-grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .property-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .property-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .exclusive-header {
+        height: 50vh;
+        min-height: 400px;
+    }
+    
+    .header-content {
+        padding: 1rem;
+    }
+    
+    .header-content h1 {
+        font-size: 2rem;
+    }
+    
+    .exclusive-badge {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+    
+    .filter-form {
+        padding: 1.5rem;
+    }
+    
+    .property-type-toggle {
+        flex-direction: column;
+    }
+    
+    .bedrooms-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="exclusive-header">
+    <div class="header-content">
+        <h1>Exclusive Properties</h1>
+        <p>
+            Discover our handpicked collection of premium properties, each carefully selected 
+            for their exceptional quality, prime locations, and outstanding investment potential.
+        </p>
+        <div class="exclusive-badge">
+            <i class="fas fa-crown"></i>
+            Premium Selection • Expert Curation • Exclusive Access
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<section class="filters-section">
+    <div class="filters-container">
+        <form method="GET" class="filter-form" action="{% url 'exclusive_properties:list' %}">
+            
+            <!-- Property Type Toggle -->
+            <div class="property-type-section">
+                <label class="filter-label">Property Type</label>
+                <div class="property-type-toggle">
+                    <button type="button" class="property-type-btn active" data-type="residential" id="residentialBtn">
+                        Residential
+                    </button>
+                    <button type="button" class="property-type-btn" data-type="commercial" id="commercialBtn">
+                        Commercial
+                    </button>
+                </div>
+                <input type="hidden" name="property_type" id="propertyTypeInput" value="residential">
+            </div>
+
+            <!-- Main Filters Grid -->
+            <div class="main-filters">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-home filter-icon"></i>
+                        Unit Type
+                    </label>
+                    <select name="unit_type" class="filter-select" id="unitTypeSelect">
+                        <option value="">All Types</option>
+                        <option value="apartment" {% if filters.unit_type == 'apartment' %}selected{% endif %}>Apartment</option>
+                        <option value="villa" {% if filters.unit_type == 'villa' %}selected{% endif %}>Villa</option>
+                        <option value="townhouse" {% if filters.unit_type == 'townhouse' %}selected{% endif %}>Townhouse</option>
+                        <option value="penthouse" {% if filters.unit_type == 'penthouse' %}selected{% endif %}>Penthouse</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-map-marker-alt filter-icon"></i>
+                        City
+                    </label>
+                    <select name="city" class="filter-select" id="citySelect">
+                        <option value="">All Cities</option>
+                        {% for city in cities %}
+                        <option value="{{ city }}" {% if filters.city == city %}selected{% endif %}>
+                            {{ city }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-building filter-icon"></i>
+                        Neighborhood
+                    </label>
+                    <select name="district" class="filter-select" id="neighborhoodSelect">
+                        <option value="">Select Area</option>
+                        {% for district in districts %}
+                        <option value="{{ district }}" {% if filters.district == district %}selected{% endif %}>
+                            {{ district }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-dollar-sign filter-icon"></i>
+                        Price Range
+                    </label>
+                    <select name="price_range" class="filter-select">
+                        <option value="">Any Price</option>
+                        <option value="0-1000000" {% if filters.price_range == '0-1000000' %}selected{% endif %}>Under 1M AED</option>
+                        <option value="1000000-2000000" {% if filters.price_range == '1000000-2000000' %}selected{% endif %}>1M - 2M AED</option>
+                        <option value="2000000-5000000" {% if filters.price_range == '2000000-5000000' %}selected{% endif %}>2M - 5M AED</option>
+                        <option value="5000000-10000000" {% if filters.price_range == '5000000-10000000' %}selected{% endif %}>5M - 10M AED</option>
+                        <option value="10000000+" {% if filters.price_range == '10000000+' %}selected{% endif %}>Above 10M AED</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bedrooms Section (Only for Residential) -->
+            <div class="bedrooms-section" id="bedroomsSection">
+                <label class="filter-label">
+                    <i class="fas fa-bed filter-icon"></i>
+                    Bedrooms
+                </label>
+                <div class="bedrooms-grid">
+                    <button type="button" class="bedroom-btn" data-bedrooms="1">1</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="2">2</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="3">3</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="4">4</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="5">5</button>
+                    <button type="button" class="bedroom-btn" data-bedrooms="6+">6+</button>
+                </div>
+                <input type="hidden" name="bedrooms" id="bedroomsInput" value="{{ filters.bedrooms|default:'' }}">
+            </div>
+
+            <!-- Advanced Filters Toggle -->
+            <div class="advanced-filters-toggle">
+                <button type="button" class="advanced-toggle-btn" id="advancedToggle">
+                    <i class="fas fa-sliders-h"></i>
+                    Advanced Filters
+                    <i class="fas fa-chevron-down" id="advancedIcon"></i>
+                </button>
+            </div>
+
+            <!-- Advanced Filters Content -->
+            <div class="advanced-filters-content" id="advancedContent">
+                <div class="advanced-filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-calendar filter-icon"></i>
+                            Delivery Year
+                        </label>
+                        <select name="delivery_year" class="filter-select">
+                            <option value="">Any Year</option>
+                            {% for year in completion_years %}
+                            <option value="{{ year }}" {% if filters.delivery_year == year|stringformat:"s" %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-building filter-icon"></i>
+                            Developer
+                        </label>
+                        <select name="developer" class="filter-select" id="developerSelect">
+                            <option value="">All Developers</option>
+                            {% for developer in developers %}
+                            <option value="{{ developer }}" {% if filters.developer == developer %}selected{% endif %}>
+                                {{ developer }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-project-diagram filter-icon"></i>
+                            Project Name
+                        </label>
+                        <input type="text" name="project_name" class="filter-select" placeholder="Enter project name" value="{{ filters.project_name|default:'' }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-info-circle filter-icon"></i>
+                            Property Status
+                        </label>
+                        <select name="property_status" class="filter-select">
+                            <option value="">Any Status</option>
+                            <option value="available" {% if filters.property_status == 'available' %}selected{% endif %}>Available</option>
+                            <option value="under_offer" {% if filters.property_status == 'under_offer' %}selected{% endif %}>Under Offer</option>
+                            <option value="reserved" {% if filters.property_status == 'reserved' %}selected{% endif %}>Reserved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Price Range Sliders -->
+                <div class="range-group">
+                    <div class="range-header">
+                        <label class="filter-label">Price Range (AED)</label>
+                        <div class="range-display">
+                            <span id="minPriceDisplay">0 AED</span> - <span id="maxPriceDisplay">100M AED</span>
+                        </div>
+                    </div>
+                    <div class="range-sliders">
+                        <input type="range" id="minPriceRange" class="range-slider" min="0" max="100000000" value="{{ filters.min_price|default:0 }}" step="100000">
+                        <input type="range" id="maxPriceRange" class="range-slider" min="0" max="100000000" value="{{ filters.max_price|default:100000000 }}" step="100000">
+                    </div>
+                    <input type="hidden" name="min_price" id="minPriceInput" value="{{ filters.min_price|default:0 }}">
+                    <input type="hidden" name="max_price" id="maxPriceInput" value="{{ filters.max_price|default:100000000 }}">
+                </div>
+
+                <!-- Area Range Sliders -->
+                <div class="range-group">
+                    <div class="range-header">
+                        <label class="filter-label">Area Range (sq ft)</label>
+                        <div class="range-display">
+                            <span id="minAreaDisplay">0 sq ft</span> - <span id="maxAreaDisplay">50K sq ft</span>
+                        </div>
+                    </div>
+                    <div class="range-sliders">
+                        <input type="range" id="minAreaRange" class="range-slider" min="0" max="50000" value="{{ filters.min_area|default:0 }}" step="100">
+                        <input type="range" id="maxAreaRange" class="range-slider" min="0" max="50000" value="{{ filters.max_area|default:50000 }}" step="100">
+                    </div>
+                    <input type="hidden" name="min_area" id="minAreaInput" value="{{ filters.min_area|default:0 }}">
+                    <input type="hidden" name="max_area" id="maxAreaInput" value="{{ filters.max_area|default:50000 }}">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="filter-actions">
+                <button type="button" class="reset-btn" onclick="resetFilters()">
+                    <i class="fas fa-refresh"></i>
+                    Reset Filters
+                </button>
+                <button type="submit" class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                    Search Properties
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Properties Section -->
+<section class="properties-section">
+    <div class="section-header">
+        <h2 class="section-title">Our Exclusive Portfolio</h2>
+        <p class="section-subtitle">
+            Each property in our exclusive collection has been personally vetted and selected 
+            for its exceptional quality, prime location, and investment potential.
+        </p>
+    </div>
+
+    {% if properties %}
+    <div class="properties-grid">
+        {% for property in properties %}
+        <div class="property-card">
+            <div class="property-image" style="background-image: url('{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}');">
+                <div class="exclusive-tag">EXCLUSIVE</div>
+                <div class="price-tag">{{ property.formatted_price }}</div>
+                <div class="property-status">
+                    {% if property.status == 'available' %}Available
+                    {% elif property.status == 'under_offer' %}Under Offer
+                    {% elif property.status == 'reserved' %}Reserved
+                    {% else %}{{ property.get_status_display }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <h3 class="property-title">{{ property.title }}</h3>
+                <div class="property-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ property.district }}{% if property.city %}, {{ property.city }}{% endif %}
+                </div>
+                <div class="property-features">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-bed"></i></div>
+                        <div class="feature-text">{{ property.bedroom_display }}</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-bath"></i></div>
+                        <div class="feature-text">{{ property.bathrooms }} Bath</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-ruler-combined"></i></div>
+                        <div class="feature-text">{{ property.area_sqft|floatformat:0 }} sq ft</div>
+                    </div>
+                </div>
+                <p class="property-description">
+                    {% if property.short_description %}
+                        {{ property.short_description }}
+                    {% else %}
+                        {{ property.description|striptags|truncatewords:25 }}
+                    {% endif %}
+                </p>
+                <div class="property-actions">
+                    <a href="{% url 'exclusive_properties:detail' property.slug %}" class="btn-primary-custom">
+                        <i class="fas fa-eye"></i>
+                        View Details
+                    </a>
+                    <a href="{% url 'contact' %}?property={{ property.id }}" class="btn-outline-primary">
+                        <i class="fas fa-phone"></i>
+                        Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if properties.has_other_pages %}
+    <div class="pagination-section">
+        <div class="pagination-info">
+            Showing {{ properties.start_index }}-{{ properties.end_index }} of {{ properties.paginator.count }} exclusive properties
+        </div>
+        <div class="pagination-nav">
+            {% if properties.has_previous %}
+            <a href="?{% url_replace request 'page' properties.previous_page_number %}" class="nav-btn">
+                <i class="fas fa-chevron-left"></i>
+                Previous
+            </a>
+            {% endif %}
+
+            {% for page_num in properties.paginator.page_range %}
+                {% if page_num == properties.number %}
+                    <span class="page-btn active">{{ page_num }}</span>
+                {% elif page_num > properties.number|add:'-3' and page_num < properties.number|add:'3' %}
+                    <a href="?{% url_replace request 'page' page_num %}" class="page-btn">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if properties.has_next %}
+            <a href="?{% url_replace request 'page' properties.next_page_number %}" class="nav-btn">
+                Next
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="no-properties" style="text-align: center; padding: 4rem 2rem;">
+        <h3 style="color: var(--rose-gold); font-size: 2rem; margin-bottom: 1rem;">No Properties Found</h3>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+            No properties match your current filter criteria. Try adjusting your search parameters.
+        </p>
+        <button onclick="resetFilters()" class="search-btn" style="display: inline-flex;">
+            <i class="fas fa-refresh"></i>
+            Reset Filters
+        </button>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Exclusive Properties Page - Loading...');
+    
+    // Initialize ranges
+    updatePriceRange();
+    updateAreaRange();
+    
+    // Setup event listeners
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Property type toggle
+    document.querySelectorAll('.property-type-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any form submission
+            e.stopPropagation(); // Stop event bubbling
+            
+            const type = this.dataset.type;
+            updatePropertyType(type);
+        });
+    });
+
+    // Bedrooms
+    document.querySelectorAll('.bedroom-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            e.stopPropagation(); // Stop event bubbling
+            
+            const bedrooms = this.dataset.bedrooms;
+            console.log('🛏️ Bedroom button clicked:', bedrooms);
+            updateBedroomSelection(bedrooms);
+        });
+    });
+
+    // Advanced filters toggle
+    const advancedToggle = document.getElementById('advancedToggle');
+    if (advancedToggle) {
+        advancedToggle.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            e.stopPropagation(); // Stop event bubbling
+            console.log('🔽 Advanced toggle clicked');
+            toggleAdvancedFilters();
+        });
+    }
+
+    // Form submission with loading state
+    const filterForm = document.querySelector('.filter-form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            const searchBtn = document.getElementById('searchBtn');
+            
+            // Prevent multiple submissions if already loading
+            if (searchBtn.classList.contains('loading')) {
+                console.log('🔍 Search already in progress, ignoring...');
+                return;
+            }
+            
+            console.log('🔍 Form submitted - starting search...');
+            const originalText = searchBtn.innerHTML;
+            
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            searchBtn.disabled = true;
+            
+            // Form will submit normally, but we show loading state
+            setTimeout(() => {
+                searchBtn.classList.remove('loading');
+                searchBtn.innerHTML = originalText;
+                searchBtn.disabled = false;
+            }, 3000);
+        });
+    }
+
+    // Range slider event listeners
+    const minPriceRange = document.getElementById('minPriceRange');
+    const maxPriceRange = document.getElementById('maxPriceRange');
+    const minAreaRange = document.getElementById('minAreaRange');
+    const maxAreaRange = document.getElementById('maxAreaRange');
+
+    if (minPriceRange && maxPriceRange) {
+        minPriceRange.addEventListener('input', updatePriceRange);
+        maxPriceRange.addEventListener('input', updatePriceRange);
+    }
+
+    if (minAreaRange && maxAreaRange) {
+        minAreaRange.addEventListener('input', updateAreaRange);
+        maxAreaRange.addEventListener('input', updateAreaRange);
+    }
+}
+
+function updatePropertyType(propertyType) {
+    console.log('🔄 Updating property type to:', propertyType);
+    
+    const propertyTypeInput = document.getElementById('propertyTypeInput');
+    const residentialBtn = document.getElementById('residentialBtn');
+    const commercialBtn = document.getElementById('commercialBtn');
+    const bedroomsSection = document.getElementById('bedroomsSection');
+
+    if (propertyTypeInput) {
+        propertyTypeInput.value = propertyType;
+    }
+
+    if (residentialBtn && commercialBtn) {
+        residentialBtn.classList.remove('active');
+        commercialBtn.classList.remove('active');
+        
+        if (propertyType === 'residential') {
+            residentialBtn.classList.add('active');
+            if (bedroomsSection) bedroomsSection.style.display = 'block';
+        } else {
+            commercialBtn.classList.add('active');
+            if (bedroomsSection) bedroomsSection.style.display = 'none';
+        }
+    }
+}
+
+function updateBedroomSelection(bedrooms) {
+    console.log('🛏️ Updating bedroom selection to:', bedrooms);
+    
+    document.querySelectorAll('.bedroom-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const bedroomsInput = document.getElementById('bedroomsInput');
+    if (bedroomsInput) {
+        if (bedroomsInput.value === bedrooms) {
+            bedroomsInput.value = '';
+            console.log('🛏️ Deselected bedrooms');
+        } else {
+            bedroomsInput.value = bedrooms;
+            const selectedBtn = document.querySelector(`[data-bedrooms="${bedrooms}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('active');
+            }
+            console.log('🛏️ Selected bedrooms:', bedrooms);
+        }
+    }
+}
+
+function toggleAdvancedFilters() {
+    console.log('🔽 Toggling advanced filters...');
+    
+    const content = document.getElementById('advancedContent');
+    const icon = document.getElementById('advancedIcon');
+    
+    if (content && icon) {
+        const isOpen = content.classList.contains('open');
+        
+        if (isOpen) {
+            content.classList.remove('open');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            content.classList.add('open');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+}
+
+function updatePriceRange() {
+    const minPriceRange = document.getElementById('minPriceRange');
+    const maxPriceRange = document.getElementById('maxPriceRange');
+    const minPriceDisplay = document.getElementById('minPriceDisplay');
+    const maxPriceDisplay = document.getElementById('maxPriceDisplay');
+    const minPriceInput = document.getElementById('minPriceInput');
+    const maxPriceInput = document.getElementById('maxPriceInput');
+
+    if (minPriceRange && maxPriceRange && minPriceDisplay && maxPriceDisplay) {
+        const minValue = parseInt(minPriceRange.value);
+        const maxValue = parseInt(maxPriceRange.value);
+        
+        minPriceDisplay.textContent = formatPrice(minValue);
+        maxPriceDisplay.textContent = formatPrice(maxValue);
+        
+        if (minPriceInput) minPriceInput.value = minValue;
+        if (maxPriceInput) maxPriceInput.value = maxValue;
+    }
+}
+
+function updateAreaRange() {
+    const minAreaRange = document.getElementById('minAreaRange');
+    const maxAreaRange = document.getElementById('maxAreaRange');
+    const minAreaDisplay = document.getElementById('minAreaDisplay');
+    const maxAreaDisplay = document.getElementById('maxAreaDisplay');
+    const minAreaInput = document.getElementById('minAreaInput');
+    const maxAreaInput = document.getElementById('maxAreaInput');
+
+    if (minAreaRange && maxAreaRange && minAreaDisplay && maxAreaDisplay) {
+        const minValue = parseInt(minAreaRange.value);
+        const maxValue = parseInt(maxAreaRange.value);
+        
+        minAreaDisplay.textContent = formatArea(minValue);
+        maxAreaDisplay.textContent = formatArea(maxValue);
+        
+        if (minAreaInput) minAreaInput.value = minValue;
+        if (maxAreaInput) maxAreaInput.value = maxValue;
+    }
+}
+
+function formatPrice(price) {
+    if (price >= 1000000) {
+        return `${(price / 1000000).toFixed(1)}M AED`;
+    } else if (price >= 1000) {
+        return `${(price / 1000).toFixed(0)}K AED`;
+    }
+    return `${price} AED`;
+}
+
+function formatArea(area) {
+    if (area >= 1000) {
+        return `${(area / 1000).toFixed(1)}K sq ft`;
+    }
+    return `${area} sq ft`;
+}
+
+function resetFilters() {
+    console.log('🔄 Resetting filters...');
+    window.location.href = '{% url "exclusive_properties:list" %}';
+}
+</script>
+{% endblock %}
+
