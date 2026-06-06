@@ -1,0 +1,730 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load date_extras %}
+
+{% block title %}
+{{ meta_title }}
+{% endblock %}
+
+
+
+{% block description %}
+{% if property.description.en|striptags|length > 30 %}
+{{ property.description.en|striptags|truncatechars:150 }} (Ref: {{ property.id }})
+{% elif property.title.en %}
+{{ property.title.en }} - Luxury {{ property.property_type.name.en|default:"off-plan property" }} in {{
+property.district.name.en }}, Dubai starting from {{ property.low_price|add_commas }} AED. (Ref: {{ property.id }})
+{% else %}
+Exclusive {{ property.property_type.name.en|default:"off-plan" }} project by {{ property.developer.name }} in {{
+property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_commas }} AED. (Ref: {{ property.id }})
+{% endif %}
+{% endblock %}
+
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com{{ request.path }}">{% endblock %}
+
+
+{% block extra_head %}
+
+<!-- Resource hints for performance -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://maps.google.com">
+
+<!-- Preload hero image -->
+<link rel="preload" href="{{ property.cover }}" as="image" fetchpriority="high">
+
+<!-- Async font loading -->
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap"
+    as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+
+<noscript>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</noscript>
+
+{% endblock %}
+
+{% block content %}
+<!-- <style> -->
+
+<link rel="stylesheet" href="{% static 'css/property_detail_styles.css' %}">
+<!-- </style> -->
+
+<!-- Main Layout -->
+<div class="property-layout" id="propertyLayout">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <!-- Hero Section -->
+     <section class="property-hero">
+    <div class="hero-gallery">
+        {% if property.property_images|length > 0 %}
+            <img id="heroImage" src="{{ property.property_images.0.image|default:property.cover }}" alt="{{ property.title.en }}" class="hero-image"
+                loading="eager" decoding="async" fetchpriority="high" width="1200" height="800">
+        {% else %}
+            <img id="heroImage" src="{{ property.cover }}" alt="{{ property.title.en }}" class="hero-image"
+                loading="eager" decoding="async" fetchpriority="high" width="1200" height="800">
+        {% endif %}
+
+        {% if property.property_images|length > 0 %}
+        <button class="gallery-nav gallery-prev" onclick="changeImage(-1)" aria-label="Previous image">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="gallery-nav gallery-next" onclick="changeImage(1)" aria-label="Next image">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="gallery-indicators" id="galleryIndicators">
+            <div class="gallery-indicator active"></div>
+            {% for image in property.property_images %}
+            <div class="gallery-indicator"></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="hero-overlay">
+        <h1 class="property-title">
+            {% if property.title.en %}
+            {{ property.title.en }}
+            {% else %}
+            {{ property.developer.name }} {{ property.property_type.name.en|default:"Residences" }} at {{
+            property.district.name.en }}
+            {% endif %}
+        </h1>
+        <div class="property-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ property.district.name.en }}, {{ property.city.name.en }}</span>
+        </div>
+        <div class="price-badge">
+            From {{ property.low_price|floatformat:0|add_commas }} AED
+        </div>
+    </div>
+</section>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <!-- Overview Section -->
+            <div class="section fade-in" id="overviewSection">
+                <h2 class="section-title">
+                    <i class="fas fa-home"></i>
+                    About This Property
+                </h2>
+                <div class="property-description">
+                    {{ property.description.en|safe }}
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="section slide-up" id="detailsSection">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Property Details
+                </h2>
+                <div class="property-stats">
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-building"></i>
+                        <div class="stat-value">{{ property.residential_units }}</div>
+                        <div class="stat-label">Units</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-calendar"></i>
+                        <div class="stat-value">{{ property.delivery_date|format_delivery }}</div>
+                        <div class="stat-label">Delivery</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-percentage"></i>
+                        <div class="stat-value">{{ property.completion_rate }}%</div>
+                        <div class="stat-label">Complete</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-expand-arrows-alt"></i>
+                        <div class="stat-value">{{ property.min_area|floatformat:0 }}</div>
+                        <div class="stat-label">Min sq ft</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities Section -->
+            {% if property.facilities %}
+            <div class="section bounce-in" id="amenitiesSection">
+                <h2 class="section-title">
+                    <i class="fas fa-star"></i>
+                    Amenities & Facilities
+                </h2>
+                <div class="facilities-grid">
+                    {% for facility in property.facilities %}
+                    <div class="facility-item">
+                        <div class="facility-icon">
+                            {% if "Swimming" in facility.name.en or "Pool" in facility.name.en %}
+                            <i class="fas fa-swimming-pool"></i>
+                            {% elif "Gym" in facility.name.en or "Fitness" in facility.name.en %}
+                            <i class="fas fa-dumbbell"></i>
+                            {% elif "Garden" in facility.name.en or "Park" in facility.name.en %}
+                            <i class="fas fa-leaf"></i>
+                            {% elif "BBQ" in facility.name.en %}
+                            <i class="fas fa-fire"></i>
+                            {% elif "Parking" in facility.name.en or "Garage" in facility.name.en %}
+                            <i class="fas fa-car"></i>
+                            {% elif "Jogging" in facility.name.en or "Track" in facility.name.en %}
+                            <i class="fas fa-running"></i>
+                            {% elif "Yoga" in facility.name.en or "Spa" in facility.name.en %}
+                            <i class="fas fa-peace"></i>
+                            {% elif "Playground" in facility.name.en or "Kids" in facility.name.en %}
+                            <i class="fas fa-child"></i>
+                            {% elif "Security" in facility.name.en %}
+                            <i class="fas fa-shield-alt"></i>
+                            {% elif "Business" in facility.name.en %}
+                            <i class="fas fa-briefcase"></i>
+                            {% elif "Retail" in facility.name.en or "Shop" in facility.name.en %}
+                            <i class="fas fa-store"></i>
+                            {% else %}
+                            <i class="fas fa-star"></i>
+                            {% endif %}
+                        </div>
+                        <span>{{ facility.name.en }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Units Section -->
+            {% if property.grouped_apartments %}
+            <div class="section fade-in" id="unitsSection">
+                <h2 class="section-title">
+                    <i class="fas fa-building"></i>
+                    Available Units
+                </h2>
+                <div class="units-grid">
+                    {% for unit in property.grouped_apartments %}
+                    <div class="unit-card"
+                        onclick="navigateToUnit('{{ property.slug }}','{{ property.id }}', '{{ unit.id }}')">
+                        <div class="unit-header">
+                            <div class="unit-type">
+                                {{ unit.unit_type.en }} - {{ unit.rooms.en }}{% if unit.rooms.en != "Studio" %}BR{%endif %}
+                            </div>
+                            <div class="unit-price">
+                                {{ unit.min_price|floatformat:0|add_commas }} AED
+                            </div>
+                        </div>
+                        <div class="unit-details">
+                            <div class="unit-detail">
+                                <div class="unit-detail-value">{{ unit.min_area|floatformat:0 }}</div>
+                                <div class="unit-detail-label">sq ft</div>
+                            </div>
+                            <div class="unit-detail">
+                                <div class="unit-detail-value">{{ unit.rooms.en }}</div>
+                                <div class="unit-detail-label">
+                                    {% if unit.rooms.en == "Studio" %}
+                                        Studio
+                                    {% else %}
+                                        BR
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="unit-action">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Location Section -->
+            <div class="section slide-up" id="locationSection">
+                <h2 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Location & Nearby
+                </h2>
+                <div class="location-content">
+                    <i class="fas fa-map-marked-alt location-icon"></i>
+                    <h3 class="location-title">Prime Location</h3>
+                    <p class="location-description">
+                        Located in {{ property.district.name.en }}, one of Dubai's most sought-after neighborhoods,
+                        this property offers excellent connectivity to major landmarks, business districts, and
+                        leisure destinations.
+                        Experience the perfect blend of urban convenience and luxurious living.
+                    </p>
+
+                    <button onclick="toggleMap()" class="location-btn">
+                        <i class="fas fa-map"></i> View on Map
+                    </button>
+
+                    <!-- Hidden Map Container -->
+                    <!-- <div id="mapContainer" style="display:none; height:400px; width:100%; margin-top:20px; border-radius:15px; overflow:hidden; border: 1px solid rgba(232, 180, 160, 0.2);">
+                        {% if property.latitude and property.longitude %}
+                        <iframe
+                            src="https://maps.google.com/maps?q={{ property.latitude }},{{ property.longitude }}&z=15&output=embed"
+                            width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                        {% else %}
+                        <iframe
+                            src="https://maps.google.com/maps?q={{ property.district.name.en|urlencode }}&z=15&output=embed"
+                            width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                        {% endif %}
+                    </div> -->
+
+                    <!-- OPTIMIZED: Map container with data attributes (NO iframe initially) -->
+                    <div id="mapContainer"
+                        style="display:none; height:400px; width:100%; margin-top:20px; border-radius:15px; overflow:hidden; border: 1px solid rgba(232, 180, 160, 0.2);"
+                        data-lat="{{ property.latitude }}" data-lng="{{ property.longitude }}"
+                        data-location="{{ property.district.name.en }}">
+                        <!-- Iframe loads here on click -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar">
+        <!-- Contact Card -->
+        <div class="sidebar-card contact-card">
+            <div class="agent-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 class="agent-name">Property Consultant</h3>
+            <p class="agent-title">{{ property.developer.name }} Representative</p>
+
+
+            <a href="tel:+971567655599" class="contact-btn">
+                <i class="fas fa-phone"></i>
+                Call Now
+            </a>
+            <a href="https://wa.me/971567655599" class="contact-btn outline" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp"></i>
+                WhatsApp
+            </a>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Quick Info
+            </h3>
+            <div class="plan-details">
+                <div class="plan-item">
+                    <span>Type</span>
+                    <strong>Residential</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Developer</span>
+                    <strong>{{ property.developer.name }}</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Status</span>
+                    <strong>{{ property.sales_status.name.en }}</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Handover</span>
+                    <strong>{{ property.delivery_date|format_delivery }}</strong>
+                </div>
+                {% if property.min_area and property.max_area %}
+                <div class="plan-item">
+                    <span>Built-up Area</span>
+                    <strong>{{ property.min_area|floatformat:0 }} - {{ property.max_area|floatformat:0 }} sq ft</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment Plans -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-credit-card"></i>
+                Payment Plans
+            </h3>
+            {% if property.payment_plans %}
+            {% for plan in property.payment_plans %}
+            <div class="payment-plan">
+                <div class="plan-name">{{ plan.name.en }}</div>
+                <div class="plan-details">
+                    {% for value in plan.values %}
+                    <div class="plan-item">
+                        <span>{{ value.values.en }}</span>
+                        <strong>{{ value.value }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="payment-plan">
+                <div class="plan-name">Standard Plan</div>
+                <div class="plan-details">
+                    <div class="plan-item">
+                        <span>Down Payment</span>
+                        <strong>20%</strong>
+                    </div>
+                    <div class="plan-item">
+                        <span>During Construction</span>
+                        <strong>60%</strong>
+                    </div>
+                    <div class="plan-item">
+                        <span>On Handover</span>
+                        <strong>20%</strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Location Highlights -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-map"></i>
+                Location Highlights
+            </h3>
+            <div class="plan-details">
+                <div class="plan-item">
+                    <span>Dubai Mall</span>
+                    <strong>15 min</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Burj Khalifa</span>
+                    <strong>12 min</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Dubai Airport</span>
+                    <strong>25 min</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Beach Access</span>
+                    <strong>5 min walk</strong>
+                </div>
+                <div class="plan-item">
+                    <span>Metro Station</span>
+                    <strong>8 min walk</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Info -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-building"></i>
+                Developer
+            </h3>
+            <div style="text-align: center; position: relative; z-index: 1;">
+                <h4
+                    style="color: var(--rose-gold); margin-bottom: 1rem; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600;">
+                    {{ property.developer.name }}</h4>
+                <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6; font-weight: 300;">
+                    {% if property.developer.description %}
+                    {{ property.developer.description }}
+                    {% else %}
+                    Trusted developer with years of experience in creating exceptional properties in Dubai's prime
+                    locations.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let mapLoaded = false;
+    function toggleMap() {
+        const mapContainer = document.getElementById("mapContainer");
+        const btn = event.target;
+
+        if (!mapLoaded) {
+            const lat = mapContainer.dataset.lat;
+            const lng = mapContainer.dataset.lng;
+            const location = mapContainer.dataset.location;
+            
+            const mapSrc = (lat && lng) 
+                 ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+                 : `https://maps.google.com/maps?q=${encodeURIComponent(location)}&z=15&output=embed`;
+            
+            mapContainer.innerHTML = `
+                <iframe 
+                    src="${mapSrc}"
+                    width="100%" 
+                    height="100%" 
+                    style="border:0;" 
+                    allowfullscreen 
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            `;
+            mapLoaded = true;
+        }
+
+        if (mapContainer.style.display === "none" || mapContainer.style.display === "") {
+            mapContainer.style.display = "block";
+            btn.innerHTML = '<i class="fas fa-times"></i> Hide Map';
+        } else {
+            mapContainer.style.display = "none";
+            btn.innerHTML = '<i class="fas fa-map"></i> View on Map';
+        }
+    }
+
+    // Image gallery functionality
+    const PRELOAD_COUNT = 2;
+    let currentImageIndex = 0;
+    let galleryInterval = null;
+    let imagesPreloaded = false;
+
+    // ✅ FIX 1: Build images array
+    const images = [
+        {% for image in property.property_images %}"{{ image.image|default:''|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+    ].filter(src => src && src.trim() !== '');
+
+    // ✅ FIX 2: Use cover as fallback if images array is empty or first image is broken
+    const coverFallback = "{{ property.cover|escapejs }}";
+    if (images.length === 0 && coverFallback) {
+        images.push(coverFallback);
+    } else if (images.length > 0 && !images[0]) {
+        images[0] = coverFallback;
+    }
+
+    // ==========================================
+    // IMAGE PRELOADING (Progressive)
+    // ==========================================
+    function preloadImage(src) {
+        return new Promise((resolve) => {
+            if (!src || src.trim() === '') {
+                resolve();
+                return;
+            }
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = src;
+        });
+    }
+
+    function preloadRemainingImages() {
+        if (imagesPreloaded || images.length <= PRELOAD_COUNT) return;
+        imagesPreloaded = true;
+
+        const remainingImages = images.slice(PRELOAD_COUNT);
+        const chunkSize = 2;
+
+        function preloadChunk(startIndex) {
+            if (startIndex >= remainingImages.length) return;
+
+            const chunk = remainingImages.slice(startIndex, startIndex + chunkSize);
+            Promise.all(chunk.map(preloadImage)).then(() => {
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => preloadChunk(startIndex + chunkSize));
+                } else {
+                    setTimeout(() => preloadChunk(startIndex + chunkSize), 100);
+                }
+            });
+        }
+
+        preloadChunk(0);
+    }
+
+    if (images.length > 1) {
+        const initialImages = images.slice(1, PRELOAD_COUNT + 1);
+        initialImages.forEach(src => preloadImage(src));
+    }
+
+    // ==========================================
+    // GALLERY FUNCTIONS
+    // ==========================================
+    function changeImage(direction) {
+        if (images.length <= 1) return;
+
+        const heroImage = document.getElementById('heroImage');
+        const indicators = document.querySelectorAll('.gallery-indicator');
+
+        currentImageIndex += direction;
+        if (currentImageIndex >= images.length) currentImageIndex = 0;
+        else if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+
+        const nextIndex = (currentImageIndex + 1) % images.length;
+        const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
+        preloadImage(images[nextIndex]);
+        preloadImage(images[prevIndex]);
+
+        heroImage.style.opacity = '0.7';
+        heroImage.style.transform = 'scale(1.05)';
+
+        setTimeout(() => {
+            heroImage.src = images[currentImageIndex];
+            heroImage.style.opacity = '1';
+            heroImage.style.transform = 'scale(1)';
+        }, 300);
+
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentImageIndex);
+        });
+
+        resetGalleryAutoplay();
+    }
+
+    function startGalleryAutoplay() {
+        if (images.length <= 1 || galleryInterval) return;
+        galleryInterval = setInterval(() => changeImage(1), 5000);
+    }
+
+    function stopGalleryAutoplay() {
+        if (galleryInterval) {
+            clearInterval(galleryInterval);
+            galleryInterval = null;
+        }
+    }
+
+    function resetGalleryAutoplay() {
+        stopGalleryAutoplay();
+        startGalleryAutoplay();
+    }
+
+    // ==========================================
+    // NAVIGATION & INTERACTIONS
+    // ==========================================
+    function navigateToUnit(propertySlug, propertyId, unitId) {
+        if (!propertySlug || propertySlug === 'None' || propertySlug.trim() === '') {
+            propertySlug = 'property';
+        }
+          const url = `/property/${propertySlug}-${propertyId}/unit/${unitId}/`;
+        window.location.href = url;
+    }
+
+    function requestBrochure() {
+        const btn = event.target.closest('.quick-action');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-check"></i> Sent!';
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        }, 1500);
+    }
+
+    function scheduleViewing() {
+        const btn = event.target.closest('.quick-action');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-check"></i> Booked!';
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        }, 1500);
+    }
+
+    // ==========================================
+    // ANIMATIONS (Deferred)
+    // ==========================================
+    function initializeAnimations() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    }
+
+    // ==========================================
+    // TOUCH GESTURES (Mobile)
+    // ==========================================
+    function initializeTouchGestures() {
+        if (!('ontouchstart' in window)) return;
+
+        let startX = 0;
+        let startTime = 0;
+        const heroGallery = document.querySelector('.hero-gallery');
+        if (!heroGallery) return;
+
+        heroGallery.addEventListener('touchstart', function (e) {
+            startX = e.touches[0].clientX;
+            startTime = Date.now();
+        }, { passive: true });
+
+        heroGallery.addEventListener('touchend', function (e) {
+            const endX = e.changedTouches[0].clientX;
+            const timeDiff = Date.now() - startTime;
+            const distance = Math.abs(startX - endX);
+
+            if (timeDiff < 500 && distance > 50) {
+                if (startX - endX > 0) {
+                    changeImage(1);
+                } else {
+                    changeImage(-1);
+                }
+            }
+        }, { passive: true });
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function () {
+        if (images.length > 1) {
+            startGalleryAutoplay();
+        }
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                initializeAnimations();
+                initializeTouchGestures();
+                setTimeout(preloadRemainingImages, 2000);
+            }, { timeout: 1000 });
+        } else {
+            setTimeout(() => {
+                initializeAnimations();
+                initializeTouchGestures();
+                setTimeout(preloadRemainingImages, 2000);
+            }, 200);
+        }
+    });
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            stopGalleryAutoplay();
+        } else {
+            startGalleryAutoplay();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft' && images.length > 1) {
+            changeImage(-1);
+        } else if (e.key === 'ArrowRight' && images.length > 1) {
+            changeImage(1);
+        }
+    });
+
+    // ✅ FIX 3: Error handler tries cover before placeholder
+    const heroImage = document.getElementById('heroImage');
+    if (heroImage) {
+       heroImage.addEventListener('error', function() {
+    this.onerror = null; // prevent infinite loop
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+CjxyZWN0IHg9IjM1MCIgeT0iMjUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U4YjRhMCIgcng9IjUwIi8+CjwvU3ZnPgo=';
+});
+
+        heroImage.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    const galleryNav = document.querySelector('.gallery-nav');
+    if (galleryNav) {
+        galleryNav.addEventListener('click', preloadRemainingImages, { once: true });
+    }
+</script>
+{% endblock %}

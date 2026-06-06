@@ -1,0 +1,1410 @@
+<!-- templates/properties/exclusive_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ property.title }} - Exclusive Property - KIF Realty{% endblock %}
+
+{% block meta_description %}{{ property.meta_description|default:property.short_description|default:property.description|striptags|truncatewords:30 }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* OBSIDIAN Theme Variables - Matching Index Page */
+        :root {
+            --obsidian-black: #1a1a1a;
+            --charcoal-gray: #2a2a2a;
+            --medium-gray: #3a3a3a;
+            --rose-gold: #e8b4a0;
+            --champagne-gold: #f4d03f;
+            --text-light: #f5f5f5;
+            --text-muted: rgba(245, 245, 245, 0.8);
+            --accent-gradient: linear-gradient(135deg, var(--rose-gold), var(--champagne-gold));
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-light);
+            background: var(--obsidian-black);
+            margin: 0;
+            padding: 0;
+            padding-top: 80px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--charcoal-gray);
+            backdrop-filter: blur(15px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar.scrolled {
+            background: var(--medium-gray);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .breadcrumb {
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(232, 180, 160, 0.1);
+        }
+
+        .breadcrumb-container a {
+            color: var(--rose-gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-container a:hover {
+            color: var(--champagne-gold);
+        }
+
+        .breadcrumb-container span {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .breadcrumb-container i {
+            margin: 0 8px;
+            color: var(--rose-gold);
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links{
+                background-color: var(--medium-gray);
+            }
+        }
+
+        /* Main Layout */
+        .property-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            min-height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .property-hero {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(232, 180, 160, 0.3));
+        }
+
+        .hero-gallery {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+
+        .exclusive-badge {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 30px rgba(232, 180, 160, 0.6);
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(26, 26, 26, 0.7), rgba(232, 180, 160, 0.2));
+            padding: 3rem;
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .property-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        .property-location {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+            color: var(--text-muted);
+        }
+
+        .price-badge {
+            display: inline-block;
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            padding: 1.5rem 3rem;
+            border-radius: 40px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            box-shadow: 0 15px 40px rgba(232, 180, 160, 0.6);
+            align-self: flex-start;
+            text-shadow: none;
+            letter-spacing: -0.01em;
+        }
+
+        .content-container {
+            flex: 1;
+            overflow-y: auto;
+            background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--medium-gray) 100%);
+            padding: 3rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--rose-gold);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-title i {
+            color: var(--rose-gold);
+            font-size: 1.6rem;
+        }
+
+        .property-description {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .property-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(232, 180, 160, 0.1);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .stat-item:hover::before {
+            opacity: 0.05;
+        }
+
+        .stat-item:hover {
+            border-color: rgba(232, 180, 160, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--rose-gold);
+            margin-bottom: 1.5rem;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .amenity-item {
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            padding: 2rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(232, 180, 160, 0.1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .amenity-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .amenity-item:hover::before {
+            opacity: 0.1;
+        }
+
+        .amenity-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(232, 180, 160, 0.3);
+        }
+
+        .amenity-icon {
+            font-size: 1.5rem;
+            color: var(--rose-gold);
+            transition: all 0.4s ease;
+            width: 30px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .amenity-item:hover .amenity-icon {
+            transform: scale(1.2) rotate(5deg);
+            color: var(--champagne-gold);
+        }
+
+        .amenity-item span {
+            position: relative;
+            z-index: 1;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, var(--charcoal-gray) 0%, var(--medium-gray) 100%);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(232, 180, 160, 0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar-card {
+            padding: 2.5rem;
+            border-bottom: 1px solid rgba(232, 180, 160, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .contact-card {
+            text-align: center;
+            background: linear-gradient(145deg, rgba(232, 180, 160, 0.05), rgba(244, 208, 63, 0.05));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0.02;
+        }
+
+        .agent-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--obsidian-black);
+            box-shadow: 0 15px 40px rgba(232, 180, 160, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .agent-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--text-light);
+            position: relative;
+            z-index: 1;
+        }
+
+        .agent-title {
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-btn {
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            padding: 18px 35px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1.2rem;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .contact-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .contact-btn:hover::before {
+            left: 100%;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(232, 180, 160, 0.6);
+            color: var(--obsidian-black);
+        }
+
+        .contact-btn.outline {
+            background: transparent;
+            color: var(--rose-gold);
+            border: 2px solid var(--rose-gold);
+        }
+
+        .contact-btn.outline:hover {
+            background: var(--rose-gold);
+            color: var(--obsidian-black);
+        }
+
+        .info-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            letter-spacing: -0.01em;
+        }
+
+        .info-card-title i {
+            color: var(--rose-gold);
+        }
+
+        .plan-details {
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .plan-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 25px;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(145deg, var(--medium-gray), var(--charcoal-gray));
+            border-radius: 12px;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(232, 180, 160, 0.1);
+        }
+
+        .plan-item:hover {
+            transform: translateX(8px);
+            border-color: rgba(232, 180, 160, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .plan-item-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .plan-item-value {
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        /* Location Section */
+        .location-content {
+            text-align: center;
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(232, 180, 160, 0.1);
+        }
+
+        .location-content button {
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .location-content button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(232, 180, 160, 0.5);
+        }
+
+        /* Mobile Responsive Design */
+        @media (max-width: 968px) {
+            .property-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel {
+                order: 1;
+            }
+
+            .sidebar {
+                order: 2;
+                border-left: none;
+                border-top: 1px solid rgba(232, 180, 160, 0.1);
+            }
+
+            .property-hero {
+                height: 400px;
+            }
+
+            .property-title {
+                font-size: 2.8rem;
+            }
+
+            .content-container {
+                padding: 2rem;
+            }
+
+            .property-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .amenities-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-card {
+                padding: 2rem;
+            }
+
+            .exclusive-badge {
+                top: 15px;
+                left: 15px;
+                padding: 0.8rem 1.8rem;
+                font-size: 0.85rem;
+                border-radius: 22px;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                min-width: 110px;
+                line-height: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 70px;
+            }
+
+            .property-hero {
+                height: 320px;
+            }
+
+            .property-title {
+                font-size: 2.2rem;
+            }
+
+            .price-badge {
+                font-size: 1.3rem;
+                padding: 1.2rem 2.5rem;
+            }
+
+            .content-container {
+                padding: 1.5rem;
+            }
+
+            .property-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item {
+                padding: 2rem;
+            }
+
+            .agent-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            .exclusive-badge {
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: var(--accent-gradient);
+                color: var(--obsidian-black);
+                padding: 0.8rem 1.2rem;
+                border-radius: 0 0 18px 0;
+                font-weight: 700;
+                font-size: 0.75rem;
+                box-shadow: 0 4px 15px rgba(232, 180, 160, 0.4);
+                z-index: 10;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                min-width: 90px;
+                max-width: 100px;
+                text-align: center;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.3rem;
+                line-height: 1;
+            }
+
+            .exclusive-badge i {
+                font-size: 0.65rem;
+                flex-shrink: 0;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .exclusive-badge {
+                display: none;
+            }
+        }
+
+        /* Gallery Navigation */
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(42, 42, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(232, 180, 160, 0.3);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            z-index: 10;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .gallery-nav:hover {
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 10px 25px rgba(232, 180, 160, 0.5);
+        }
+
+        .gallery-prev {
+            left: 25px;
+        }
+
+        .gallery-next {
+            right: 25px;
+        }
+
+        .gallery-indicators {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .gallery-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(245, 245, 245, 0.5);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(232, 180, 160, 0.3);
+        }
+
+        .gallery-indicator.active {
+            background: var(--rose-gold);
+            transform: scale(1.3);
+            box-shadow: 0 4px 12px rgba(232, 180, 160, 0.5);
+        }
+
+        /* Enhanced Floor Plan Section */
+        .floor-plan-image {
+            width: 100%;
+            border-radius: 15px;
+            border: 2px solid rgba(232, 180, 160, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .floor-plan-image:hover {
+            transform: scale(1.02);
+            border-color: rgba(232, 180, 160, 0.4);
+        }
+
+        /* Inquiry Modal Styling */
+        #inquiryModal {
+            backdrop-filter: blur(10px);
+        }
+
+        #inquiryModal > div {
+            background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+            border: 1px solid rgba(232, 180, 160, 0.2);
+            color: var(--text-light);
+        }
+
+        #inquiryModal h3 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--text-light);
+        }
+
+        #inquiryModal input,
+        #inquiryModal select,
+        #inquiryModal textarea {
+            background: var(--obsidian-black);
+            border: 2px solid rgba(232, 180, 160, 0.2);
+            color: var(--text-light);
+        }
+
+        #inquiryModal input:focus,
+        #inquiryModal select:focus,
+        #inquiryModal textarea:focus {
+            border-color: var(--rose-gold);
+            outline: none;
+            box-shadow: 0 0 15px rgba(232, 180, 160, 0.3);
+        }
+
+        #inquiryModal button[type="submit"] {
+            background: var(--accent-gradient);
+            color: var(--obsidian-black);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Animations */
+        @keyframes titleGlow {
+            0% { text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8); }
+            100% { text-shadow: 2px 2px 15px rgba(232, 180, 160, 0.3); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <div class="breadcrumb-container">
+        <a href="{% url 'index' %}">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'exclusive_properties:list' %}">Exclusive Properties</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ property.title }}</span>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="property-layout">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <!-- Hero Section -->
+        <section class="property-hero">
+            <div class="hero-gallery">
+                <img id="heroImage"
+                     src="{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
+                     alt="{{ property.title }}"
+                     class="hero-image">
+
+                <div class="exclusive-badge">
+                    <i class="fas fa-crown"></i>
+                    EXCLUSIVE
+                </div>
+
+                {% if property.images.count > 0 %}
+                <button class="gallery-nav gallery-prev" onclick="changeImage(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="gallery-nav gallery-next" onclick="changeImage(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <div class="gallery-indicators" id="galleryIndicators">
+                    <div class="gallery-indicator active"></div>
+                    {% for image in property.images.all %}
+                    <div class="gallery-indicator"></div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="hero-overlay">
+                <h1 class="property-title">{{ property.title }}</h1>
+                <div class="property-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ property.district }}{% if property.city %}, {{ property.city }}{% endif %}</span>
+                </div>
+                <div class="price-badge">
+                    {{ property.formatted_price }}
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <!-- Overview Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-home"></i>
+                    About This Property
+                </h2>
+                <div class="property-description">
+                    {{ property.description|safe }}
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Property Specifications
+                </h2>
+                <div class="property-stats">
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-bed"></i>
+                        <div class="stat-value">{{ property.bedroom_display }}</div>
+                        <div class="stat-label">Bedrooms</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-bath"></i>
+                        <div class="stat-value">{{ property.bathrooms }}</div>
+                        <div class="stat-label">Bathrooms</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-expand-arrows-alt"></i>
+                        <div class="stat-value">{{ property.area_sqft|floatformat:0 }}</div>
+                        <div class="stat-label">Sq Ft</div>
+                    </div>
+                    {% if property.plot_size %}
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-map"></i>
+                        <div class="stat-value">{{ property.plot_size|floatformat:0 }}</div>
+                        <div class="stat-label">Plot Size</div>
+                    </div>
+                    {% endif %}
+                    {% if property.price_per_sqft %}
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-calculator"></i>
+                        <div class="stat-value">{{ property.price_per_sqft|floatformat:0 }}</div>
+                        <div class="stat-label">AED/Sq Ft</div>
+                    </div>
+                    {% endif %}
+                    {% if property.completion_year %}
+                    <div class="stat-item">
+                        <i class="stat-icon fas fa-calendar"></i>
+                        <div class="stat-value">{{ property.completion_year }}</div>
+                        <div class="stat-label">Year Built</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Key Features Section -->
+            {% if property.key_features %}
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-star"></i>
+                    Key Features
+                </h2>
+                <div class="amenities-grid">
+                    {% for feature in property.key_features %}
+                    <div class="amenity-item">
+                        <div class="amenity-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <span>{{ feature }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Amenities Section -->
+            {% if property.amenities.exists %}
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-building"></i>
+                    Building Amenities
+                </h2>
+                <div class="amenities-grid">
+                    {% for amenity_rel in property.amenities.all %}
+                    <div class="amenity-item">
+                        <div class="amenity-icon">
+                            <i class="{{ amenity_rel.amenity.icon }}"></i>
+                        </div>
+                        <span>{{ amenity_rel.amenity.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Nearby Amenities Section -->
+            {% if property.nearby_amenities %}
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Nearby Amenities
+                </h2>
+                <div class="amenities-grid">
+                    {% for amenity in property.nearby_amenities %}
+                    <div class="amenity-item">
+                        <div class="amenity-icon">
+                            <i class="fas fa-location-dot"></i>
+                        </div>
+                        <span>{{ amenity }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if property.floor_plan %}
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-drafting-compass"></i>
+                    Floor Plan
+                </h2>
+                <img src="{{ property.floor_plan.url }}" alt="Floor Plan of {{ property.title }}" class="floor-plan-image">
+            </div>
+            {% endif %}
+
+            <!-- Location Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-map"></i>
+                    Location & Map
+                </h2>
+                <div class="location-content">
+                    <div>
+                        <i class="fas fa-map-marked-alt" style="font-size: 3rem; color: var(--rose-gold); margin-bottom: 1.5rem;"></i>
+                        <h3 style="font-family: 'Cormorant Garamond', serif; color: var(--text-light); margin-bottom: 1.5rem; font-size: 1.8rem; font-weight: 600;">Prime Location</h3>
+                        <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 2rem; font-size: 1.1rem;">
+                            {% if property.address %}
+                                {{ property.address }}
+                            {% else %}
+                                Located in {{ property.district }}, one of Dubai's most prestigious neighborhoods,
+                                this exclusive property offers excellent connectivity to major landmarks, business districts, and
+                                leisure destinations.
+                            {% endif %}
+                        </p>
+                        <button onclick="toggleMap(event)">
+                            <i class="fas fa-map"></i> View on Map
+                        </button>
+                    </div>
+
+                    <!-- Lazy Map Container — iframe injects on first click only -->
+                    <div id="mapContainer"
+                        style="display:none; height:400px; width:100%; margin-top:25px; border-radius:15px; overflow:hidden; border: 2px solid rgba(232, 180, 160, 0.2);"
+                        data-lat="{{ property.latitude }}"
+                        data-lng="{{ property.longitude }}"
+                        data-location="{{ property.district }},Dubai">
+                        <!-- Iframe loads here on click -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar">
+        <!-- Contact Card -->
+        <div class="sidebar-card contact-card">
+            <div class="agent-avatar">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3 class="agent-name">
+                {% if property.assigned_agent %}
+                    {{ property.assigned_agent.get_full_name|default:property.assigned_agent.username }}
+                {% else %}
+                    Property Consultant
+                {% endif %}
+            </h3>
+            <p class="agent-title">Exclusive Properties Specialist</p>
+
+            <a href="tel:{% if property.contact_phone %}{{ property.contact_phone }}{% else %}+971509647864{% endif %}" class="contact-btn">
+                <i class="fas fa-phone"></i>
+                Call Now
+            </a>
+            <a href="https://wa.me/971509647864?text=I'm interested in {{ property.title }}" class="contact-btn outline" target="_blank">
+                <i class="fab fa-whatsapp"></i>
+                WhatsApp
+            </a>
+            <a href="{% url 'exclusive_properties:submit_inquiry' %}"
+               class="contact-btn outline"
+               onclick="openInquiryModal('{{ property.id }}'); return false;">
+                <i class="fas fa-envelope"></i>
+                Send Inquiry
+            </a>
+        </div>
+
+        <!-- Property Info -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Property Details
+            </h3>
+            <div class="plan-details">
+                <div class="plan-item">
+                    <span class="plan-item-label">Property Type</span>
+                    <strong class="plan-item-value">{{ property.get_property_type_display }}</strong>
+                </div>
+                <div class="plan-item">
+                    <span class="plan-item-label">Status</span>
+                    <strong class="plan-item-value">{{ property.get_status_display }}</strong>
+                </div>
+                {% if property.developer_name %}
+                <div class="plan-item">
+                    <span class="plan-item-label">Developer</span>
+                    <strong class="plan-item-value">{{ property.developer_name }}</strong>
+                </div>
+                {% endif %}
+                {% if property.service_charge %}
+                <div class="plan-item">
+                    <span class="plan-item-label">Service Charge</span>
+                    <strong class="plan-item-value">AED {{ property.service_charge|floatformat:0 }}/year</strong>
+                </div>
+                {% endif %}
+                <div class="plan-item">
+                    <span class="plan-item-label">Reference</span>
+                    <strong class="plan-item-value">KIF-{{ property.id|slice:":8" }}</strong>
+                </div>
+                <div class="plan-item">
+                    <span class="plan-item-label">Views</span>
+                    <strong class="plan-item-value">{{ property.view_count }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Info -->
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-chart-line"></i>
+                Investment Highlights
+            </h3>
+            <div class="plan-details">
+                <div class="plan-item">
+                    <span class="plan-item-label">Price per Sq Ft</span>
+                    <strong class="plan-item-value">
+                        {% if property.price_per_sqft %}
+                            AED {{ property.price_per_sqft|floatformat:0 }}
+                        {% else %}
+                            Contact for details
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="plan-item">
+                    <span class="plan-item-label">ROI Potential</span>
+                    <strong class="plan-item-value">6-8% annually</strong>
+                </div>
+                <div class="plan-item">
+                    <span class="plan-item-label">Financing</span>
+                    <strong class="plan-item-value">Available</strong>
+                </div>
+                <div class="plan-item">
+                    <span class="plan-item-label">Ownership</span>
+                    <strong class="plan-item-value">Freehold</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Properties -->
+        {% if related_properties %}
+        <div class="sidebar-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-building"></i>
+                Similar Properties
+            </h3>
+            {% for related in related_properties %}
+            <div style="border: 1px solid rgba(232, 180, 160, 0.2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; transition: all 0.4s ease; cursor: pointer; background: linear-gradient(145deg, var(--medium-gray), var(--charcoal-gray));" onclick="location.href='{{ related.get_absolute_url }}'">
+                <h4 style="margin: 0 0 0.8rem 0; font-size: 1.1rem; color: var(--text-light); font-family: 'Cormorant Garamond', serif; font-weight: 600;">{{ related.title }}</h4>
+                <p style="margin: 0 0 0.8rem 0; color: var(--text-muted); font-size: 0.95rem;">{{ related.district }}</p>
+                <p style="margin: 0; font-weight: 700; color: var(--rose-gold); font-size: 1.1rem;">{{ related.formatted_price }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Inquiry Modal -->
+<div id="inquiryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 26, 0.8); z-index: 9999; padding: 1rem;">
+    <div style="max-width: 550px; margin: 2rem auto; border-radius: 25px; padding: 3rem; position: relative; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);">
+        <button onclick="closeInquiryModal()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-muted); transition: all 0.3s ease;">×</button>
+
+        <h3 style="margin-bottom: 2.5rem; text-align: center; font-size: 2rem; font-weight: 600;">Property Inquiry</h3>
+
+        <form id="inquiryForm" onsubmit="submitInquiry(event)">
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Full Name *</label>
+                <input type="text" name="name" required style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Email *</label>
+                <input type="email" name="email" required style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Phone</label>
+                <input type="tel" name="phone" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Inquiry Type</label>
+                <select name="inquiry_type" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
+                    <option value="info">Request Information</option>
+                    <option value="viewing">Schedule Viewing</option>
+                    <option value="offer">Make Offer</option>
+                    <option value="callback">Request Callback</option>
+                    <option value="brochure">Download Brochure</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 2.5rem;">
+                <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Message</label>
+                <textarea name="message" rows="3" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem; resize: vertical;" placeholder="Please provide any additional details about your inquiry..."></textarea>
+            </div>
+
+            <button type="submit" style="width: 100%; padding: 18px; border: none; border-radius: 15px; font-size: 1.2rem; cursor: pointer; transition: all 0.4s ease;">
+                Send Inquiry
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // MAP — lazy load: iframe injects on first click only
+    // ==========================================
+    let mapLoaded = false;
+
+    function toggleMap(event) {
+        const mapContainer = document.getElementById("mapContainer");
+        const btn = event ? event.target.closest('button') : null;
+
+        if (!mapLoaded) {
+            const lat = mapContainer.dataset.lat;
+            const lng = mapContainer.dataset.lng;
+            const location = mapContainer.dataset.location;
+
+            const mapSrc = (lat && lng)
+                ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+                : `https://maps.google.com/maps?q=${encodeURIComponent(location)}&z=15&output=embed`;
+
+            mapContainer.innerHTML = `
+                <iframe
+                    src="${mapSrc}"
+                    width="100%"
+                    height="100%"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            `;
+            mapLoaded = true;
+        }
+
+        if (mapContainer.style.display === "none" || mapContainer.style.display === "") {
+            mapContainer.style.display = "block";
+            if (btn) btn.innerHTML = '<i class="fas fa-times"></i> Hide Map';
+        } else {
+            mapContainer.style.display = "none";
+            if (btn) btn.innerHTML = '<i class="fas fa-map"></i> View on Map';
+        }
+    }
+
+    // ==========================================
+    // IMAGE GALLERY
+    // ==========================================
+    let currentImageIndex = 0;
+    const images = [
+        "{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
+        {% for image in property.images.all %},
+        "{{ image.image.url }}"
+        {% endfor %}
+    ];
+
+    function changeImage(direction) {
+        if (images.length <= 1) return;
+
+        const heroImage = document.getElementById('heroImage');
+        const indicators = document.querySelectorAll('.gallery-indicator');
+
+        currentImageIndex += direction;
+
+        if (currentImageIndex >= images.length) currentImageIndex = 0;
+        else if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+
+        heroImage.style.opacity = '0.7';
+        heroImage.style.transform = 'scale(1.05)';
+
+        setTimeout(() => {
+            heroImage.src = images[currentImageIndex];
+            heroImage.style.opacity = '1';
+            heroImage.style.transform = 'scale(1)';
+        }, 200);
+
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentImageIndex);
+        });
+    }
+
+    // Auto-play gallery if there are multiple images
+    if (images.length > 1) {
+        setInterval(() => {
+            changeImage(1);
+        }, 5000);
+    }
+
+    // ==========================================
+    // INQUIRY MODAL
+    // ==========================================
+    function openInquiryModal(propertyId) {
+        document.getElementById('inquiryModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeInquiryModal() {
+        document.getElementById('inquiryModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    function submitInquiry(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const data = {
+            property_id: '{{ property.id }}',
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            inquiry_type: formData.get('inquiry_type'),
+            message: formData.get('message')
+        };
+
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+
+        fetch('{% url "exclusive_properties:submit_inquiry" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thank you for your inquiry! We will contact you soon.');
+                closeInquiryModal();
+                event.target.reset();
+            } else {
+                alert('There was an error submitting your inquiry. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('There was an error submitting your inquiry. Please try again.');
+        })
+        .finally(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // ==========================================
+    // ANIMATIONS & INIT
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'all 0.8s ease';
+
+            setTimeout(() => {
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+
+        console.log('KIF Realty Exclusive Property Detail Page Loaded Successfully');
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeInquiryModal();
+        }
+    });
+
+    // Close modal on outside click
+    document.getElementById('inquiryModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeInquiryModal();
+        }
+    });
+</script>
+
+{% endblock %}

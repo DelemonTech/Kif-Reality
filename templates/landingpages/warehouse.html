@@ -1,0 +1,1999 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}Warehouses for Sale in Dubai, UAE{% endblock %}
+
+<meta name="description" content="{% block description %}
+Discover Warehouses for Sale in Dubai | Prime Industrial Properties & Investment Opportunities | Spacious & Well-Connected Locations for Your Business Needs{% endblock %}">
+
+<!-- canonical -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/warehouses-for-sale">
+{% endblock %}
+
+
+
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet" />
+
+<!-- Intl Tel Input CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
+
+
+<!-- Warehouses Hero Section -->
+<section class="warehouse-hero-section">
+  <div class="warehouse-hero-content">
+    <h1 style="font-weight: 700;">Warehouses for Sale in <span>Dubai</span></h1>
+    <h3>Industrial & Logistics Properties with High ROI</h3>
+   <p>
+Dubai is a top logistics hub with high demand for industrial and storage warehouses. Explore warehouses for sale in Al Quoz, Jebel Ali, and Ras Al Khor offering strong ROI and long-term investment value with KIF Realty.
+
+    <div class="warehouse-hero-buttons">
+      <a href="#location" class="btn-primary_ware">Explore Spaces</a>
+      <a href="#consultationModal" class="btn-secondary_ware openModalBtn">Book Consultation</a>
+    </div>
+
+    <div class="warehouse-hero-stats">
+      <div>
+        <h2>7–9%</h2>
+        <p>Rental Yields Annually</p>
+      </div>
+      <div>
+        <h2>10+</h2>
+        <p>Years of Investment Growth</p>
+      </div>
+      <div>
+        <h2>6+</h2>
+        <p>Prime Locations</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+  }
+
+  body {
+    background-color: #030303;
+  }
+
+  .warehouse-hero-section {
+    background: radial-gradient(120% 72% at 50% 100%, rgba(42, 60, 68, 0) 0, rgb(7 28 53 / 3%) 66.59%, rgb(7 28 53 / 44%) 99.98%),
+      linear-gradient(-90deg, rgba(7, 28, 53, 0.8) 10%, rgba(7, 28, 53, 0.14) 80.83%),
+      url("{% static 'images/kif_8_hero.webp' %}") center/cover no-repeat;
+    color: #fff;
+    padding: 100px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .warehouse-hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .warehouse-hero-section::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #030303 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .warehouse-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .warehouse-hero-content h1 {
+    font-size: 54px;
+    font-weight: 800;
+    line-height: 1.5;
+    margin-top: 3%;
+    letter-spacing: 1px;
+    animation: fadeUp 1s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .warehouse-hero-content h1 span {
+    color: #eeb32b;
+  }
+
+  .warehouse-hero-content h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 15px 0 25px 0;
+    color: #fff;
+    letter-spacing: 1px;
+    animation: fadeUp 1s ease-out 0.6s forwards;
+    opacity: 0;
+    line-height: 1.5;
+  }
+
+  .warehouse-hero-content p {
+    font-size: 18px;
+    color: #a3a3a3;
+    letter-spacing: 0.2px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    animation: fadeUp 1s ease-out 0.9s forwards;
+    opacity: 0;
+  }
+
+  .warehouse-hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    animation: fadeUp 1s ease-out 1.2s forwards;
+    opacity: 0;
+  }
+
+  .btn-primary_ware,
+  .btn-secondary_ware {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 14px;
+    min-width: 200px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .btn-primary_ware {
+    background: #eeb32b;
+    color: #000;
+  }
+
+  .btn-secondary_ware {
+    background: transparent;
+    border: 2px solid #eeb32b;
+    color: #fff;
+  }
+
+  .btn-primary_ware:hover {
+    background: #d9a91f;
+  }
+
+  .btn-secondary_ware:hover {
+    background: #eeb32b;
+    color: #000;
+  }
+
+  .warehouse-hero-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 50px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: fadeUp 1s ease-out 1.5s forwards;
+    opacity: 0;
+  }
+
+  .warehouse-hero-stats div {
+    flex: 1;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .warehouse-hero-stats h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #eeb32b;
+  }
+
+  .warehouse-hero-stats p {
+    font-size: 16px;
+    color: #a3a3a3;
+    letter-spacing: 0.2px;
+    line-height: 1.7;
+  }
+
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 992px) {
+    .warehouse-hero-content h1 {
+      font-size: 40px;
+    }
+    .warehouse-hero-content h3 {
+      font-size: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .warehouse-hero-section {
+      padding: 80px 20px;
+    }
+    .warehouse-hero-content h1 {
+      font-size: 34px;
+    }
+    .warehouse-hero-content p {
+      font-size: 15px;
+    }
+  }
+
+  @media (max-width: 492px) {
+    .warehouse-hero-section {
+      padding-bottom: 20px;
+    }
+    .warehouse-hero-content h1 {
+      font-size: 30px;
+      margin-top: 1%;
+    }
+    .warehouse-hero-buttons {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .warehouse-hero-content h3 {
+      font-size: 17px;
+      font-weight: 500;
+    }
+    .warehouse-hero-content p {
+      font-size: 14px;
+    }
+    .btn-primary_ware,
+    .btn-secondary_ware {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    .warehouse-hero-stats h2 {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .warehouse-hero-stats p {
+      font-size: 13px;
+    }
+    .warehouse-hero-stats {
+      gap: 5px;
+    }
+    .warehouse-hero-stats div {
+      min-width: 50px;
+    }
+  }
+</style>
+
+
+<!-- ------------------------------------------------------- Warehouses Investment Graph Section --------------------------------------------------------------- -->
+
+<!-- 📊 Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .graph_section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 3s ease-out 1.5s backwards;
+    }
+
+    .graph_section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #fff;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .graph_section h2 span {
+        color: #F7B600;
+    }
+
+    .graph_section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        max-width: 900px;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+    }
+
+    .graph_container {
+        background-color: #0b0b0b;
+        border-radius: 6px;
+        padding: 25px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        max-width: 1100px;
+        width: 100%;
+        height: 450px;
+        box-sizing: border-box;
+    }
+
+    canvas {
+        display: block;
+        max-width: 100%;
+        height: 100% !important;
+    }
+
+    @keyframes fadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .graph_section {
+            padding: 30px 20px;
+        }
+
+        .graph_section h2 {
+            font-size: 28px;
+        }
+
+        .graph_section p {
+            font-size: 16px;
+        }
+
+        .graph_container {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .graph_section h2 {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1.7;
+        }
+
+        .graph_section p {
+            font-size: 14px;
+        }
+
+        .graph_container {
+            height: 250px;
+        }
+    }
+</style>
+
+<section class="graph_section">
+    <h2>10-Year Investment Growth in <span>Warehouses</span></h2>
+    <p>
+        Industrial warehouse rental and price growth trends across Al Quoz, Jebel Ali, and Dubai Investment Park (DIP)
+        over the past decade.
+    </p>
+
+    <div class="graph_container">
+        <canvas id="warehouseChart"></canvas>
+    </div>
+</section>
+
+<script>
+    const ctx = document.getElementById('warehouseChart').getContext('2d');
+    const warehouseChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+            datasets: [
+                {
+                    label: 'Al Quoz',
+                    data: [100, 104, 110, 118, 126, 134, 142, 150, 160, 172, 182],
+                    borderColor: '#F7B600',
+                    backgroundColor: '#F7B600',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Jebel Ali',
+                    data: [100, 106, 114, 122, 131, 141, 152, 163, 175, 185, 195],
+                    borderColor: '#00BFFF',
+                    backgroundColor: '#00BFFF',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'DIP',
+                    data: [100, 105, 112, 120, 128, 138, 147, 157, 168, 180, 190],
+                    borderColor: '#FF6347',
+                    backgroundColor: '#FF6347',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: '#fff' }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#fff' },
+                    grid: { color: '#2a2a2a' }
+                },
+                y: {
+                    beginAtZero: false,
+                    ticks: { color: '#fff' },
+                    grid: { color: '#2a2a2a' }
+                }
+            }
+        }
+    });
+</script>
+
+
+
+<!-- ------------------------------- Prime Locations Section --------------------------------- -->
+
+<style>
+    :root {
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 42 85% 55%;
+        --gradient-gold: linear-gradient(135deg, hsl(42 85% 55%), hsl(42 85% 65%));
+        --gradient-dark: linear-gradient(180deg, hsl(0 0% 0%), hsl(0 0% 3%));
+        --gradient-subtle: linear-gradient(180deg, hsl(0 0% 0% / 0), hsl(0 0% 5%));
+        --shadow-gold: 0 20px 50px -15px hsl(42 85% 55% / .35);
+        --shadow-glow: 0 0 40px hsl(42 85% 55% / .35);
+        --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        --transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+        --transition-bounce: all .4s cubic-bezier(.68, -.55, .265, 1.55);
+    }
+
+    .prime-locations {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+        animation: fadeUp 4s ease-out 3s backwards;
+    }
+
+    .prime-locations h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .prime-locations h2 span {
+        color: #F7B600;
+    }
+
+    .prime-locations p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .locations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .location-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 20px 20px 1px 20px;
+        text-align: center;
+        transition: var(--transition-smooth);
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+    }
+
+    .location-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .location-icon {
+        width: 55px;
+        height: 55px;
+        background: rgba(247, 182, 0, 0.1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        border: 1px solid #33280f;
+    }
+
+    .location-icon img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+
+    .location-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.7;
+    }
+
+    .location-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .location-card p {
+        font-size: 16px;
+        color: #bbb;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        text-align: center;
+    }
+
+    @keyframes fadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .prime-locations h2 {
+            font-size: 28px;
+        }
+
+        .prime-locations p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .prime-locations h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .location-card h3 {
+            font-size: 16px;
+        }
+
+        .location-card p {
+            font-size: 12px;
+        }
+
+        .location-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .prime-locations p {
+            font-size: 14px;
+        }
+
+        .location-icon img {
+            width: 24px;
+            height: 24px;
+        }
+    }
+</style>
+
+<section class="prime-locations" id="location">
+    <h2>Prime <span>Locations</span></h2>
+    <p>Explore Dubai’s top warehouse investment zones — from central industrial areas to modern logistics hubs.</p>
+
+    <div class="locations-grid">
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Al Quoz Icon">
+            </div>
+            <h3>Al Quoz</h3>
+            <p>Central hub for Al Quoz warehouse for rent and storage units in Dubai.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Jebel Ali Icon">
+            </div>
+            <h3>Jebel Ali Free Zone (JAFZA)</h3>
+            <p>Global trading center with JAFZA warehouse for rent and sales opportunities.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Ras Al Khor Icon">
+            </div>
+            <h3>Ras Al Khor</h3>
+            <p>Popular area for Ras Al Khor warehouse for rent and industrial use.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="Al Qusais Icon">
+            </div>
+            <h3>Al Qusais</h3>
+            <p>Established district ideal for Al Qusais warehouse for rent and commercial operations.</p>
+        </div>
+
+        <div class="location-card">
+            <div class="location-icon">
+                <img src="{% static 'images/location.svg' %}" alt="DIP & Dubai South Icon">
+            </div>
+            <h3>Dubai South & DIP</h3>
+            <p>Modern logistics hubs with large-scale warehouse Dubai facilities and investment potential.</p>
+        </div>
+
+    </div>
+</section>
+
+
+
+
+<!-- ---------------------------------------------- ROI & Capital Appreciation Section -------------------------------------------- -->
+
+<section class="roi-cards-custom">
+    <div class="container">
+        <div class="section-header">
+            <h2>ROI & <span>Capital Appreciation</span></h2>
+            <p>
+                Rental yields range from 7–9% annually for industrial warehouses in Dubai. There is high demand for small warehouses for rent in Dubai and flexible storage solutions. Warehouses for sale in free zones like JAFZA and Jebel Ali also offer strong resale potential.
+            </p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="Rental Yield Icon"></div>
+                <h3>7–9% Rental Yields</h3>
+            </div>
+
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/warehouse1.svg' %}" alt="Flexible Storage Icon"></div>
+                <h3>High Demand for Small Warehouses</h3>
+            </div>
+
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/money-stack.svg' %}" alt="Resale Market Icon"></div>
+                <h3>Free Zone Resale Potential</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .roi-cards-custom {
+        background: #030303;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .roi-cards-custom .container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .roi-cards-custom .section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin: 0 0 10px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .roi-cards-custom .section-header h2 span {
+        color: #F7B600;
+    }
+
+    .roi-cards-custom .section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 900px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .roi-cards-custom .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 10px;
+    }
+
+    .roi-cards-custom .card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 30px 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        box-shadow: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        cursor: default;
+    }
+
+    .roi-cards-custom .card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .roi-cards-custom .card .icon img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .roi-cards-custom .card h3 {
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        margin-top: 10px;
+        color: #a3a3a3;
+        text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 28px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 16px;
+        }
+
+        .roi-cards-custom {
+            padding: 50px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .roi-cards-custom .cards-grid {
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+
+
+<!-- ---------------------------------5 SECTION: Market Trends--------------------------------- -->
+
+<style>
+    .market-trends {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .market-trends h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .market-trends h2 span {
+        color: #F7B600;
+    }
+
+    .market-trends p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .trends-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: left;
+    }
+
+    .trend-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 20px 20px;
+        transition: all .3s ease;
+        border: 1px solid #171717;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .5);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .trend-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(247, 182, 0, 0.6);
+        box-shadow: 0 8px 12px -6px rgba(247, 182, 0, 0.5);
+    }
+
+    .trend-icon {
+        width: 55px;
+        height: 55px;
+        background: rgba(247, 182, 0, 0.1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        border: 1px solid #33280f;
+    }
+
+    .trend-icon img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+
+    .trend-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.7;
+        text-align: center;
+    }
+
+    .trend-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .trend-card ul {
+        list-style: none;
+        padding-left: 0;
+        color: #a3a3a3;
+        line-height: 1.7;
+        margin: 0;
+        text-align: left;
+        width: 100%;
+        letter-spacing: 0.2px;
+    }
+
+    .trend-card ul li {
+        position: relative;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        padding-left: 32px;
+        margin-bottom: 10px;
+    }
+
+    .trend-card ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: 18px;
+        height: 18px;
+        background: no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23F7B600' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='10 8 14 12 10 16'/></svg>");
+        opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+        .market-trends h2 {
+            font-size: 28px;
+        }
+
+        .market-trends p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .market-trends h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .trend-card h3 {
+            font-size: 16px;
+        }
+
+        .trend-card ul {
+            font-size: 14px;
+        }
+
+        .trend-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .trend-icon img {
+            width: 24px;
+            height: 24px;
+        }
+    }
+</style>
+
+<section class="market-trends">
+    <h2>Market <span>Trends</span></h2>
+    <p>
+        Dubai’s warehouse and logistics market is evolving, with growing opportunities for e-commerce, SMEs, and corporates seeking strategic industrial spaces.
+    </p>
+    <div class="trends-grid">
+        <div class="trend-card">
+            <div class="trend-icon">
+                <img src="{% static 'images/warehouse.svg' %}" alt="E-commerce Growth Icon" />
+            </div>
+            <h3>E-commerce Growth</h3>
+            <ul>
+                <li>A surge in demand for fulfillment centers in Dubai is driven by e-commerce growth.</li>
+            </ul>
+        </div>
+        <div class="trend-card">
+            <div class="trend-icon">
+                <img src="{% static 'images/warehouse1.svg' %}" alt="SME Preference Icon" />
+            </div>
+            <h3>SME Preference</h3>
+            <ul>
+                <li>SMEs preferring affordable warehouses for rent in central Dubai locations.</li>
+            </ul>
+        </div>
+
+        <div class="trend-card">
+            <div class="trend-icon">
+                <img src="{% static 'images/hand.svg' %}" alt="Corporate Leases Icon" />
+            </div>
+            <h3>Corporate Leases</h3>
+            <ul>
+                <li>Corporate clients securing long-term leases in the Jebel Ali warehouse rental market.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+
+
+<!-- ----------------------------------------------6 SECTION: Investor Guide--------------------------------------- -->
+
+<style>
+    .kif-investor-section {
+        background: #030303;
+        color: #fff;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .kif-investor-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .kif-investor-section h2 span {
+        color: #ffb400;
+    }
+
+    .kif-investor-section .kif-subtitle {
+        font-size: 16px;
+        color: #a3a3a3;
+        max-width: 900px;
+        margin: 15px auto 45px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        white-space: pre-line;
+    }
+
+    .kif-points-box {
+        background: #080808;
+        border-radius: 6px;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 30px 25px;
+        text-align: left;
+        border: 1px solid #171717;
+        transition: all .3s cubic-bezier(.4, 0, .2, 1);
+        box-shadow: 0 10px 30px -10px hsl(0 0% 0% / .5);
+    }
+
+    .kif-points-box:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .kif-point {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 18px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 180, 0, 0.08);
+        border: 1px solid rgba(255, 180, 0, 0.3);
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        margin-right: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .kif-investor-section h2 {
+            font-size: 28px;
+        }
+
+        .kif-investor-section .kif-subtitle {
+            font-size: 16px;
+            max-width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .kif-point {
+            font-size: 16px;
+            margin-bottom: 14px;
+        }
+
+        .kif-icon {
+            width: 28px;
+            height: 28px;
+            margin-right: 8px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kif-investor-section {
+            padding: 20px 20px;
+        }
+
+        .kif-investor-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .kif-subtitle {
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .kif-points-box {
+            padding: 20px 15px;
+            box-shadow: 0 6px 15px -6px hsl(0 0% 0% / .4);
+        }
+
+        .kif-point {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .kif-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 6px;
+        }
+    }
+</style>
+
+
+<section class="kif-investor-section">
+    <div class="container">
+        <h2>Buyer’s & Investor’s <span>Guide</span></h2>
+        <p class="kif-subtitle">
+Explore prime investment opportunities with warehouses for sale in Dubai (freehold) and long-term warehouse rentals. Investors seeking stable returns prefer storage warehouses and small warehouses for rent in Dubai. Jebel Ali and DIP remain the top locations for international trading and logistics companies.        </p>
+
+        <div class="kif-points-box">
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Warehouse for sale in Dubai (freehold) and long-term lease options.
+            </div>
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Stable ROI opportunities with storage warehouses and small warehouses for rent in Dubai.
+            </div>
+            <div class="kif-point">
+                <span class="kif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffb400" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                Prime locations including Jebel Ali and DIP, preferred by international trading firms.
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- ---------------------------------------------7 SECTION--------------------------------------- -->
+
+<style>
+    .kif-why-choose {
+        background: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .kif-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .kif-section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .kif-section-header h2 span {
+        color: #F7B600;
+    }
+
+    .kif-section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 850px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 10px;
+    }
+
+    .kif-card {
+        background: #080808;
+        border-radius: 10px;
+        padding: 25px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+        text-align: center;
+    }
+
+    .kif-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(247, 182, 0, 0.6);
+        box-shadow: 0 10px 20px -6px rgba(247, 182, 0, 0.5);
+    }
+
+    .kif-card-icon img {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 15px;
+    }
+
+    .kif-card p {
+        color: #a3a3a3;
+        font-size: 16px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .kif-section-header h2 {
+            font-size: 28px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kif-section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .kif-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .kif-card {
+            padding: 15px 20px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+<section class="kif-why-choose">
+    <div class="kif-container">
+        <div class="kif-section-header">
+            <h2>Why Choose <span>KIF Realty</span></h2>
+            <p>
+                Trusted experts in Dubai’s warehouse market, connecting clients with prime properties and corporate tenants for optimal investment and occupancy.
+            </p>
+        </div>
+
+        <div class="kif-cards-grid">
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/warehouse1.svg' %}" alt="Exclusive Listings">
+                </div>
+                <p>Access to exclusive warehouse listings in Jebel Ali, Al Quoz, and DIP.</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/hand.svg' %}" alt="Expert Matching">
+                </div>
+                <p>Expertise in matching clients with warehouses for rent and sale across Dubai.</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/group.svg' %}" alt="High Occupancy">
+                </div>
+                <p>Strong corporate tenant network ensures consistently high occupancy.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+<!-- -------------------------------------------8 SECTION---------------------------------------- -->
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-container">
+
+        <h2>Explore <span>Warehouses in Dubai</span></h2>
+        <p>
+            Explore warehouse for sale in Dubai, Jebel Ali free zone warehouses, and Al Quoz warehouses for rent with KIF Realty today.
+        </p>
+        <div class="cta-buttons_ware">
+            <a href="#location" class="btn-outline_contact_ware">Explore Spaces</a>
+            <a href="#consultationModal" class="btn-primary_contact_ware openModalBtn">Book Consultation</a>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* CTA Section */
+    .cta-section {
+        background: #030303;
+        color: #fff;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .cta-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .cta-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+    }
+
+    .cta-section h2 span {
+        color: #F7B600;
+    }
+
+    .cta-section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        white-space: pre-line;
+    }
+
+    .cta-buttons_ware {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cta-buttons_ware .btn-primary_contact_ware,
+    .cta-buttons_ware .btn-outline_contact_ware {
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        min-width: 200px;
+        text-align: center;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .cta-buttons_ware .btn-primary_contact_ware {
+        background: #F7B600;
+        color: #000;
+    }
+
+    .cta-buttons_ware .btn-primary_contact_ware:hover {
+        background: #e6ac00;
+    }
+
+    .cta-buttons_ware .btn-outline_contact_ware {
+        background: transparent;
+        border: 2px solid #F7B600;
+        color: #fff;
+    }
+
+    .cta-buttons_ware .btn-outline_contact_ware:hover {
+        background: #F7B600;
+        color: #000;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .cta-section h2 {
+            font-size: 28px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+        }
+
+    }
+
+    @media (max-width: 480px) {
+        .cta-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .cta-section p {
+            font-size: 14px;
+        }
+
+        .cta-section {
+            padding: 20px 20px;
+        }
+        .cta-buttons_ware {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cta-buttons_ware .btn-primary_contact_ware,
+    .cta-buttons_ware .btn-outline_contact_ware {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+<!-- Modal Trigger -->
+
+<style>
+    /* Modal Overlay */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.75);
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    /* Modal Box */
+    .modal-content {
+        background-color: #111;
+        color: #fff;
+        border-radius: 6px;
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 450px;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+
+    }
+
+    .modal-content h2 {
+        margin-bottom: 10px;
+        color: #eeb32b;
+        font-size: 24px;
+        text-align: center;
+        line-height: 1.7;
+    }
+
+    .modal-content p {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #ccc;
+        line-height: 1.7;
+    }
+
+    .modal label {
+        color: #a3a3a3;
+        margin: 1%;
+    }
+
+
+    .modal-content input,
+    .modal-content select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        background-color: #000;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #a3a3a3;
+    }
+
+    .modal-content input:focus,
+    .modal-content select:focus {
+        border-color: #eeb32b;
+        outline: none;
+    }
+
+    .modal-content button {
+        width: 100%;
+        padding: 12px;
+        background-color: #eeb32b;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-transform: uppercase;
+    }
+
+    .modal-content button:hover {
+        background-color: #d9a91f;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 12px;
+        right: 20px;
+        font-size: 24px;
+        color: #eeb32b;
+        cursor: pointer;
+    }
+
+    /* Fade Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+        .modal-content {
+            padding: 20px 20px;
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+        }
+
+        .modal-content p {
+            font-size: 13px;
+        }
+    }
+
+    /* Fix for intl-tel-input layout inside modal */
+    .iti {
+        width: 100%;
+        display: block;
+        margin-bottom: 15px;
+
+    }
+
+    .iti input[type="tel"] {
+        width: 100% !important;
+        padding-left: 50px !important;
+        /* leave space for flag */
+        background-color: #000 !important;
+        border: 1px solid #444 !important;
+        border-radius: 6px !important;
+        color: #a3a3a3 !important;
+        height: 44px;
+        font-size: 14px;
+    }
+
+    .iti__flag-container {
+        background: #000;
+        border-right: 1px solid #444;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+
+    }
+
+    .iti__selected-flag {
+        padding: 0 10px;
+    }
+
+    .iti__country-list {
+        background-color: #111;
+        color: #fff;
+        border: 1px solid #333;
+        width: 100%;
+        min-width: 250px;
+        max-width: 300px;
+
+    }
+
+
+    .iti__country:hover {
+        background-color: #222;
+    }
+
+    @media (max-width: 500px) {
+        .iti__country-list {
+            width: 100% !important;
+            /* fits inside modal */
+            max-width: 280px;
+            /* optional safety cap */
+        }
+    }
+</style>
+
+<!-- Modal -->
+<div id="consultationModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        <h2>Investment Consultation</h2>
+        <p>Fill in your details and our team will contact you within 24 hours.</p>
+
+
+        <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
+            <!-- Web3Forms Access Key -->
+            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+            <input type="hidden" name="subject" value="New Contact Form Submission">
+            <input type="hidden" name="replyto" value="{{ email }}" />
+            <input type="hidden" name="page_url" id="modal_page_url">
+
+            <input type="text" name="name" placeholder="Name" required>
+
+            <input type="email" name="email" placeholder="Email" required>
+
+            <input type="tel" id="phone" name="phone" placeholder="Phone" required>
+
+            <select name="area_of_interest" id="area_of_interest" required>
+                <option value="">Select Preferred Location</option>
+                <option value="Al Quoz">Al Quoz</option>
+                <option value="Jebel Ali Free Zone (JAFZA)">Jebel Ali Free Zone (JAFZA)</option>
+                <option value="Ras Al Khor">Ras Al Khor</option>
+                <option value="Al Qusais">Al Qusais</option>
+                <option value="Dubai South & DIP">Dubai South & DIP</option>
+            </select>
+
+            <button type="submit">Submit Inquiry</button>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+<script>
+    const modal = document.getElementById("consultationModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const openModalBtn = document.querySelectorAll(".openModalBtn"); // ✅ Select all buttons with that class
+
+    // Open modal for any of the buttons
+    const openModalBtns = document.querySelectorAll(".openModalBtn");
+    openModalBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            modal.classList.add("active");
+            modal.style.display = "flex";
+            modal.setAttribute("aria-hidden", "false");
+        });
+    });
+
+
+    // Close modal
+    closeModalBtn.addEventListener("click", () => {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+    });
+
+    // Close modal on outside click
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModalBtn.click();
+        }
+    });
+
+    // Close modal on ESC key
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("active")) {
+            closeModalBtn.click();
+        }
+    });
+
+    // Initialize intl-tel-input
+    const phoneInput = document.querySelector("#phone");
+    if (phoneInput) {
+        window.intlTelInput(phoneInput, {
+            initialCountry: "ae",
+            utilsScript:
+                "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
+    }
+
+    //Auto-fill page URL
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlInput = document.getElementById("modal_page_url");
+        if (urlInput) {
+            urlInput.value = window.location.href;
+        }
+    });
+
+
+    // Handle form submission
+    document.getElementById("propertyForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+
+        fetch(this.action, {
+            method: "POST",
+            body: formData,
+            headers: { Accept: "application/json" },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Form submitted successfully. Our team will contact you soon!");
+                    modal.classList.remove("active");
+                    modal.style.display = "none";
+                    this.reset();
+                } else {
+                    alert("There was a problem submitting the form.");
+                }
+                submitBtn.disabled = false;
+            })
+            .catch((error) => {
+                console.error("Error submitting the form", error);
+                alert("Something went wrong. Please try again.");
+                submitBtn.disabled = false;
+            });
+    });
+</script>
+
+<!-- ----------------------------------------------------------auto popup form ------------------------------------------------------>
+
+<!-- Modal Popup Form -->
+<div id="blogPopupForm" class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn2">&times;</span>
+    <h2>Find the Right Property – Contact Us Today!</h2>
+    <p>Fill in your details and we’ll contact you shortly.</p>
+    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+      <input type="hidden" name="page_url" id="page_url">
+
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone" required>
+      <textarea name="message" placeholder="Message" required></textarea>
+
+      <button type="submit">Send</button>
+    </form>
+    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.modal-content {
+    background-color: #111;
+    color: #fff;
+    border-radius: 6px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-bottom: 10px;
+    color: #eeb32b;
+    font-size: 24px;
+    line-height: 1.7;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #000!important;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #a3a3a3;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b;
+    background-color: #000!important;
+    outline: none;
+}
+
+.modal-content input, .modal-content select {
+    background-color: #000!important;
+}
+/* Remove Chrome Autofill White/Yellow Background */
+.modal-content input:-webkit-autofill,
+.modal-content textarea:-webkit-autofill,
+.modal-content select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+/* Normal focus style */
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    outline: none;
+}
+
+/*.modal-content button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-content button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(232, 180, 160, 0.4);
+} */
+
+.close-btn2 {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 24px;
+    color: #eeb32b;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.95);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .modal-content {
+        padding: 20px 20px;
+    }
+    .modal-content h2 { font-size: 20px; }
+    .modal-content p { font-size: 13px; }
+}
+</style>
+
+<!-- JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById('blogPopupForm');
+    const closeBtn = document.querySelector('.close-btn2');
+    const form = document.getElementById('web3Form');
+    const formMessage = document.getElementById('formMessage');
+
+    function showPopup() { popup.style.display = 'flex'; }
+    function hidePopup() { 
+        popup.style.display = 'none';
+        //setTimeout(showPopup, 30000); // reappear after 30s
+    }
+
+    document.getElementById('page_url').value = window.location.href;
+
+    // Auto show popup after 12s
+    setTimeout(showPopup, 20000);
+
+    closeBtn.addEventListener('click', hidePopup);
+    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
+    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
+
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
+
+        const formData = new FormData(form);
+        try {
+            const res = await fetch(form.action, { method: form.method, body: formData });
+            const data = await res.json();
+
+            if(data.success){
+                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
+                form.reset();
+                setTimeout(hidePopup, 2000);
+            } else {
+                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+            }
+        } catch (err) {
+            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
+        }
+    });
+});
+</script>
+
+
+{% endblock %}
