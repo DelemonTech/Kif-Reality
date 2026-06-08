@@ -23,6 +23,31 @@ from .services import PropertyService
 
 import json
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
+
+# ── x-opperp CRM webhook ──────────────────────────────────────────────────────
+XOPPERP_WEBHOOK_URL = "https://x-opperp.com/api/v1/integrations/webhooks/website-lead/"
+XOPPERP_API_TOKEN   = "47399e08-7406-4426-836f-bfc81bc09ae8"
+
+def send_lead_to_xopperp(first_name, last_name, email, phone, message=""):
+    """Send lead to x-opperp CRM. Never raises — won't break form flow."""
+    payload = {
+        "api_token": XOPPERP_API_TOKEN,
+        "first_name": first_name or "",
+        "last_name":  last_name  or "",
+        "email":      email      or "",
+        "phone":      phone      or "",
+        "message":    message    or "",
+    }
+    try:
+        resp = requests.post(XOPPERP_WEBHOOK_URL, json=payload, timeout=5)
+        resp.raise_for_status()
+        logger.info("x-opperp lead sent (status %s)", resp.status_code)
+    except Exception as exc:
+        logger.error("x-opperp webhook error: %s", exc)
+# ─────────────────────────────────────────────────────────────────────────────
 import re
 import os
 from dotenv import load_dotenv
@@ -703,6 +728,10 @@ def contact(request):
             message=message_text
         )
 
+        # Send lead to x-opperp CRM
+        parts = (name or "").strip().split(" ", 1)
+        send_lead_to_xopperp(parts[0], parts[1] if len(parts) > 1 else "", email, phone, message_text)
+
         messages.success(request, 'Thank you for your message! We will get back to you soon.')
         return redirect('contact')
 
@@ -895,6 +924,12 @@ def contact_submit(request):
         except Exception as e:
             print(f"Email notification failed: {e}")
 
+        # Send lead to x-opperp CRM
+        try:
+            send_lead_to_xopperp(first_name, last_name, email, phone, message)
+        except Exception as e:
+            print(f"CRM webhook failed: {e}")
+
         messages.success(request, 'Thank you for your inquiry! Our team will contact you within 24 hours.')
         return redirect('contact')
 
@@ -953,6 +988,12 @@ def contact_submit_ajax(request):
             send_notification_email(contact)
         except Exception as e:
             print(f"Email notification failed: {e}")
+
+        # Send lead to x-opperp CRM
+        try:
+            send_lead_to_xopperp(first_name, last_name, email, phone, message)
+        except Exception as e:
+            print(f"CRM webhook failed: {e}")
 
         return JsonResponse({
             'success': True,
