@@ -42,7 +42,6 @@ class StaticViewSitemap(Sitemap):
             'labour-camps',
             'warehouses-for-sale',
             'plots-for-sale',
-            'mansions-for-sale',
         ]
 
     def location(self, item):
