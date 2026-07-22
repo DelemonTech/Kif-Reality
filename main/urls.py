@@ -68,7 +68,7 @@ urlpatterns = [
     path('labour-camps',views.labour, name='labour-camps'),
     path('warehouses-for-sale',views.warehouse, name='warehouses-for-sale'),
     path('plots-for-sale',views.plots, name='plots-for-sale'),
-    path('mansions-for-sale', views.mansions_redirect, name='mansions-for-sale'),
+    path('mansions-for-sale', views.mansions, name='mansions-for-sale'),
     path('developers/', views.developers, name='developers'),
     
 ]
