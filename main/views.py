@@ -1216,8 +1216,9 @@ def warehouse(request):
 def plots(request):
     return render(request, 'landingpages/plots.html')
 
-def mansions(request):
-    return render(request, 'landingpages/mansions.html')
+def mansions_redirect(request):
+    """Mansions for Sale has been merged into the Luxury Villas, Townhouses & Mansions page."""
+    return redirect('luxury-villas-townhouses', permanent=True)
 
 
 def privacy(request):
