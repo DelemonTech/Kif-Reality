@@ -1219,6 +1219,9 @@ def plots(request):
 def mansions(request):
     return render(request, 'landingpages/mansions.html')
 
+def office_space(request):
+    return render(request, 'landingpages/office-space.html')
+
 
 def privacy(request):
     return render(request, 'privacy_policy.html')

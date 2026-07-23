@@ -1,0 +1,1789 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}Office Space in Dubai, UAE | KIF Realty{% endblock %}
+
+<meta name="description" content="{% block description %}
+Find the perfect office space in Dubai with KIF Realty — serviced offices, fully fitted offices, coworking spaces & Grade A commercial towers across Business Bay, DIFC, Downtown & more.
+{% endblock %}">
+
+<!-- canonical -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/office-space-in-dubai">
+{% endblock %}
+
+
+
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+<!-- Intl Tel Input CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
+
+
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        font-family: "Montserrat", sans-serif;
+    }
+
+    body {
+        background-color: #030303;
+    }
+
+    .office-hero-section {
+        background: radial-gradient(120% 72% at 50% 100%,
+            rgba(42, 60, 68, 0) 0,
+            rgb(7 28 53 / 3%) 66.59%,
+            rgb(7 28 53 / 44%) 99.98%),
+        linear-gradient(-90deg, rgba(7, 28, 53, 0.8) 10%, rgba(7, 28, 53, 0.14) 80.83%),
+        url("{% static 'images/kif_4_hero.webp' %}") center/cover no-repeat;
+        color: #fff;
+        padding: 100px 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .office-hero-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .office-hero-section::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #030303 100%);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .office-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .office-hero-content h1 {
+        font-size: 60px;
+        font-weight: 800;
+        line-height: 1.5;
+        margin-top: 3%;
+        letter-spacing: 1px;
+        animation: fadeUp 1s ease-out 0.3s forwards;
+        opacity: 0;
+    }
+
+    .office-hero-content h1 span {
+        color: #eeb32b;
+    }
+
+    .office-hero-content h3 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 15px 0 25px 0;
+        color: #fff;
+        letter-spacing: 1px;
+        animation: fadeUp 1s ease-out 0.6s forwards;
+        opacity: 0;
+        line-height: 1.5;
+    }
+
+    .office-hero-content p {
+        font-size: 18px;
+        color: #a3a3a3;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+        margin-bottom: 40px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        animation: fadeUp 1s ease-out 0.9s forwards;
+        opacity: 0;
+    }
+
+    .office-hero-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        animation: fadeUp 1s ease-out 1.2s forwards;
+        opacity: 0;
+    }
+
+    .btn-primary_office,
+    .btn-secondary_office {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        font-size: 14px;
+        min-width: 200px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    .btn-primary_office {
+        background: #eeb32b;
+        color: #000;
+    }
+
+    .btn-secondary_office {
+        background: transparent;
+        border: 2px solid #eeb32b;
+        color: #fff;
+    }
+
+    .btn-primary_office:hover {
+        background: #d9a91f;
+    }
+
+    .btn-secondary_office:hover {
+        background: #eeb32b;
+        color: #000;
+    }
+
+    @keyframes fadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .office-hero-content h1 {
+            font-size: 42px;
+        }
+
+        .office-hero-content h3 {
+            font-size: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .office-hero-section {
+            padding: 60px 20px;
+        }
+
+        .office-hero-content h1 {
+            font-size: 34px;
+        }
+
+        .office-hero-content p {
+            font-size: 15px;
+        }
+    }
+
+    @media (max-width: 492px) {
+        .office-hero-content h1 {
+            font-size: 34px;
+            margin-top: 1%;
+        }
+
+        .office-hero-buttons {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .office-hero-content h3 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .office-hero-content p {
+            font-size: 14px;
+        }
+
+        .btn-primary_office,
+        .btn-secondary_office {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    }
+</style>
+
+
+<section class="office-hero-section">
+    <div class="office-hero-content">
+        <h1 style="font-weight: 700;">Office Space in <span>Dubai, UAE</span></h1>
+        <h3>Find the Perfect Office Space with KIF Realty</h3>
+        <p>
+            Whether you're launching a startup, expanding your SME, relocating your regional headquarters, or
+            establishing a multinational presence, KIF Realty helps you find the ideal office space in Dubai that
+            aligns with your business objectives, operational needs, and budget.
+        </p>
+
+        <div class="office-hero-buttons">
+            <a href="#office-types" class="btn-primary_office">Explore Office Spaces</a>
+            <a href="#consultationModal" class="btn-secondary_office openModalBtn">Book Consultation</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ------------------------------------------------------- Intro / Why Choose Section --------------------------------------------------------------- -->
+
+<style>
+    :root {
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 42 85% 55%;
+        --gradient-gold: linear-gradient(135deg, hsl(42 85% 55%), hsl(42 85% 65%));
+        --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        --transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .office-intro-section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .office-intro-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .office-intro-section h2 span {
+        color: #F7B600;
+    }
+
+    .office-intro-section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 45px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .office-intro-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .office-intro-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 25px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        transition: var(--transition-smooth);
+    }
+
+    .office-intro-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .office-intro-card .icon img {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 15px;
+    }
+
+    .office-intro-card p {
+        color: #a3a3a3;
+        font-size: 16px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .office-intro-section h2 {
+            font-size: 28px;
+        }
+
+        .office-intro-section p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .office-intro-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .office-intro-cards {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .office-intro-section p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<section class="office-intro-section">
+    <h2>Why Choose <span>KIF Realty</span></h2>
+    <p>
+        Finding the right office is about more than just location — it's about choosing a workspace that supports
+        productivity, growth, and long-term success. Our experienced commercial property consultants provide
+        personalized guidance throughout every stage of your property journey, backed by tailored commercial real
+        estate solutions, expert market advice, and end-to-end leasing and purchase support.
+    </p>
+
+    <div class="office-intro-cards">
+        <div class="office-intro-card">
+            <div class="icon"><img src="{% static 'images/shield.svg' %}" alt="Exclusive Listings"></div>
+            <p>Extensive commercial property portfolio across Dubai's best business districts</p>
+        </div>
+        <div class="office-intro-card">
+            <div class="icon"><img src="{% static 'images/1user.svg' %}" alt="Experienced Consultants"></div>
+            <p>Experienced property consultants offering personalized, end-to-end guidance</p>
+        </div>
+        <div class="office-intro-card">
+            <div class="icon"><img src="{% static 'images/hand.svg' %}" alt="Transparent Pricing"></div>
+            <p>Transparent pricing and flexible leasing or purchase options</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- ----------------------------------------------------------- Office Types We Offer ------------------------------------------------------------------ -->
+
+<style>
+    .office-types-section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .office-types-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .office-types-section h2 span {
+        color: #F7B600;
+    }
+
+    .office-types-section > p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .office-types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: left;
+    }
+
+    .office-type-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 25px 20px;
+        transition: var(--transition-smooth);
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .office-type-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .office-type-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.7;
+        text-align: center;
+    }
+
+    .office-type-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .office-type-card .tagline {
+        font-size: 14px;
+        color: #a3a3a3;
+        text-align: center;
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+
+    .office-type-card ul {
+        list-style: none;
+        padding-left: 0;
+        color: #a3a3a3;
+        line-height: 1.7;
+        margin: 0;
+        letter-spacing: 0.2px;
+    }
+
+    .office-type-card ul li {
+        position: relative;
+        font-size: 15px;
+        letter-spacing: 0.2px;
+        padding-left: 30px;
+        margin-bottom: 8px;
+    }
+
+    .office-type-card ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 3px;
+        width: 18px;
+        height: 18px;
+        background: no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23F7B600' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='10 8 14 12 10 16'/></svg>");
+        opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+        .office-types-section h2 {
+            font-size: 28px;
+        }
+
+        .office-types-section > p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .office-types-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .office-type-card ul li {
+            font-size: 13px;
+        }
+    }
+</style>
+
+<section class="office-types-section" id="office-types">
+    <h2>Office Spaces We <span>Offer</span></h2>
+    <p>
+        From flexible coworking desks to prestigious Grade A towers, KIF Realty offers commercial workspaces suited
+        to every stage of your business.
+    </p>
+
+    <div class="office-types-grid">
+        <div class="office-type-card">
+            <h3>Serviced Offices</h3>
+            <p class="tagline">Move into a fully equipped workspace without the hassle of setting up your office
+                infrastructure.</p>
+            <ul>
+                <li>Fully furnished offices with reception services</li>
+                <li>Meeting rooms & high-speed internet included</li>
+                <li>Flexible lease terms & business support services</li>
+            </ul>
+        </div>
+
+        <div class="office-type-card">
+            <h3>Fully Fitted Offices</h3>
+            <p class="tagline">Ready-to-use office spaces that allow your business to begin operations immediately.
+            </p>
+            <ul>
+                <li>Minimal setup time with modern interiors</li>
+                <li>Reduced fit-out costs & flexible layouts</li>
+                <li>Professional, move-in ready workspace</li>
+            </ul>
+        </div>
+
+        <div class="office-type-card">
+            <h3>Shell &amp; Core Offices</h3>
+            <p class="tagline">Create a workspace designed specifically for your brand and operational requirements.
+            </p>
+            <ul>
+                <li>Best suited for large enterprises & corporate HQs</li>
+                <li>Fully customized office designs</li>
+                <li>Built for expanding businesses</li>
+            </ul>
+        </div>
+
+        <div class="office-type-card">
+            <h3>Coworking Spaces</h3>
+            <p class="tagline">Flexible shared workspaces designed for collaboration and networking.</p>
+            <ul>
+                <li>Hot desks, dedicated desks & private offices</li>
+                <li>Meeting rooms & business lounge access</li>
+                <li>Perfect for entrepreneurs, startups & remote teams</li>
+            </ul>
+        </div>
+
+        <div class="office-type-card">
+            <h3>Grade A Commercial Offices</h3>
+            <p class="tagline">Premium office buildings offering world-class facilities and prestigious business
+                addresses.</p>
+            <ul>
+                <li>Smart building technology & modern security</li>
+                <li>Sustainable infrastructure & high-speed connectivity</li>
+                <li>Ideal for enhancing corporate image</li>
+            </ul>
+        </div>
+
+        <div class="office-type-card">
+            <h3>Executive Suites &amp; HQs</h3>
+            <p class="tagline">Prestigious, ready-to-brand spaces for regional headquarters and executive teams.</p>
+            <ul>
+                <li>Corporate headquarters & executive suites</li>
+                <li>Commercial property investment guidance</li>
+                <li>Office relocation assistance included</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+<!-- ---------------------------------------------------------- Prime Office Locations ------------------------------------------------------------------- -->
+
+<style>
+    .office-locations-section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .office-locations-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .office-locations-section h2 span {
+        color: #F7B600;
+    }
+
+    .office-locations-section > p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .office-locations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .office-location-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 20px 20px;
+        text-align: center;
+        transition: var(--transition-smooth);
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .office-location-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .office-location-icon {
+        width: 55px;
+        height: 55px;
+        background: rgba(247, 182, 0, 0.1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        border: 1px solid #33280f;
+    }
+
+    .office-location-icon img {
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+    }
+
+    .office-location-card h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+        color: #fff;
+        line-height: 1.6;
+    }
+
+    .office-location-card:hover h3 {
+        color: #F7B600;
+    }
+
+    .office-location-card p {
+        font-size: 14px;
+        color: #a3a3a3;
+        line-height: 1.6;
+        letter-spacing: 0.2px;
+        text-align: center;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .office-locations-section h2 {
+            font-size: 28px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .office-locations-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .office-location-card h3 {
+            font-size: 15px;
+        }
+
+        .office-location-card p {
+            font-size: 12px;
+        }
+    }
+</style>
+
+<section class="office-locations-section" id="location">
+    <h2>Prime Office <span>Locations in Dubai</span></h2>
+    <p>KIF Realty provides access to premium office spaces across Dubai's most sought-after business districts.</p>
+
+    <div class="office-locations-grid">
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Business Bay"></div>
+            <h3>Business Bay</h3>
+            <p>Modern office towers with excellent connectivity, ideal for finance, consulting & tech firms.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="DIFC"></div>
+            <h3>DIFC</h3>
+            <p>Prestigious financial district known for premium Grade A offices and a thriving business ecosystem.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Downtown Dubai"></div>
+            <h3>Downtown Dubai</h3>
+            <p>Home to iconic landmarks and premium commercial developments for a prestigious address.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Sheikh Zayed Road"></div>
+            <h3>Sheikh Zayed Road</h3>
+            <p>Dubai's main commercial corridor, suited for HQs, trading & multinational businesses.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Dubai Marina"></div>
+            <h3>Dubai Marina</h3>
+            <p>A vibrant waterfront business district with premium offices and lifestyle amenities.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="JLT"></div>
+            <h3>Jumeirah Lake Towers</h3>
+            <p>A cost-effective destination with flexible office solutions for startups and growing companies.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Dubai Internet City"></div>
+            <h3>Dubai Internet City</h3>
+            <p>A technology-focused community ideal for IT companies and software developers.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Dubai Media City"></div>
+            <h3>Dubai Media City</h3>
+            <p>Designed for media, marketing, advertising, and creative industries.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/warehouse.svg' %}" alt="Dubai South"></div>
+            <h3>Dubai South</h3>
+            <p>A rapidly growing district near Al Maktoum Airport, ideal for logistics & aviation businesses.</p>
+        </div>
+        <div class="office-location-card">
+            <div class="office-location-icon"><img src="{% static 'images/location.svg' %}" alt="Deira & Bur Dubai"></div>
+            <h3>Deira &amp; Bur Dubai</h3>
+            <p>Established commercial districts offering affordable options with strong trading opportunities.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- --------------------------------------------------------- Why Businesses Choose Dubai ---------------------------------------------------------------- -->
+
+<section class="roi-cards-custom">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why Businesses Choose <span>Dubai</span></h2>
+            <p>Dubai continues to be one of the most attractive business destinations globally, offering advantages
+                that make it ideal for businesses of all sizes looking to establish or expand.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/globe.svg' %}" alt="Strategic Location"></div>
+                <h3>Strategic location connecting Europe, Asia & Africa</h3>
+            </div>
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/building.svg' %}" alt="Infrastructure"></div>
+                <h3>World-class airports, seaports & modern infrastructure</h3>
+            </div>
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/shield-check.svg' %}" alt="Business-friendly"></div>
+                <h3>Business-friendly policies & multiple Free Zones</h3>
+            </div>
+            <div class="card">
+                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="Thriving Economy"></div>
+                <h3>Thriving economy with long-term investment opportunities</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .roi-cards-custom {
+        background: #030303;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .roi-cards-custom .container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .roi-cards-custom .section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin: 0 0 10px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .roi-cards-custom .section-header h2 span {
+        color: #F7B600;
+    }
+
+    .roi-cards-custom .section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 900px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .roi-cards-custom .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 10px;
+    }
+
+    .roi-cards-custom .card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 30px 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        box-shadow: 0 10px 30px -10px hsl(0 0% 0% / .5);
+        cursor: default;
+    }
+
+    .roi-cards-custom .card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .roi-cards-custom .card .icon img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .roi-cards-custom .card h3 {
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        margin-top: 10px;
+        color: #a3a3a3;
+    }
+
+    @media (max-width: 768px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 28px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 16px;
+        }
+
+        .roi-cards-custom {
+            padding: 50px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .roi-cards-custom .section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .roi-cards-custom .cards-grid {
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .roi-cards-custom .section-header p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+<!-- ---------------------------------------------------------- Office Leasing Process -------------------------------------------------------------------- -->
+
+<style>
+    .office-process-section {
+        background-color: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .office-process-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .office-process-section h2 span {
+        color: #F7B600;
+    }
+
+    .office-process-section > p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 50px;
+        letter-spacing: 0.2px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.7;
+    }
+
+    .office-process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: left;
+    }
+
+    .office-process-card {
+        background: #080808;
+        border-radius: 6px;
+        padding: 22px 20px;
+        border: 1px solid #171717;
+        box-shadow: var(--shadow-elegant);
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .office-process-card:hover {
+        transform: translateY(-6px);
+        border-color: hsl(42 85% 55% / .6);
+        box-shadow: 0 8px 12px -6px hsl(42 85% 55% / 0.5);
+    }
+
+    .office-process-step {
+        color: #F7B600;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .office-process-card h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #fff;
+        line-height: 1.6;
+    }
+
+    .office-process-card p {
+        font-size: 14px;
+        color: #a3a3a3;
+        line-height: 1.6;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .office-process-section h2 {
+            font-size: 28px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .office-process-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+    }
+</style>
+
+<section class="office-process-section">
+    <h2>Our Office Leasing <span>Process</span></h2>
+    <p>We make leasing commercial property simple and transparent.</p>
+
+    <div class="office-process-grid">
+        <div class="office-process-card">
+            <span class="office-process-step">Step 1</span>
+            <h3>Consultation</h3>
+            <p>Understand your business goals, team size, budget, and workspace requirements.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 2</span>
+            <h3>Property Shortlisting</h3>
+            <p>Present office spaces that match your business needs and preferred locations.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 3</span>
+            <h3>Property Viewings</h3>
+            <p>Arrange convenient site visits to shortlisted commercial properties.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 4</span>
+            <h3>Compare Options</h3>
+            <p>Evaluate pricing, facilities, lease terms, and long-term suitability.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 5</span>
+            <h3>Negotiation</h3>
+            <p>Negotiate favorable lease terms and commercial conditions on your behalf.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 6</span>
+            <h3>Documentation</h3>
+            <p>Assist with tenancy agreements, legal documentation, and compliance requirements.</p>
+        </div>
+        <div class="office-process-card">
+            <span class="office-process-step">Step 7</span>
+            <h3>Move-In Support</h3>
+            <p>Complete the leasing process and help ensure a smooth transition into your new office.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- --------------------------------------------------------------- Why Trust KIF Realty ----------------------------------------------------------------- -->
+
+<section class="kif-why-choose">
+    <div class="kif-container">
+        <div class="kif-section-header">
+            <h2>Why Businesses Trust <span>KIF Realty</span></h2>
+            <p>
+                Businesses across the UAE choose KIF Realty because of our commitment to delivering tailored
+                commercial real estate solutions, from search to move-in.
+            </p>
+        </div>
+
+        <div class="kif-cards-grid">
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/shield.svg' %}" alt="Extensive Portfolio">
+                </div>
+                <p>Extensive commercial property portfolio across Dubai's prime office locations</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/1user.svg' %}" alt="Experienced Consultants">
+                </div>
+                <p>Experienced property consultants with transparent pricing and market insights</p>
+            </div>
+
+            <div class="kif-card">
+                <div class="kif-card-icon">
+                    <img src="{% static 'images/hand.svg' %}" alt="End-to-End Support">
+                </div>
+                <p>Flexible leasing options with end-to-end transaction and relocation support</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+    .kif-why-choose {
+        background: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .kif-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .kif-section-header h2 {
+        font-weight: 700;
+        font-size: 36px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .kif-section-header h2 span {
+        color: #F7B600;
+    }
+
+    .kif-section-header p {
+        color: #a3a3a3;
+        font-size: 16px;
+        max-width: 850px;
+        margin: 0 auto 50px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .kif-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 10px;
+    }
+
+    .kif-card {
+        background: #080808;
+        border-radius: 10px;
+        padding: 25px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #171717;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+        text-align: center;
+    }
+
+    .kif-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(247, 182, 0, 0.6);
+        box-shadow: 0 10px 20px -6px rgba(247, 182, 0, 0.5);
+    }
+
+    .kif-card-icon img {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 15px;
+    }
+
+    .kif-card p {
+        color: #a3a3a3;
+        font-size: 16px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    @media (max-width: 768px) {
+        .kif-section-header h2 {
+            font-size: 28px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kif-section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .kif-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .kif-card {
+            padding: 15px 20px;
+        }
+
+        .kif-section-header p,
+        .kif-card p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+<!-- ----------------------------------------------------------------- FAQ Section ------------------------------------------------------------------------ -->
+
+<style>
+    .office-faq-section {
+        background: #030303;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .office-faq-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        line-height: 1.7;
+    }
+
+    .office-faq-section h2 span {
+        color: #F7B600;
+    }
+
+    .office-faq-list {
+        max-width: 850px;
+        margin: 40px auto 0;
+        text-align: left;
+    }
+
+    .office-faq-item {
+        background: #080808;
+        border: 1px solid #171717;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow-elegant);
+    }
+
+    .office-faq-question {
+        width: 100%;
+        background: none;
+        border: none;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: left;
+        padding: 18px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .office-faq-question:hover {
+        color: #F7B600;
+    }
+
+    .office-faq-question .plus {
+        color: #F7B600;
+        font-size: 20px;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .office-faq-item.active .plus {
+        transform: rotate(45deg);
+    }
+
+    .office-faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.35s ease;
+        padding: 0 20px;
+    }
+
+    .office-faq-item.active .office-faq-answer {
+        max-height: 400px;
+        padding: 0 20px 20px;
+    }
+
+    .office-faq-answer p {
+        color: #a3a3a3;
+        font-size: 15px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+
+    @media (max-width: 480px) {
+        .office-faq-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .office-faq-question {
+            font-size: 14px;
+            padding: 15px;
+        }
+    }
+</style>
+
+<section class="office-faq-section">
+    <h2>Frequently Asked <span>Questions</span></h2>
+
+    <div class="office-faq-list">
+        <div class="office-faq-item">
+            <button class="office-faq-question">
+                What types of office spaces does KIF Realty offer?
+                <span class="plus">+</span>
+            </button>
+            <div class="office-faq-answer">
+                <p>We offer a wide range of commercial office solutions, including serviced offices, coworking
+                    spaces, fully fitted offices, shell &amp; core offices, executive suites, Grade A commercial
+                    offices, corporate headquarters, and commercial investment properties.</p>
+            </div>
+        </div>
+
+        <div class="office-faq-item">
+            <button class="office-faq-question">
+                Which are the best locations for office space in Dubai?
+                <span class="plus">+</span>
+            </button>
+            <div class="office-faq-answer">
+                <p>Some of the most popular business locations include Business Bay, DIFC, Downtown Dubai, Sheikh
+                    Zayed Road, Dubai Marina, Jumeirah Lake Towers (JLT), Dubai Internet City, Dubai Media City,
+                    Dubai Silicon Oasis, Dubai South, Deira, and Bur Dubai. The best location depends on your
+                    industry, budget, and business goals.</p>
+            </div>
+        </div>
+
+        <div class="office-faq-item">
+            <button class="office-faq-question">
+                Can international businesses lease office space in Dubai?
+                <span class="plus">+</span>
+            </button>
+            <div class="office-faq-answer">
+                <p>Yes. International businesses can lease office space in Dubai for mainland companies, Free Zone
+                    entities, branch offices, and regional headquarters. KIF Realty provides complete assistance
+                    throughout the leasing process.</p>
+            </div>
+        </div>
+
+        <div class="office-faq-item">
+            <button class="office-faq-question">
+                Does KIF Realty assist with both office leasing and office purchases?
+                <span class="plus">+</span>
+            </button>
+            <div class="office-faq-answer">
+                <p>Absolutely. We help businesses lease, purchase, and invest in commercial office properties across
+                    Dubai, offering customized solutions based on operational needs and long-term investment
+                    objectives.</p>
+            </div>
+        </div>
+
+        <div class="office-faq-item">
+            <button class="office-faq-question">
+                Why should I choose KIF Realty for office space in Dubai?
+                <span class="plus">+</span>
+            </button>
+            <div class="office-faq-answer">
+                <p>KIF Realty provides expert commercial real estate advice, access to premium office listings,
+                    personalized property recommendations, transparent negotiations, legal documentation support, and
+                    end-to-end assistance to help businesses secure the ideal office space quickly and efficiently.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll('.office-faq-question').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const item = btn.closest('.office-faq-item');
+            const isActive = item.classList.contains('active');
+            document.querySelectorAll('.office-faq-item').forEach(function (el) {
+                el.classList.remove('active');
+            });
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        });
+    });
+</script>
+
+
+<!-- --------------------------------------------------------------------- CTA Section -------------------------------------------------------------------- -->
+
+<section class="cta-section">
+    <div class="cta-container">
+
+        <h2>Looking for Office Space in <span>Dubai?</span></h2>
+        <p>
+            Your office is more than just a workplace — it's the foundation of your business success. Contact KIF
+            Realty today and let our commercial property experts help you find the perfect workspace that matches
+            your vision, budget, and growth plans.
+        </p>
+        <div class="cta-buttons_comm">
+            <a href="#office-types" class="btn-outline_contact_comm">Explore Office Spaces</a>
+            <a href="#consultationModal" class="btn-primary_contact_comm openModalBtn">Book a Free Consultation</a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .cta-section {
+        background: #030303;
+        color: #fff;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .cta-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .cta-section h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        letter-spacing: 0.2px;
+        line-height: 1.7;
+    }
+
+    .cta-section h2 span {
+        color: #F7B600;
+    }
+
+    .cta-section p {
+        font-size: 16px;
+        color: #a3a3a3;
+        margin-bottom: 40px;
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+    }
+
+    .cta-buttons_comm {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cta-buttons_comm .btn-primary_contact_comm,
+    .cta-buttons_comm .btn-outline_contact_comm {
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        min-width: 200px;
+        text-align: center;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .cta-buttons_comm .btn-primary_contact_comm {
+        background: #F7B600;
+        color: #000;
+    }
+
+    .cta-buttons_comm .btn-primary_contact_comm:hover {
+        background: #e6ac00;
+    }
+
+    .cta-buttons_comm .btn-outline_contact_comm {
+        background: transparent;
+        border: 2px solid #F7B600;
+        color: #fff;
+    }
+
+    .cta-buttons_comm .btn-outline_contact_comm:hover {
+        background: #F7B600;
+        color: #000;
+    }
+
+    @media (max-width: 768px) {
+        .cta-section h2 {
+            font-size: 28px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cta-section h2 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .cta-section p {
+            font-size: 14px;
+        }
+
+        .cta-section {
+            padding: 20px 20px;
+        }
+
+        .cta-buttons_comm {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cta-buttons_comm .btn-primary_contact_comm,
+        .cta-buttons_comm .btn-outline_contact_comm {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    }
+</style>
+
+
+<!-- ------------------------------------------------------------------ Consultation Modal ---------------------------------------------------------------- -->
+
+<style>
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.75);
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    .modal-content {
+        background-color: #111;
+        color: #fff;
+        border-radius: 6px;
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 450px;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .modal-content h2 {
+        margin-bottom: 10px;
+        color: #eeb32b;
+        font-size: 24px;
+        text-align: center;
+        line-height: 1.7;
+    }
+
+    .modal-content p {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #ccc;
+        line-height: 1.7;
+    }
+
+    .modal-content input,
+    .modal-content select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        background-color: #000;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #a3a3a3;
+    }
+
+    .modal-content input:focus,
+    .modal-content select:focus {
+        border-color: #eeb32b;
+        outline: none;
+    }
+
+    .modal-content button {
+        width: 100%;
+        padding: 12px;
+        background-color: #eeb32b;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-transform: uppercase;
+    }
+
+    .modal-content button:hover {
+        background-color: #d9a91f;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 12px;
+        right: 20px;
+        font-size: 24px;
+        color: #eeb32b;
+        cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .modal-content {
+            padding: 20px 20px;
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+        }
+
+        .modal-content p {
+            font-size: 13px;
+        }
+    }
+
+    .iti {
+        width: 100%;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .iti input[type="tel"] {
+        width: 100% !important;
+        padding-left: 50px !important;
+        background-color: #000 !important;
+        border: 1px solid #444 !important;
+        border-radius: 6px !important;
+        color: #a3a3a3 !important;
+        height: 44px;
+        font-size: 14px;
+    }
+
+    .iti__flag-container {
+        background: #000;
+        border-right: 1px solid #444;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+
+    .iti__selected-flag {
+        padding: 0 10px;
+    }
+
+    .iti__country-list {
+        background-color: #111;
+        color: #fff;
+        border: 1px solid #333;
+        width: 100%;
+        min-width: 250px;
+        max-width: 300px;
+    }
+
+    .iti__country:hover {
+        background-color: #222;
+    }
+
+    @media (max-width: 500px) {
+        .iti__country-list {
+            width: 100% !important;
+            max-width: 280px;
+        }
+    }
+</style>
+
+<div id="consultationModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        <h2>Office Space Consultation</h2>
+        <p>Fill in your details and our team will contact you within 24 hours.</p>
+
+        <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+            <input type="hidden" name="subject" value="New Contact Form Submission">
+            <input type="hidden" name="replyto" value="{{ email }}" />
+            <input type="hidden" name="page_url" id="modal_page_url">
+
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="tel" id="phone" name="phone" placeholder="Phone" required>
+
+            <select name="area_of_interest" id="area_of_interest" required>
+                <option value="">Select Preferred Location</option>
+                <option value="Business Bay">Business Bay</option>
+                <option value="DIFC">DIFC</option>
+                <option value="Downtown Dubai">Downtown Dubai</option>
+                <option value="Sheikh Zayed Road">Sheikh Zayed Road</option>
+                <option value="Dubai Marina">Dubai Marina</option>
+                <option value="Jumeirah Lake Towers (JLT)">Jumeirah Lake Towers (JLT)</option>
+            </select>
+
+            <button type="submit">Submit Inquiry</button>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+<script>
+    const modal = document.getElementById("consultationModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+
+    const openModalBtns = document.querySelectorAll(".openModalBtn");
+    openModalBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            modal.classList.add("active");
+            modal.style.display = "flex";
+            modal.setAttribute("aria-hidden", "false");
+        });
+    });
+
+    closeModalBtn.addEventListener("click", () => {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModalBtn.click();
+        }
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("active")) {
+            closeModalBtn.click();
+        }
+    });
+
+    const phoneInput = document.querySelector("#phone");
+    if (phoneInput) {
+        window.intlTelInput(phoneInput, {
+            initialCountry: "ae",
+            utilsScript:
+                "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlInput = document.getElementById("modal_page_url");
+        if (urlInput) {
+            urlInput.value = window.location.href;
+        }
+    });
+
+    document.getElementById("propertyForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+
+        fetch(this.action, {
+            method: "POST",
+            body: formData,
+            headers: { Accept: "application/json" },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Form submitted successfully. Our team will contact you soon!");
+                    modal.classList.remove("active");
+                    modal.style.display = "none";
+                    this.reset();
+                } else {
+                    alert("There was a problem submitting the form.");
+                }
+                submitBtn.disabled = false;
+            })
+            .catch((error) => {
+                console.error("Error submitting the form", error);
+                alert("Something went wrong. Please try again.");
+                submitBtn.disabled = false;
+            });
+    });
+</script>
+
+{% endblock %}
