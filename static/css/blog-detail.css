@@ -1,32 +1,7 @@
-/* body{
-    font-family: 'Cinzel', serif;
-} */
 
-/* Blog Detail Specific Styles */
 .blog-detail {
     margin-top: 80px; /* Account for fixed navbar */
 }
-
-/* .navbar {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: #2c2c2c;
-    backdrop-filter: blur(15px);
-    padding: 1rem 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1000;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 30px rgba(0, 0, 0, 0.1);
-}
-
-.navbar.scrolled {
-    background: #4c4c4c;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.15);
-} */
 
 /* Blog Hero Section */
 .blog-hero {

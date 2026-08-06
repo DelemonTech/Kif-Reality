@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /property
+Allow: /
+Sitemap: https://kifrealty.com/sitemap.xml

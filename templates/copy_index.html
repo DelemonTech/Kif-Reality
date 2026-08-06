@@ -1,0 +1,1538 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}KIF Realty – Property Expert in Dubai{% endblock %}
+
+<!-- home.html -->
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/">{% endblock %}
+
+
+<script>
+    // Enhanced Real-time Calculator System with Editable Inputs
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Mortgage Calculator Elements
+        const mortgageElements = {
+            // Sliders
+            propertyPrice: document.getElementById('property-price'),
+            downPayment: document.getElementById('down-payment'),
+            loanAmount: document.getElementById('loan-amount'),
+            loanPeriod: document.getElementById('loan-period'),
+            // interestRate: document.getElementById('interest-rate'),
+
+            // Editable Inputs
+            propertyPriceInput: document.getElementById('property-price-input'),
+            downPaymentInput: document.getElementById('down-payment-input'),
+            loanAmountInput: document.getElementById('loan-amount-input'),
+            loanPeriodInput: document.getElementById('loan-period-input'),
+            interestRateInput: document.getElementById('interest-rate-input'),
+
+            // Displays
+            downPercentage: document.getElementById('down-percentage'),
+            loanPercentage: document.getElementById('loan-percentage'),
+            displayRate: document.getElementById('display-rate'),
+            monthlyPayment: document.getElementById('monthly-payment')
+        };
+
+        // ROI Calculator Elements
+        const roiElements = {
+            // Sliders
+            purchasePrice: document.getElementById('purchase-price'),
+            currentValue: document.getElementById('current-value'),
+            annualRent: document.getElementById('annual-rent'),
+            annualExpenses: document.getElementById('annual-expenses'),
+            holdingPeriod: document.getElementById('holding-period'),
+
+            // Editable Inputs
+            purchasePriceInput: document.getElementById('purchase-price-input'),
+            currentValueInput: document.getElementById('current-value-input'),
+            annualRentInput: document.getElementById('annual-rent-input'),
+            annualExpensesInput: document.getElementById('annual-expenses-input'),
+            holdingPeriodInput: document.getElementById('holding-period-input'),
+
+            // Displays
+            totalROIDisplay: document.getElementById('total-roi-display'),
+            annualROIDisplay: document.getElementById('annual-roi-display')
+        };
+
+        // Residency status buttons
+        const statusButtons = document.querySelectorAll('.status-btn');
+
+        // Utility Functions
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num));
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num)) + ' AED';
+        }
+
+        function formatPercent(num) {
+            return num.toFixed(2) + '%';
+        }
+
+        function parseFormattedNumber(str) {
+            return parseFloat(str.toString().replace(/,/g, ''));
+        }
+
+        // MORTGAGE CALCULATOR FUNCTIONS
+        function updateMortgageCalculations() {
+            const price = parseFloat(mortgageElements.propertyPrice.value);
+            const down = parseFloat(mortgageElements.downPayment.value);
+            const loan = parseFloat(mortgageElements.loanAmount.value);
+            const period = parseFloat(mortgageElements.loanPeriod.value);
+            const rate = parseFloat(mortgageElements.interestRate.value);
+
+            // Update input fields
+            mortgageElements.loanAmount.value = loan;
+            mortgageElements.downPayment.max = price * 0.8;
+            mortgageElements.loanAmount.min = price * 0.2;
+            mortgageElements.loanAmount.max = price * 0.8;
+        }
+
+        // ROI CALCULATOR FUNCTIONS
+        function updateROICalculations() {
+            const purchasePrice = parseFloat(roiElements.purchasePrice.value);
+            const currentValue = parseFloat(roiElements.currentValue.value);
+            const annualRent = parseFloat(roiElements.annualRent.value);
+            const annualExpenses = parseFloat(roiElements.annualExpenses.value);
+            const holdingPeriod = parseFloat(roiElements.holdingPeriod.value);
+
+            // Update input fields
+            roiElements.purchasePriceInput.value = formatNumber(purchasePrice);
+            roiElements.currentValueInput.value = formatNumber(currentValue);
+            roiElements.annualRentInput.value = formatNumber(annualRent);
+            roiElements.annualExpensesInput.value = formatNumber(annualExpenses);
+            roiElements.holdingPeriodInput.value = holdingPeriod;
+
+            // Calculate ROI
+            const capitalAppreciation = currentValue - purchasePrice;
+            const netAnnualRent = annualRent - annualExpenses;
+            const totalRentalIncome = netAnnualRent * holdingPeriod;
+
+            const totalROI = ((capitalAppreciation + totalRentalIncome) / purchasePrice) * 100;
+            const annualROI = totalROI / holdingPeriod;
+
+            roiElements.totalROIDisplay.textContent = formatPercent(totalROI);
+            roiElements.annualROIDisplay.textContent = formatPercent(annualROI);
+        }
+
+        // INPUT FIELD EVENT LISTENERS
+        function setupInputListeners() {
+            // Mortgage Calculator Inputs
+            mortgageElements.propertyPriceInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 100000 && value <= 100000000) {
+                    mortgageElements.propertyPrice.value = value;
+                    mortgageElements.downPayment.min = value * 0.2;
+                    mortgageElements.downPayment.max = value * 0.8;
+
+                    const currentDownPercent = parseFloat(mortgageElements.downPayment.value) / value;
+                    if (currentDownPercent < 0.2 || currentDownPercent > 0.8) {
+                        mortgageElements.downPayment.value = value * 0.2;
+                    }
+
+                    syncMortgageSliders();
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.downPaymentInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                const price = parseFloat(mortgageElements.propertyPrice.value);
+                if (value >= price * 0.2 && value <= price * 0.8) {
+                    mortgageElements.downPayment.value = value;
+                    syncMortgageSliders();
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.loanAmountInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                const price = parseFloat(mortgageElements.propertyPrice.value);
+                if (value >= price * 0.2 && value <= price * 0.8) {
+                    mortgageElements.loanAmount.value = value;
+                    mortgageElements.downPayment.value = price - value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.loanPeriodInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 25) {
+                    mortgageElements.loanPeriod.value = value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.interestRateInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 10) {
+                    mortgageElements.interestRate.value = value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            // ROI Calculator Inputs
+            roiElements.purchasePriceInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 500000 && value <= 10000000) {
+                    roiElements.purchasePrice.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.currentValueInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 500000 && value <= 12000000) {
+                    roiElements.currentValue.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.annualRentInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 50000 && value <= 800000) {
+                    roiElements.annualRent.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.annualExpensesInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 5000 && value <= 100000) {
+                    roiElements.annualExpenses.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.holdingPeriodInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 20) {
+                    roiElements.holdingPeriod.value = value;
+                    updateROICalculations();
+                }
+            });
+        }
+
+        // MORTGAGE SLIDER EVENT LISTENERS
+        mortgageElements.propertyPrice.addEventListener('input', function () {
+            const price = parseFloat(this.value);
+            mortgageElements.downPayment.min = price * 0.2;
+            mortgageElements.downPayment.max = price * 0.8;
+
+            const currentDownPercent = parseFloat(mortgageElements.downPayment.value) / parseFloat(mortgageElements.propertyPrice.value);
+            mortgageElements.downPayment.value = Math.max(mortgageElements.downPayment.min, Math.min(mortgageElements.downPayment.max, price * currentDownPercent));
+
+            syncMortgageSliders();
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.downPayment.addEventListener('input', function () {
+            syncMortgageSliders();
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.loanAmount.addEventListener('input', function () {
+            const price = parseFloat(mortgageElements.propertyPrice.value);
+            const loan = parseFloat(this.value);
+            const down = price - loan;
+            mortgageElements.downPayment.value = down;
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.loanPeriod.addEventListener('input', updateMortgageCalculations);
+        mortgageElements.interestRate.addEventListener('input', updateMortgageCalculations);
+
+        // Residency status buttons
+        statusButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                statusButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const rate = parseFloat(this.getAttribute('data-rate'));
+                // mortgageElements.interestRate.value = rate;
+                updateMortgageCalculations();
+            });
+        });
+
+        // ROI SLIDER EVENT LISTENERS
+        roiElements.purchasePrice.addEventListener('input', updateROICalculations);
+        roiElements.currentValue.addEventListener('input', updateROICalculations);
+        roiElements.annualRent.addEventListener('input', updateROICalculations);
+        roiElements.annualExpenses.addEventListener('input', updateROICalculations);
+        roiElements.holdingPeriod.addEventListener('input', updateROICalculations);
+
+        // Setup input listeners
+        setupInputListeners();
+
+        // Initialize both calculators
+        syncMortgageSliders();
+        updateMortgageCalculations();
+        updateROICalculations();
+    });
+</script>
+
+{% block extra_css %}
+
+
+<link rel="stylesheet" href="{% static 'css/index-styles.css' %}">
+
+<!-- <style> -->
+
+<!-- </style> -->
+{% endblock %}
+
+{% load custom_filters %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section id="home" class="hero">
+
+     <!-- Instant dark background (shows first) -->
+  <div class="hero-backdrop" aria-hidden="true"></div>
+
+    <video id="hero-video" autoplay muted loop playsinline preload="none" class="hero-video" width="100%" height="auto">
+        <source data-src="/static/videos/kif_web.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Optional particle overlay -->
+    <div class="hero-particles"></div>
+
+    <!-- Hero Content -->
+    <div class="hero-content-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-star" aria-hidden="true"></i>
+                Dubai's Premier Real Estate Partner
+            </div>
+            <h1>Property expert in Dubai, UAE</h1>
+            <p class="hero-subtitle">
+                Offplan | Ready to move project | Land broker | Property investment consultant |
+                Super Agent for new Developers
+            </p>
+            <div class="cta-buttons">
+                <a href="/properties" class="btn-1 btn-primary">Explore Properties</a>
+                <a href="/contact" class="btn-2 btn-secondary">Our Services</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="featured-properties">
+    <div class="heading">
+        <div class="heading-left">
+            <img src="static/images/logo-kif.png" alt="KIF Realty - Dubai Real Estate Logo" class="logo" loading="lazy">
+            <h2>Latest Properties</h2>
+        </div>
+        <div class="heading-right">
+            <p>
+                Find your perfect home in Dubai with KIF Realty — trusted listings, fair prices, and expert guidance
+            </p>
+            <a href="{% url 'properties' %}" class="view-all-btn">View All Properties</a>
+        </div>
+    </div>
+    <div class="properties-grid">
+        {% for property in featured_properties %}
+        <div class="property-card">
+            <img src="{{ property.cover|default:'/static/img/no-image.jpg' }}" alt="{{ property.title }}"
+                loading="lazy">
+            <div class="property-info">
+                <h3>{{ property.low_price }} <span>{{ property.currency|default:"AED" }}</span></h3>
+                <p>{{ property.city.name }}</p>
+                <div class="details">
+                </div>
+                {% endfor %}
+            </div>
+</section>
+
+<div class="properties-grid"></div>
+
+<script>
+    function loadFeaturedProperties() {
+        const grid = document.querySelector('.properties-grid');
+        grid.innerHTML = `<p>Loading Featured Properties...</p>`;
+
+       const MICROSERVICE_API = "http://127.0.0.1:8000/api";
+
+        const API_URL = `${MICROSERVICE_API}/properties/filter/`;
+        console.log(API_URL);
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                property_type: "Residential",
+                limit: 8,        // Try to limit results
+                page_size: 8     // Alternative parameter
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                grid.innerHTML = ""; // clear loading message
+
+                if (data?.data?.results?.length) {
+                    // ✅ Show only first 8 properties
+                    data.data.results.slice(0, 8).forEach(p => {
+
+                        // Create slug from API slug or title
+                        const slug = p.slug || createSlug(p.title?.en || 'property');
+                        const propertyUrl = `/property/${slug}-${p.id}/`;
+
+                        grid.innerHTML += `
+          <div class="property-card">
+            <img src="${p.cover || '/static/img/no-image.jpg'}" alt="${p.title?.en || 'Property'}" loading="lazy">
+            <div class="property-info">
+              <h3>${p.title?.en || 'Untitled Property'}</h3>
+              <h4>${p.low_price || 'Price on request'} <span>${p.currency || "AED"}</span></h4>
+              <p>${p.district?.name?.en || ""} / ${p.city?.name?.en || ""}</p>
+             
+              <a href="${propertyUrl}" class="learn-more" aria-label="Learn more about ${p.title?.en || 'this property'}">LEARN MORE</a>
+            </div>
+          </div>
+        `;
+                    });
+                } else {
+                    grid.innerHTML = `<p>No Featured Properties Found</p>`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading properties:', err);
+                grid.innerHTML = `<p>Error loading properties. Please try again later.</p>`;
+            });
+    } // ✅ Function properly closed here
+
+    // ✅ Helper function defined OUTSIDE loadFeaturedProperties
+    function createSlug(text) {
+        return text
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Remove special characters
+            .replace(/\s+/g, '-')      // Replace spaces with hyphens
+            .replace(/--+/g, '-')      // Replace multiple hyphens with single hyphen
+            .trim();
+    }
+
+    // ✅ Run on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        loadFeaturedProperties();
+        loadCitiesFromAPI(); // ✅ Also load cities
+    });
+
+    // ✅ Load cities function
+    function loadCitiesFromAPI() {
+
+       const MICROSERVICE_API = "http://127.0.0.1:8000/api";
+
+        API_URL = `${MICROSERVICE_API}/cities/`;
+        console.log("Cities:",API_URL);
+
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(result => {
+                // Handle the nested structure: result.data.data
+                if (result && result.data && result.data.status && result.data.data) {
+                    citiesData = result.data.data;
+                    populateCitiesDropdown();
+                } else {
+                    console.error('Failed to load cities:', result.error || 'Invalid response structure');
+                    citiesData = [];
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cities:', error);
+                citiesData = [];
+            });
+    }
+
+    // ✅ Populate cities dropdown
+    function populateCitiesDropdown() {
+        const citySelect = document.getElementById('citySelect');
+
+        if (!citySelect) {
+            console.error('❌ City select element not found');
+            return;
+        }
+
+        if (!citiesData.length) {
+            console.error('❌ No cities data available');
+            return;
+        }
+
+        // Clear existing options except the first one
+        citySelect.innerHTML = '<option value="">All Cities</option>';
+
+        // Add cities from API - Use a Set to avoid duplicates
+        const uniqueCities = new Map();
+        citiesData.forEach(city => {
+            if (city.name && city.name.en) {
+                uniqueCities.set(city.name.en, city);
+            }
+        });
+
+        // Add unique cities to dropdown
+        uniqueCities.forEach((city, cityName) => {
+            const option = document.createElement('option');
+            option.value = cityName;
+            option.textContent = cityName;
+            citySelect.appendChild(option);
+        });
+    }
+
+    // ✅ Initialize citiesData variable
+    let citiesData = [];
+</script>
+
+<section class="services-1 fade-up">
+    <!-- Left Side -->
+    <div class="services-left">
+        <h2>Comprehensive Dubai Real Estate Services</h2>
+
+        <p>From luxury villas for sale in Dubai to off-plan properties with flexible payment plans - we provide
+            end-to-end solutions for every investor, family, and business owner in the UAE property market.</p>
+        <p>Buy Apartments in Dubai 2025: Studio apartments in JVC, luxury penthouses in Downtown Dubai, and waterfront
+            properties in Dubai Marina with expert ROI analysis and market insights.</p>
+        <img src="{% static 'images/kif-about.jpg' %}" alt="Dubai Real Estate" class="real-estate-image" loading="lazy">
+
+    </div>
+
+    <!-- Right Side -->
+    <div class="services-right">
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 3l8 6v12h-5v-6H9v6H4V9l8-6z" />
+            </svg>
+            <h3 style="margin-top: 15px;">Luxury Villas & Townhouses</h3>
+            <p>Beachfront villas in Palm Jumeirah, golf course homes in Dubai Hills, and affordable villas in Dubailand
+                with premium locations and exclusive communities.</p>
+
+        </div>
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+            </svg>
+            <h3>Off-Plan Investment Properties</h3>
+            <p>Direct from developers with flexible payment plans, high-growth communities, and guaranteed returns on
+                Dubai freehold property investments.</p>
+
+        </div>
+        <div class="service-card-1">
+            <h3 style="margin-top: 15px;">Commercial Property Dubai</h3>
+            <p>Office spaces in Business Bay, retail units in prime locations, and mixed-use buildings with strategic
+                commercial plots for business growth.</p>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M3 13h8V3H3v10zm10 8h8V3h-8v18zM3 21h8v-6H3v6z" />
+            </svg>
+        </div>
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M12 12c2.7 0 5.33-.67 7.5-1.92L12 2 4.5 10.08C6.67 11.33 9.3 12 12 12zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+            </svg>
+            <h3>Property Management</h3>
+            <p>End-to-end portfolio care, short-term rental management, and fully furnished properties with consistent
+                passive income generation.</p>
+        </div>
+    </div>
+</section>
+
+<h1 class="location-head ">Prime Dubai Locations We Cover</h1>
+<p class="section-title">From iconic Downtown Dubai to emerging Dubai South - discover the best property investment
+    opportunities across Dubai's most sought-after communities.</p>
+
+<div class="carousel-wrapper">
+    <button id="prevBtn" class="arrow left">&#10094;</button>
+
+    <div class="carousel-container" id="carouselContainer">
+        <ul class="carousel" id="dubaiCarousel">
+            <li class="day-card">
+                <img src="{% static 'images/bussinesbay.webp' %}" alt="Downtown Dubai" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Downtown Dubai</h2>
+                    <p class="desc">Burj Khalifa views & iconic lifestyle.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubai-marina.jpg' %}" alt="Dubai Marina" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai Marina</h2>
+                    <p class="desc">Waterfront living with nightlife & retail.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/Palm-Jumeirah.jpg' %}" alt="Palm Jumeirah" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Palm Jumeirah</h2>
+                    <p class="desc">Ultra-luxury beachfront properties.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubaihill.webp' %}" alt="Dubai Hills Estate" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai Hills Estate</h2>
+                    <p class="desc">Golf course communities & family living.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/bussinesbay.webp' %}" alt="Business Bay" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Business Bay</h2>
+                    <p class="desc">Central commercial & residential hub.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubaisouth.jpg' %}" alt="Dubai South" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai South</h2>
+                    <p class="desc">Future growth near Al Maktoum Airport.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/Jumeirah-Village.jpg' %}" alt="JVC" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Jumeirah Village Circle</h2>
+                    <p class="desc">Affordable apartments & townhouses.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/ras.jpg' %}" alt="Ras Al Khaimah" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Ras Al Khaimah</h2>
+                    <p class="desc">Next frontier of luxury developments.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <button id="nextBtn" class="arrow right">&#10095;</button>
+</div>
+
+<!-- WHY CHOOSE KIF REALTY SECTION -->
+<section class="why-choose-kif">
+    <div class="why-choose-kif-container">
+        <!-- Left Golden Gradient Section -->
+        <div class="why-choose-kif-left">
+            <h2> Why Choose Kif Realty</h2>
+            <img src="{% static 'images/logo-kif.png' %}" loading="lazy" alt="KIF Realty Logo" />
+        </div>
+
+        <!-- Right Content -->
+        <div class="why-choose-kif-right">
+            <p class="intro">
+                Ranked among the top real estate brokers in Dubai, we deliver transparent,
+                reliable, and profitable property solutions since 2011.
+            </p>
+
+            <!-- Feature 1 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="13">0</div><span>+</span>
+                </div>
+                <div class="kif-text">
+                    <h3>Years of Market Leadership</h3>
+                    <p>Deep expertise in Dubai real estate market dynamics, developer relationships, and investment
+                        strategies.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="100">0</div><span>%</span>
+                </div>
+                <div class="kif-text">
+                    <h3>RERA Certified Team</h3>
+                    <p>Licensed real estate professionals ensuring compliance, transparency, and ethical business
+                        practices.</p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="24">0</div><span>/7</span>
+                </div>
+                <div class="kif-text">
+                    <h3>Customer Support</h3>
+                    <p>Dedicated support throughout your property journey - from initial consultation to post-purchase
+                        services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Investment Calculator Section -->
+<section class="calculators-section">
+    <div class="section-title-new">
+        <h2>UAE Property Investment Calculators</h2>
+        <p>Make informed decisions with our accurate calculators designed specifically for Dubai real estate
+            investments.</p>
+    </div>
+
+    <!-- Mortgage Calculator -->
+    <div id="mortgage-calculator" class="calculator-container">
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h3>UAE Mortgage Payment Calculator</h3>
+                <p>Calculate your monthly mortgage payments based on current UAE bank rates and regulations.</p>
+            </div>
+            <div class="calculator-grid">
+                <div class="calculator-left">
+
+                    <div class="calculator-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="property-price">Property Purchase Price</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="property-price-input" value="1,200,000"
+                                        class="editable-input">
+                                    <input type="range" id="property-price" min="300000" max="200000000" value="1200000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">300,000 AED</span>
+                                        <span class="max-value">200,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="residency-status">Residency Status</label>
+                                <div class="button-group">
+                                    <button type="button" class="status-btn" data-value="uae-national" data-rate="3.25">
+                                        UAE National
+                                        <span class="rate-badge">3.25%</span>
+                                    </button>
+                                    <button type="button" class="status-btn active" data-value="uae-resident"
+                                        data-rate="3.75">
+                                        UAE Resident
+                                        <span class="rate-badge">3.75%</span>
+                                    </button>
+                                    <button type="button" class="status-btn" data-value="non-resident" data-rate="4.54">
+                                        Non-Resident
+                                        <span class="rate-badge">4.54%</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="down-payment">Down Payment</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="down-payment-input" value="240,000" class="editable-input">
+                                    <input type="range" id="down-payment" min="240000" max="960000" value="240000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value" id="down-min-display">240,000 AED (20%)</span>
+                                        <span class="percentage-value" id="down-percentage">20%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="loan-amount">Loan Amount</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="loan-amount-input" value="960,000" class="editable-input">
+                                    <input type="range" id="loan-amount" min="240000" max="960000" value="960000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value" id="loan-min-display">240,000 AED (20%)</span>
+                                        <span class="percentage-value" id="loan-percentage">80%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="loan-period">Loan Period (Years)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="loan-period-input" value="25" class="editable-input">
+                                    <input type="range" id="loan-period" min="1" max="25" value="25" class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">1 year</span>
+                                        <span class="max-value">25 years</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="interest-rate">Annual Interest Rate (%)</label>
+                                <div class="input-slider-group">
+                                    <!-- Manual editable input -->
+                                    <input type="text" id="interest-rate-input" value="3.75" class="editable-input">
+
+                                    <!-- Slider (optional) -->
+                                    <!-- <input type="range" id="interest-rate" min="2.5" max="8" value="3.75" class="slider"> -->
+
+                                    <div class="slider-values">
+                                        <span class="min-value">1%</span>
+                                        <span class="max-value">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="calculator-right">
+                    <div class="result-display">
+                        <div class="result-main">
+                            <span class="result-label-small">Monthly payment</span>
+                            <div class="result-value-large" id="monthly-payment">4,936 AED</div>
+                        </div>
+                        <div class="result-secondary">
+                            <span class="result-label-small">Interest rate</span>
+                            <div class="result-value-medium" id="display-rate">3.75%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROI Calculator -->
+    <div id="roi-calculator" class="calculator-container">
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h3>Dubai Property ROI Calculator</h3>
+                <p>Analyze potential returns on your Dubai property investment with comprehensive ROI
+                    calculations.</p>
+            </div>
+
+            <div class="calculator-grid">
+                <div class="calculator-left">
+
+
+                    <div class="calculator-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="purchase-price">Purchase Price (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="purchase-price-input" value="2,500,000"
+                                        class="editable-input">
+                                    <input type="range" id="purchase-price" min="500000" max="10000000" value="2500000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">500,000 AED</span>
+                                        <span class="max-value">10,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="current-value">Current Market Value (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="current-value-input" value="3,000,000"
+                                        class="editable-input">
+                                    <input type="range" id="current-value" min="500000" max="15000000" value="3000000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">500,000 AED</span>
+                                        <span class="max-value">15,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="annual-rent">Annual Rental Income (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="annual-rent-input" value="180,000" class="editable-input">
+                                    <input type="range" id="annual-rent" min="30000" max="800000" value="180000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">30,000 AED</span>
+                                        <span class="max-value">800,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="annual-expenses">Annual Expenses (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="annual-expenses-input" value="25,000" class="editable-input">
+                                    <input type="range" id="annual-expenses" min="5000" max="100000" value="25000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">5,000 AED</span>
+                                        <span class="max-value">100,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="holding-period">Investment Period (Years)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="holding-period-input" value="5" class="editable-input">
+                                    <input type="range" id="holding-period" min="1" max="20" value="5" class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">1 year</span>
+                                        <span class="max-value">20 years</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty for layout balance -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="calculator-right">
+                    <div class="result-display">
+                        <div class="result-main">
+                            <span class="result-label-small">Total ROI</span>
+                            <div class="result-value-large" id="total-roi-display">31.20%</div>
+                        </div>
+                        <div class="result-secondary">
+                            <span class="result-label-small">Annual return</span>
+                            <div class="result-value-medium" id="annual-roi-display">6.24%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="cta-overlay">
+        <div class="cta-content">
+            <h2>Ready to Invest in Dubai Real Estate?</h2>
+            <p>
+                Join thousands of satisfied investors who chose KIF Realty for their Dubai property investments.
+                Get expert guidance on buying apartments, luxury villas, and off-plan properties with guaranteed
+                returns.
+            </p>
+            <div class="cta-button">
+                <a href="/contact" class="btn-primary-custom">Start Your Investment Journey</a>
+                <a href="/properties" class="btn-secondary-custom">Browse Properties</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+
+
+<script>
+    const video = document.querySelector('.hero-video');
+    const source = video.querySelector('source');
+
+    // Create an IntersectionObserver to lazy load the video when it is in the viewport
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Load the video by setting the source attribute
+                source.src = source.dataset.src;
+                video.load(); // Start loading the video
+
+                // Once the video is loaded, start playing it and fade in
+                video.addEventListener('canplay', () => {
+                    video.style.opacity = 1; // Fade in the video
+                });
+
+                // Stop observing once the video has started loading
+                observer.disconnect();
+            }
+        });
+    }, {
+        rootMargin: '100px', // Trigger when the video is 100px from the viewport
+    });
+
+    // Observe the video element
+    observer.observe(video);
+</script>
+
+
+<script>
+    // UAE Property Investment Calculators - Fixed Implementation with Precise Input Handling
+    // UAE Property Investment Calculators - Fixed with Max Loan Positioning
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Utility Functions
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num));
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num)) + ' AED';
+        }
+
+        function parseFormattedNumber(str) {
+            return parseFloat(str.toString().replace(/,/g, ''));
+        }
+        let manualRateChanged = false; // tracks if user typed the rate manually
+
+        // MORTGAGE CALCULATOR
+        function setupMortgageCalculator() {
+            const elements = {
+                propertyPrice: document.getElementById('property-price'),
+                downPayment: document.getElementById('down-payment'),
+                loanAmount: document.getElementById('loan-amount'),
+                loanPeriod: document.getElementById('loan-period'),
+                // interestRate: document.getElementById('interest-rate'),
+
+                propertyPriceInput: document.getElementById('property-price-input'),
+                downPaymentInput: document.getElementById('down-payment-input'),
+                loanAmountInput: document.getElementById('loan-amount-input'),
+                loanPeriodInput: document.getElementById('loan-period-input'),
+                interestRateInput: document.getElementById('interest-rate-input'),
+
+                monthlyPayment: document.getElementById('monthly-payment'),
+                displayRate: document.getElementById('display-rate'),
+                downPercentage: document.getElementById('down-percentage'),
+                loanPercentage: document.getElementById('loan-percentage')
+            };
+
+            // Store actual values 
+            let actualValues = {
+                propertyPrice: 1200000,
+                downPayment: 240000,     // Will be recalculated based on residency
+                loanAmount: 960000,      // Will be recalculated based on residency
+                loanPeriod: 25,
+                interestRate: 3.75
+            };
+
+            function getResidencyLimits() {
+                const activeStatusEl = document.querySelector('.status-btn.active');
+                if (!activeStatusEl) return { maxLoanPercent: 0.80, minDownPercent: 0.20 }; // default
+
+                const activeStatus = activeStatusEl.getAttribute('data-value');
+
+                if (activeStatus === 'uae-national') {
+                    return { maxLoanPercent: 0.85, minDownPercent: 0.15 };
+                } else if (activeStatus === 'uae-resident') {
+                    return { maxLoanPercent: 0.80, minDownPercent: 0.20 };
+                } else { // non-resident
+                    return { maxLoanPercent: 0.60, minDownPercent: 0.40 };
+                }
+            }
+
+            function setToMaxLoanPosition() {
+                const price = actualValues.propertyPrice;
+                const limits = getResidencyLimits();
+
+                // Set loan to maximum allowed and down payment to minimum required
+                actualValues.loanAmount = price * limits.maxLoanPercent;
+                actualValues.downPayment = price * limits.minDownPercent;
+            }
+
+            function updateSliderRanges() {
+                const price = actualValues.propertyPrice;
+                const limits = getResidencyLimits();
+
+                const minDown = price * limits.minDownPercent;
+                const maxDown = price * (1 - limits.minDownPercent);
+                const minLoan = price * limits.minDownPercent;
+                const maxLoan = price * limits.maxLoanPercent;
+
+                // Update slider ranges
+                elements.downPayment.min = minDown;
+                elements.downPayment.max = maxDown;
+                elements.loanAmount.min = minLoan;
+                elements.loanAmount.max = maxLoan;
+            }
+
+            function updateMortgageCalculations() {
+                const price = actualValues.propertyPrice;
+                const down = actualValues.downPayment;
+                const loan = actualValues.loanAmount;
+                const period = actualValues.loanPeriod;
+                const rate = actualValues.interestRate;
+
+                // Update slider ranges first
+                updateSliderRanges();
+
+                // Update input displays with precise values
+                elements.propertyPriceInput.value = formatNumber(price);
+                elements.downPaymentInput.value = formatNumber(down);
+                elements.loanAmountInput.value = formatNumber(loan);
+                elements.loanPeriodInput.value = period;
+                elements.interestRateInput.value = rate.toFixed(2);
+
+                // Update slider values to match actual values
+                elements.propertyPrice.value = price;
+                elements.downPayment.value = down;
+                elements.loanAmount.value = loan;
+                elements.loanPeriod.value = period;
+                // elements.interestRate.value = rate;
+
+                // Update percentages
+                const downPercent = (down / price) * 100;
+                const loanPercent = (loan / price) * 100;
+                if (elements.downPercentage) elements.downPercentage.textContent = downPercent.toFixed(1) + '%';
+                if (elements.loanPercentage) elements.loanPercentage.textContent = loanPercent.toFixed(1) + '%';
+
+                // Update min/max displays based on residency status
+                const limits = getResidencyLimits();
+                const minDown = price * limits.minDownPercent; // minimum down payment
+                const maxLoan = price * limits.maxLoanPercent; // maximum loan
+
+                const downMinDisplay = document.getElementById('down-min-display');
+                const loanMinDisplay = document.getElementById('loan-min-display');
+
+                // Set the minimum loan value to be equal to the minimum down payment (240,000 AED)
+                // Set the minimum down payment value to be displayed in the down-min-display span
+                if (downMinDisplay) {
+                    downMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
+                }
+                if (loanMinDisplay) {
+                    loanMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
+                }
+
+
+
+                // Calculate monthly payment using standard amortization formula
+                const monthlyRate = rate / 100 / 12;
+                const numberOfPayments = period * 12;
+
+                let monthlyPayment = 0;
+                if (monthlyRate > 0) {
+                    monthlyPayment = loan * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                        (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                } else {
+                    monthlyPayment = loan / numberOfPayments;
+                }
+
+                if (elements.monthlyPayment) elements.monthlyPayment.textContent = formatCurrency(monthlyPayment);
+                if (elements.displayRate) elements.displayRate.textContent = rate.toFixed(2) + '%';
+
+                // Update fees breakdown
+                updateFeesBreakdown(price, down);
+            }
+
+            function updateFeesBreakdown(price, down) {
+                const landDeptFee = price * 0.04;
+                const processingFee = Math.min(2500, price * 0.001);
+                const totalUpfront = down + landDeptFee + 4000 + processingFee + 2500 + 5000;
+
+                const downPaymentFeeEl = document.getElementById('down-payment-fee');
+                const landDeptFeeEl = document.getElementById('land-dept-fee');
+                const processingFeeEl = document.getElementById('processing-fee');
+                const totalUpfrontEl = document.getElementById('total-upfront');
+
+                if (downPaymentFeeEl) downPaymentFeeEl.textContent = formatCurrency(down);
+                if (landDeptFeeEl) landDeptFeeEl.textContent = formatCurrency(landDeptFee);
+                if (processingFeeEl) processingFeeEl.textContent = formatCurrency(processingFee);
+                if (totalUpfrontEl) totalUpfrontEl.textContent = formatCurrency(totalUpfront);
+            }
+
+            // Property price slider
+            elements.propertyPrice.addEventListener('input', function () {
+                actualValues.propertyPrice = parseFloat(this.value);
+                setToMaxLoanPosition(); // Reset to max loan when property price changes
+                updateMortgageCalculations();
+            });
+
+            // Down payment slider
+            elements.downPayment.addEventListener('input', function () {
+                actualValues.downPayment = parseFloat(this.value);
+                actualValues.loanAmount = actualValues.propertyPrice - actualValues.downPayment;
+                updateMortgageCalculations();
+            });
+
+            // Loan amount slider
+            elements.loanAmount.addEventListener('input', function () {
+                actualValues.loanAmount = parseFloat(this.value);
+                actualValues.downPayment = actualValues.propertyPrice - actualValues.loanAmount;
+                updateMortgageCalculations();
+            });
+
+            // Loan period slider
+            elements.loanPeriod.addEventListener('input', function () {
+                actualValues.loanPeriod = parseFloat(this.value);
+                updateMortgageCalculations();
+            });
+
+
+            // Interest rate slider
+            // --- FIXED INTEREST RATE INPUT HANDLING ---
+            elements.interestRateInput.addEventListener('input', function () {
+                let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+
+                // Allow only one decimal point
+                const parts = value.split('.');
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts[1]; // drop extra dots
+                }
+
+                this.value = value; // let user type freely (like "3.", "3.7", etc.)
+            });
+
+            // On blur (finalize input)
+            elements.interestRateInput.addEventListener('blur', function () {
+                let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                const num = parseFloat(value);
+
+                if (isNaN(num)) {
+                    // reset to last valid value
+                    this.value = actualValues.interestRate.toFixed(2);
+                    return;
+                }
+
+                // Clamp and update
+                const clamped = Math.min(Math.max(num, 1), 10); // between 1% and 10%
+                actualValues.interestRate = clamped;
+                this.value = clamped.toFixed(2);
+                manualRateChanged = true;
+                updateMortgageCalculations();
+            });
+
+
+            elements.interestRateInput.addEventListener('blur', function () {
+                const value = this.value.replace(/,/g, '');
+                if (value === '' || isNaN(parseFloat(value))) {
+                    this.value = actualValues.interestRate.toFixed(2);
+                    return;
+                }
+                actualValues.interestRate = parseFloat(value);
+                this.value = actualValues.interestRate.toFixed(2);
+            });
+
+            // Residency status buttons - FIXED to set max loan position
+            document.querySelectorAll('.status-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Only auto-set rate if user hasn't manually changed it
+                    if (!manualRateChanged) {
+                        actualValues.interestRate = parseFloat(this.getAttribute('data-rate'));
+                    }
+
+                    setToMaxLoanPosition();
+                    updateMortgageCalculations();
+                });
+            });
+
+            // Input field synchronization
+            function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
+                if (!inputElement) return;
+
+                inputElement.addEventListener('input', function () {
+                    let value = this.value.replace(/,/g, '');
+                    if (isInteger) {
+                        value = value.replace(/[^0-9]/g, '');
+                    } else {
+                        value = value.replace(/[^0-9.]/g, '');
+                    }
+
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && value !== '') {
+                        if (numValue >= min && numValue <= max) {
+                            actualValues[valueKey] = numValue;
+
+                            if (valueKey === 'propertyPrice') {
+                                setToMaxLoanPosition();
+                            } else if (valueKey === 'downPayment') {
+                                actualValues.loanAmount = actualValues.propertyPrice - numValue;
+                            } else if (valueKey === 'loanAmount') {
+                                actualValues.downPayment = actualValues.propertyPrice - numValue;
+                            }
+                            updateMortgageCalculations();
+                        }
+                    }
+                });
+
+                inputElement.addEventListener('blur', function () {
+                    const value = this.value.replace(/,/g, '');
+                    if (value === '' || isNaN(parseFloat(value))) {
+                        this.value = isInteger ? actualValues[valueKey].toString() : formatNumber(actualValues[valueKey]);
+                        return;
+                    }
+
+                    const numValue = parseFloat(value);
+                    const clampedValue = Math.max(min, Math.min(max, numValue));
+
+                    actualValues[valueKey] = clampedValue;
+                    this.value = isInteger ? clampedValue.toString() : formatNumber(clampedValue);
+
+                    if (valueKey === 'propertyPrice') {
+                        setToMaxLoanPosition();
+                    } else if (valueKey === 'downPayment') {
+                        actualValues.loanAmount = actualValues.propertyPrice - clampedValue;
+                    } else if (valueKey === 'loanAmount') {
+                        actualValues.downPayment = actualValues.propertyPrice - clampedValue;
+                    }
+                    updateMortgageCalculations();
+                });
+            }
+
+            // Setup input synchronization
+            setupInputSync(elements.propertyPriceInput, 'propertyPrice', false, 100000, 200000000);
+            setupInputSync(elements.downPaymentInput, 'downPayment', false, 0, 200000000);
+            setupInputSync(elements.loanAmountInput, 'loanAmount', false, 0, 200000000);
+            setupInputSync(elements.loanPeriodInput, 'loanPeriod', true, 1, 30);
+            // setupInputSync(elements.interestRateInput, 'interestRate', false, 0, 20);
+
+            // Upfront costs toggle
+            const viewUpfrontButton = document.getElementById('view-upfront-costs');
+            if (viewUpfrontButton) {
+                viewUpfrontButton.addEventListener('click', function () {
+                    const breakdown = document.getElementById('fees-breakdown');
+                    if (breakdown) {
+                        breakdown.classList.toggle('show');
+                        this.textContent = breakdown.classList.contains('show') ?
+                            'Hide upfront costs' : 'View upfront costs & fees';
+                    }
+                });
+            }
+
+            // Initialize - set to max loan position for default residency (UAE Resident)
+            setToMaxLoanPosition();
+            updateMortgageCalculations();
+        }
+
+        // ROI CALCULATOR (unchanged)
+        // ROI CALCULATOR - EXACT FIX
+        // Replace your entire setupROICalculator() function with this code
+
+        function setupROICalculator() {
+            const elements = {
+                purchasePrice: document.getElementById('purchase-price'),
+                currentValue: document.getElementById('current-value'),
+                annualRent: document.getElementById('annual-rent'),
+                annualExpenses: document.getElementById('annual-expenses'),
+                holdingPeriod: document.getElementById('holding-period'),
+
+                purchasePriceInput: document.getElementById('purchase-price-input'),
+                currentValueInput: document.getElementById('current-value-input'),
+                annualRentInput: document.getElementById('annual-rent-input'),
+                annualExpensesInput: document.getElementById('annual-expenses-input'),
+                holdingPeriodInput: document.getElementById('holding-period-input'),
+
+                totalROIDisplay: document.getElementById('total-roi-display'),
+                annualROIDisplay: document.getElementById('annual-roi-display')
+            };
+
+            let actualROIValues = {
+                purchasePrice: 2500000,
+                currentValue: 3000000,
+                annualRent: 180000,
+                annualExpenses: 25000,
+                holdingPeriod: 5
+            };
+
+            function formatNumber(num) {
+                return new Intl.NumberFormat('en-AE').format(Math.round(num));
+            }
+
+            function calculateROI() {
+                const purchasePrice = actualROIValues.purchasePrice;
+                const currentValue = actualROIValues.currentValue;
+                const annualRent = actualROIValues.annualRent;
+                const annualExpenses = actualROIValues.annualExpenses;
+                const holdingPeriod = actualROIValues.holdingPeriod;
+
+                // Update input displays
+                if (elements.purchasePriceInput) elements.purchasePriceInput.value = formatNumber(purchasePrice);
+                if (elements.currentValueInput) elements.currentValueInput.value = formatNumber(currentValue);
+                if (elements.annualRentInput) elements.annualRentInput.value = formatNumber(annualRent);
+                if (elements.annualExpensesInput) elements.annualExpensesInput.value = formatNumber(annualExpenses);
+                if (elements.holdingPeriodInput) elements.holdingPeriodInput.value = holdingPeriod;
+
+                // Update slider values
+                if (elements.purchasePrice) elements.purchasePrice.value = purchasePrice;
+                if (elements.currentValue) elements.currentValue.value = currentValue;
+                if (elements.annualRent) elements.annualRent.value = annualRent;
+                if (elements.annualExpenses) elements.annualExpenses.value = annualExpenses;
+                if (elements.holdingPeriod) elements.holdingPeriod.value = holdingPeriod;
+
+                // Calculate ROI
+                const capitalAppreciation = currentValue - purchasePrice;
+                const netAnnualRent = annualRent - annualExpenses;
+                const totalRentalIncome = netAnnualRent * holdingPeriod;
+                const totalReturn = capitalAppreciation + totalRentalIncome;
+                const totalROI = (totalReturn / purchasePrice) * 100;
+                const annualROI = holdingPeriod > 0 ? totalROI / holdingPeriod : 0;
+
+                // Update displays
+                if (elements.totalROIDisplay) elements.totalROIDisplay.textContent = totalROI.toFixed(2) + '%';
+                if (elements.annualROIDisplay) elements.annualROIDisplay.textContent = annualROI.toFixed(2) + '%';
+            }
+
+            // ========== THIS IS THE FIX - Input field synchronization ==========
+            function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
+                if (!inputElement) return;
+
+                inputElement.addEventListener('input', function () {
+                    let value = this.value.replace(/,/g, '');
+                    if (isInteger) {
+                        value = value.replace(/[^0-9]/g, '');
+                    } else {
+                        value = value.replace(/[^0-9.]/g, '');
+                    }
+
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && value !== '') {
+                        if (numValue >= min && numValue <= max) {
+                            actualROIValues[valueKey] = numValue;
+                            calculateROI();
+                        }
+                    }
+                });
+
+                inputElement.addEventListener('blur', function () {
+                    const value = this.value.replace(/,/g, '');
+                    if (value === '' || isNaN(parseFloat(value))) {
+                        this.value = isInteger ? actualROIValues[valueKey].toString() : formatNumber(actualROIValues[valueKey]);
+                        return;
+                    }
+
+                    const numValue = parseFloat(value);
+                    const clampedValue = Math.max(min, Math.min(max, numValue));
+
+                    actualROIValues[valueKey] = clampedValue;
+                    this.value = isInteger ? clampedValue.toString() : formatNumber(clampedValue);
+                    calculateROI();
+                });
+            }
+            // ========== END OF FIX ==========
+
+            // Add slider event listeners
+            if (elements.purchasePrice) {
+                elements.purchasePrice.addEventListener('input', function () {
+                    actualROIValues.purchasePrice = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.currentValue) {
+                elements.currentValue.addEventListener('input', function () {
+                    actualROIValues.currentValue = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.annualRent) {
+                elements.annualRent.addEventListener('input', function () {
+                    actualROIValues.annualRent = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.annualExpenses) {
+                elements.annualExpenses.addEventListener('input', function () {
+                    actualROIValues.annualExpenses = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.holdingPeriod) {
+                elements.holdingPeriod.addEventListener('input', function () {
+                    actualROIValues.holdingPeriod = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            // ========== CALL THE FIX - Setup input synchronization ==========
+            setupInputSync(elements.purchasePriceInput, 'purchasePrice', false, 500000, 10000000);
+            setupInputSync(elements.currentValueInput, 'currentValue', false, 500000, 15000000);
+            setupInputSync(elements.annualRentInput, 'annualRent', false, 30000, 800000);
+            setupInputSync(elements.annualExpensesInput, 'annualExpenses', false, 5000, 100000);
+            setupInputSync(elements.holdingPeriodInput, 'holdingPeriod', true, 1, 20);
+            // ========== END ==========
+
+            // Initialize
+            calculateROI();
+        }
+
+        // Initialize both calculators
+        setupMortgageCalculator();
+        setupROICalculator();
+    });
+</script>
+
+
+<script>
+    const carousel = document.getElementById("dubaiCarousel");
+    const container = document.getElementById("carouselContainer");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    let scrollAmount = 0;
+    let cardWidth = 316; // 300 card + 16 gap
+    let autoSlide;
+
+    function calculateMaxScroll() {
+        const visibleCards = Math.floor(container.offsetWidth / cardWidth);
+        return Math.max((carousel.children.length - visibleCards) * cardWidth, 0);
+    }
+
+    function updateScroll() {
+        const maxScroll = calculateMaxScroll();
+        if (scrollAmount > maxScroll) scrollAmount = 0;
+        carousel.style.transform = `translateX(-${scrollAmount}px)`;
+    }
+
+    function autoScroll() {
+        scrollAmount += cardWidth;
+        updateScroll();
+    }
+
+    function startAutoScroll() {
+        autoSlide = setInterval(autoScroll, 2500);
+    }
+
+    function stopAutoScroll() {
+        clearInterval(autoSlide);
+    }
+
+    nextBtn.addEventListener("click", () => {
+        scrollAmount += cardWidth;
+        updateScroll();
+    });
+
+    prevBtn.addEventListener("click", () => {
+        scrollAmount -= cardWidth;
+        if (scrollAmount < 0) scrollAmount = calculateMaxScroll();
+        updateScroll();
+    });
+
+    container.addEventListener("mouseenter", stopAutoScroll);
+    container.addEventListener("mouseleave", startAutoScroll);
+
+    window.addEventListener("resize", () => {
+        updateScroll();
+    });
+
+    startAutoScroll();
+</script>
+
+
+<script>
+    // Counter Animation (slower and smoother)
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".kif-count");
+
+        counters.forEach((counter) => {
+            const updateCount = () => {
+                const target = +counter.getAttribute("data-target");
+                let count = +counter.innerText;
+
+                const speed = 300; // higher = slower (more time to reach target)
+                const increment = Math.max(1, Math.ceil(target / speed));
+
+                if (count < target) {
+                    counter.innerText = count + increment;
+                    setTimeout(updateCount, 50); // slower updates
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    });
+</script>
+{% endblock %}

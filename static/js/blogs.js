@@ -1,15 +1,4 @@
 
-// Enhanced navbar scroll effect
-// window.addEventListener('scroll', function() {
-//     const navbar = document.getElementById('navbar');
-
-//     if (window.scrollY > 100) {
-//         navbar.classList.add('scrolled');
-//     } else {
-//         navbar.classList.remove('scrolled');
-//     }
-// });
-
 // Blog post click handler
 function readPost(postId) {
     const posts = {
@@ -26,61 +15,6 @@ function readPost(postId) {
     const postTitle = posts[postId] || 'Blog Post';
     alert(`Opening: "${postTitle}"\n\nThis would redirect to the full blog post page with detailed content, images, and related articles.`);
 }
-
-// Search functionality
-// document.querySelector('.search-btn').addEventListener('click', function () {
-//     const searchInput = document.querySelector('.search-input');
-//     const searchTerm = searchInput.value.trim();
-
-//     if (searchTerm) {
-//         alert(`Searching for: "${searchTerm}"\n\nThis would show filtered blog posts related to your search term.`);
-//     } else {
-//         alert('Please enter a search term');
-//     }
-// });
-
-// Newsletter subscription
-// document.querySelector('.newsletter-form').addEventListener('submit', function (e) {
-//     e.preventDefault();
-//     const email = this.querySelector('.newsletter-input').value;
-
-//     if (email) {
-//         alert(`Thank you for subscribing with: ${email}\n\nYou'll receive weekly Dubai real estate insights and market updates.`);
-//         this.querySelector('.newsletter-input').value = '';
-//     }
-// });
-
-// Category and tag clicks
-// document.querySelectorAll('.categories-list a, .tag').forEach(link => {
-//     link.addEventListener('click', function (e) {
-//         e.preventDefault();
-//         const category = this.textContent.trim();
-//         alert(`Viewing posts in category: "${category}"\n\nThis would show filtered blog posts for this category.`);
-//     });
-// });
-
-// Intersection Observer for animations
-// const observerOptions = {
-//     threshold: 0.1,
-//     rootMargin: '0px 0px -50px 0px'
-// };
-
-// const observer = new IntersectionObserver(function(entries) {
-//     entries.forEach(entry => {
-//         if (entry.isIntersecting) {
-//             entry.target.style.opacity = '1';
-//             entry.target.style.transform = 'translateY(0)';
-//         }
-//     });
-// }, observerOptions);
-
-// Observe blog posts and sidebar widgets
-// document.querySelectorAll('.blog-post, .sidebar-widget, .featured-post').forEach(element => {
-//     element.style.opacity = '0';
-//     element.style.transform = 'translateY(30px)';
-//     element.style.transition = 'all 0.8s ease';
-//     observer.observe(element);
-// });
 
 // Enhanced hover effects
 document.querySelectorAll('.blog-post').forEach(post => {
@@ -151,10 +85,13 @@ document.querySelectorAll('.pagination a').forEach(link => {
         // alert(`Loading page ${pageNum}...\n\nThis would load more blog posts.`);
     });
 });
-
 // Search on Enter key
 document.querySelector('.search-input').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         document.querySelector('.search-btn').click();
     }
 });
+
+
+
+

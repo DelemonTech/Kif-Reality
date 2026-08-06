@@ -137,7 +137,7 @@
             z-index: 10;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            white-space: nowrap; /* Keep text on single line */
+            white-space: nowrap;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -609,14 +609,13 @@
                 padding: 2rem;
             }
 
-            /* Tablet Exclusive Badge - Medium size */
             .exclusive-badge {
                 top: 15px;
                 left: 15px;
                 padding: 0.8rem 1.8rem;
                 font-size: 0.85rem;
                 border-radius: 22px;
-                white-space: nowrap; /* Keep text on single line */
+                white-space: nowrap;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -662,7 +661,6 @@
                 font-size: 2rem;
             }
 
-            /* Mobile Exclusive Badge - Small and clipped */
             .exclusive-badge {
                 position: absolute;
                 top: 0;
@@ -670,7 +668,7 @@
                 background: var(--accent-gradient);
                 color: var(--obsidian-black);
                 padding: 0.8rem 1.2rem;
-                border-radius: 0 0 18px 0; /* Clipped to top-left corner */
+                border-radius: 0 0 18px 0;
                 font-weight: 700;
                 font-size: 0.75rem;
                 box-shadow: 0 4px 15px rgba(232, 180, 160, 0.4);
@@ -680,7 +678,7 @@
                 min-width: 90px;
                 max-width: 100px;
                 text-align: center;
-                white-space: nowrap; /* Keep text on single line */
+                white-space: nowrap;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -690,11 +688,10 @@
 
             .exclusive-badge i {
                 font-size: 0.65rem;
-                flex-shrink: 0; /* Prevent icon from shrinking */
+                flex-shrink: 0;
             }
         }
 
-        /* Very small screens - hide exclusive badge completely */
         @media (max-width: 360px) {
             .exclusive-badge {
                 display: none;
@@ -860,9 +857,9 @@
         <!-- Hero Section -->
         <section class="property-hero">
             <div class="hero-gallery">
-                <img id="heroImage" 
-                     src="{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}" 
-                     alt="{{ property.title }}" 
+                <img id="heroImage"
+                     src="{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
+                     alt="{{ property.title }}"
                      class="hero-image">
 
                 <div class="exclusive-badge">
@@ -1047,26 +1044,18 @@
                                 leisure destinations.
                             {% endif %}
                         </p>
-                        <button onclick="toggleMap()">
+                        <button onclick="toggleMap(event)">
                             <i class="fas fa-map"></i> View on Map
                         </button>
                     </div>
 
-                    <!-- Hidden Map Container -->
-                    <div id="mapContainer" style="display:none; height:400px; width:100%; margin-top:25px; border-radius: 15px; overflow: hidden; border: 2px solid rgba(232, 180, 160, 0.2);">
-                        {% if property.latitude and property.longitude %}
-                        <iframe
-                            src="https://maps.google.com/maps?q={{ property.latitude }},{{ property.longitude }}&z=15&output=embed"
-                            width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                        {% else %}
-                        <iframe
-                            src="https://maps.google.com/maps?q={{ property.district|urlencode }},Dubai&z=15&output=embed"
-                            width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                        {% endif %}
+                    <!-- Lazy Map Container — iframe injects on first click only -->
+                    <div id="mapContainer"
+                        style="display:none; height:400px; width:100%; margin-top:25px; border-radius:15px; overflow:hidden; border: 2px solid rgba(232, 180, 160, 0.2);"
+                        data-lat="{{ property.latitude }}"
+                        data-lng="{{ property.longitude }}"
+                        data-location="{{ property.district }},Dubai">
+                        <!-- Iframe loads here on click -->
                     </div>
                 </div>
             </div>
@@ -1097,8 +1086,8 @@
                 <i class="fab fa-whatsapp"></i>
                 WhatsApp
             </a>
-            <a href="{% url 'exclusive_properties:submit_inquiry' %}" 
-               class="contact-btn outline" 
+            <a href="{% url 'exclusive_properties:submit_inquiry' %}"
+               class="contact-btn outline"
                onclick="openInquiryModal('{{ property.id }}'); return false;">
                 <i class="fas fa-envelope"></i>
                 Send Inquiry
@@ -1198,25 +1187,25 @@
 <div id="inquiryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 26, 0.8); z-index: 9999; padding: 1rem;">
     <div style="max-width: 550px; margin: 2rem auto; border-radius: 25px; padding: 3rem; position: relative; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);">
         <button onclick="closeInquiryModal()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-muted); transition: all 0.3s ease;">×</button>
-        
+
         <h3 style="margin-bottom: 2.5rem; text-align: center; font-size: 2rem; font-weight: 600;">Property Inquiry</h3>
-        
+
         <form id="inquiryForm" onsubmit="submitInquiry(event)">
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Full Name *</label>
                 <input type="text" name="name" required style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
             </div>
-            
+
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Email *</label>
                 <input type="email" name="email" required style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
             </div>
-            
+
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Phone</label>
                 <input type="tel" name="phone" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
             </div>
-            
+
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Inquiry Type</label>
                 <select name="inquiry_type" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem;">
@@ -1227,12 +1216,12 @@
                     <option value="brochure">Download Brochure</option>
                 </select>
             </div>
-            
+
             <div style="margin-bottom: 2.5rem;">
                 <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-light);">Message</label>
                 <textarea name="message" rows="3" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 1rem; resize: vertical;" placeholder="Please provide any additional details about your inquiry..."></textarea>
             </div>
-            
+
             <button type="submit" style="width: 100%; padding: 18px; border: none; border-radius: 15px; font-size: 1.2rem; cursor: pointer; transition: all 0.4s ease;">
                 Send Inquiry
             </button>
@@ -1241,7 +1230,50 @@
 </div>
 
 <script>
-    // Image gallery functionality
+    // ==========================================
+    // MAP — lazy load: iframe injects on first click only
+    // ==========================================
+    let mapLoaded = false;
+
+    function toggleMap(event) {
+        const mapContainer = document.getElementById("mapContainer");
+        const btn = event ? event.target.closest('button') : null;
+
+        if (!mapLoaded) {
+            const lat = mapContainer.dataset.lat;
+            const lng = mapContainer.dataset.lng;
+            const location = mapContainer.dataset.location;
+
+            const mapSrc = (lat && lng)
+                ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+                : `https://maps.google.com/maps?q=${encodeURIComponent(location)}&z=15&output=embed`;
+
+            mapContainer.innerHTML = `
+                <iframe
+                    src="${mapSrc}"
+                    width="100%"
+                    height="100%"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            `;
+            mapLoaded = true;
+        }
+
+        if (mapContainer.style.display === "none" || mapContainer.style.display === "") {
+            mapContainer.style.display = "block";
+            if (btn) btn.innerHTML = '<i class="fas fa-times"></i> Hide Map';
+        } else {
+            mapContainer.style.display = "none";
+            if (btn) btn.innerHTML = '<i class="fas fa-map"></i> View on Map';
+        }
+    }
+
+    // ==========================================
+    // IMAGE GALLERY
+    // ==========================================
     let currentImageIndex = 0;
     const images = [
         "{% if property.cover_image %}{{ property.cover_image.url }}{% else %}https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
@@ -1261,7 +1293,6 @@
         if (currentImageIndex >= images.length) currentImageIndex = 0;
         else if (currentImageIndex < 0) currentImageIndex = images.length - 1;
 
-        // Update image with smooth transition
         heroImage.style.opacity = '0.7';
         heroImage.style.transform = 'scale(1.05)';
 
@@ -1271,21 +1302,21 @@
             heroImage.style.transform = 'scale(1)';
         }, 200);
 
-        // Update indicators
         indicators.forEach((indicator, index) => {
             indicator.classList.toggle('active', index === currentImageIndex);
         });
     }
 
-    // Map toggle functionality
-    function toggleMap() {
-        const mapContainer = document.getElementById("mapContainer");
-        mapContainer.style.display = (mapContainer.style.display === "none" || mapContainer.style.display === "")
-            ? "block"
-            : "none";
+    // Auto-play gallery if there are multiple images
+    if (images.length > 1) {
+        setInterval(() => {
+            changeImage(1);
+        }, 5000);
     }
 
-    // Inquiry modal functionality
+    // ==========================================
+    // INQUIRY MODAL
+    // ==========================================
     function openInquiryModal(propertyId) {
         document.getElementById('inquiryModal').style.display = 'block';
         document.body.style.overflow = 'hidden';
@@ -1298,7 +1329,7 @@
 
     function submitInquiry(event) {
         event.preventDefault();
-        
+
         const formData = new FormData(event.target);
         const data = {
             property_id: '{{ property.id }}',
@@ -1309,7 +1340,6 @@
             message: formData.get('message')
         };
 
-        // Show loading state
         const submitBtn = event.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Sending...';
@@ -1343,21 +1373,16 @@
         });
     }
 
-    // Auto-play gallery if there are multiple images
-    if (images.length > 1) {
-        setInterval(() => {
-            changeImage(1);
-        }, 5000);
-    }
-
-    // Initialize animations
+    // ==========================================
+    // ANIMATIONS & INIT
+    // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
         const sections = document.querySelectorAll('.section');
         sections.forEach((section, index) => {
             section.style.opacity = '0';
             section.style.transform = 'translateY(30px)';
             section.style.transition = 'all 0.8s ease';
-            
+
             setTimeout(() => {
                 section.style.opacity = '1';
                 section.style.transform = 'translateY(0)';
@@ -1367,7 +1392,7 @@
         console.log('KIF Realty Exclusive Property Detail Page Loaded Successfully');
     });
 
-    // Close modal on escape key
+    // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeInquiryModal();

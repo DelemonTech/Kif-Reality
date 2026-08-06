@@ -1,0 +1,3956 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}KIF Realty – Property Expert in Dubai{% endblock %}
+
+<!-- home.html -->
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/">{% endblock %}
+
+
+<script>
+    // Enhanced Real-time Calculator System with Editable Inputs
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Mortgage Calculator Elements
+        const mortgageElements = {
+            // Sliders
+            propertyPrice: document.getElementById('property-price'),
+            downPayment: document.getElementById('down-payment'),
+            loanAmount: document.getElementById('loan-amount'),
+            loanPeriod: document.getElementById('loan-period'),
+            // interestRate: document.getElementById('interest-rate'),
+
+            // Editable Inputs
+            propertyPriceInput: document.getElementById('property-price-input'),
+            downPaymentInput: document.getElementById('down-payment-input'),
+            loanAmountInput: document.getElementById('loan-amount-input'),
+            loanPeriodInput: document.getElementById('loan-period-input'),
+            interestRateInput: document.getElementById('interest-rate-input'),
+
+            // Displays
+            downPercentage: document.getElementById('down-percentage'),
+            loanPercentage: document.getElementById('loan-percentage'),
+            displayRate: document.getElementById('display-rate'),
+            monthlyPayment: document.getElementById('monthly-payment')
+        };
+
+        // ROI Calculator Elements
+        const roiElements = {
+            // Sliders
+            purchasePrice: document.getElementById('purchase-price'),
+            currentValue: document.getElementById('current-value'),
+            annualRent: document.getElementById('annual-rent'),
+            annualExpenses: document.getElementById('annual-expenses'),
+            holdingPeriod: document.getElementById('holding-period'),
+
+            // Editable Inputs
+            purchasePriceInput: document.getElementById('purchase-price-input'),
+            currentValueInput: document.getElementById('current-value-input'),
+            annualRentInput: document.getElementById('annual-rent-input'),
+            annualExpensesInput: document.getElementById('annual-expenses-input'),
+            holdingPeriodInput: document.getElementById('holding-period-input'),
+
+            // Displays
+            totalROIDisplay: document.getElementById('total-roi-display'),
+            annualROIDisplay: document.getElementById('annual-roi-display')
+        };
+
+        // Residency status buttons
+        const statusButtons = document.querySelectorAll('.status-btn');
+
+        // Utility Functions
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num));
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num)) + ' AED';
+        }
+
+        function formatPercent(num) {
+            return num.toFixed(2) + '%';
+        }
+
+        function parseFormattedNumber(str) {
+            return parseFloat(str.toString().replace(/,/g, ''));
+        }
+
+        // MORTGAGE CALCULATOR FUNCTIONS
+        function updateMortgageCalculations() {
+            const price = parseFloat(mortgageElements.propertyPrice.value);
+            const down = parseFloat(mortgageElements.downPayment.value);
+            const loan = parseFloat(mortgageElements.loanAmount.value);
+            const period = parseFloat(mortgageElements.loanPeriod.value);
+            const rate = parseFloat(mortgageElements.interestRate.value);
+
+            // Update input fields
+            mortgageElements.loanAmount.value = loan;
+            mortgageElements.downPayment.max = price * 0.8;
+            mortgageElements.loanAmount.min = price * 0.2;
+            mortgageElements.loanAmount.max = price * 0.8;
+        }
+
+        // ROI CALCULATOR FUNCTIONS
+        function updateROICalculations() {
+            const purchasePrice = parseFloat(roiElements.purchasePrice.value);
+            const currentValue = parseFloat(roiElements.currentValue.value);
+            const annualRent = parseFloat(roiElements.annualRent.value);
+            const annualExpenses = parseFloat(roiElements.annualExpenses.value);
+            const holdingPeriod = parseFloat(roiElements.holdingPeriod.value);
+
+            // Update input fields
+            roiElements.purchasePriceInput.value = formatNumber(purchasePrice);
+            roiElements.currentValueInput.value = formatNumber(currentValue);
+            roiElements.annualRentInput.value = formatNumber(annualRent);
+            roiElements.annualExpensesInput.value = formatNumber(annualExpenses);
+            roiElements.holdingPeriodInput.value = holdingPeriod;
+
+            // Calculate ROI
+            const capitalAppreciation = currentValue - purchasePrice;
+            const netAnnualRent = annualRent - annualExpenses;
+            const totalRentalIncome = netAnnualRent * holdingPeriod;
+
+            const totalROI = ((capitalAppreciation + totalRentalIncome) / purchasePrice) * 100;
+            const annualROI = totalROI / holdingPeriod;
+
+            roiElements.totalROIDisplay.textContent = formatPercent(totalROI);
+            roiElements.annualROIDisplay.textContent = formatPercent(annualROI);
+        }
+
+        // INPUT FIELD EVENT LISTENERS
+        function setupInputListeners() {
+            // Mortgage Calculator Inputs
+            mortgageElements.propertyPriceInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 100000 && value <= 100000000) {
+                    mortgageElements.propertyPrice.value = value;
+                    mortgageElements.downPayment.min = value * 0.2;
+                    mortgageElements.downPayment.max = value * 0.8;
+
+                    const currentDownPercent = parseFloat(mortgageElements.downPayment.value) / value;
+                    if (currentDownPercent < 0.2 || currentDownPercent > 0.8) {
+                        mortgageElements.downPayment.value = value * 0.2;
+                    }
+
+                    syncMortgageSliders();
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.downPaymentInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                const price = parseFloat(mortgageElements.propertyPrice.value);
+                if (value >= price * 0.2 && value <= price * 0.8) {
+                    mortgageElements.downPayment.value = value;
+                    syncMortgageSliders();
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.loanAmountInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                const price = parseFloat(mortgageElements.propertyPrice.value);
+                if (value >= price * 0.2 && value <= price * 0.8) {
+                    mortgageElements.loanAmount.value = value;
+                    mortgageElements.downPayment.value = price - value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.loanPeriodInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 25) {
+                    mortgageElements.loanPeriod.value = value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            mortgageElements.interestRateInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 10) {
+                    mortgageElements.interestRate.value = value;
+                    updateMortgageCalculations();
+                }
+            });
+
+            // ROI Calculator Inputs
+            roiElements.purchasePriceInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 500000 && value <= 10000000) {
+                    roiElements.purchasePrice.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.currentValueInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 500000 && value <= 12000000) {
+                    roiElements.currentValue.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.annualRentInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 50000 && value <= 800000) {
+                    roiElements.annualRent.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.annualExpensesInput.addEventListener('input', function () {
+                const value = parseFormattedNumber(this.value);
+                if (value >= 5000 && value <= 100000) {
+                    roiElements.annualExpenses.value = value;
+                    updateROICalculations();
+                }
+            });
+
+            roiElements.holdingPeriodInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (value >= 1 && value <= 20) {
+                    roiElements.holdingPeriod.value = value;
+                    updateROICalculations();
+                }
+            });
+        }
+
+        // MORTGAGE SLIDER EVENT LISTENERS
+        mortgageElements.propertyPrice.addEventListener('input', function () {
+            const price = parseFloat(this.value);
+            mortgageElements.downPayment.min = price * 0.2;
+            mortgageElements.downPayment.max = price * 0.8;
+
+            const currentDownPercent = parseFloat(mortgageElements.downPayment.value) / parseFloat(mortgageElements.propertyPrice.value);
+            mortgageElements.downPayment.value = Math.max(mortgageElements.downPayment.min, Math.min(mortgageElements.downPayment.max, price * currentDownPercent));
+
+            syncMortgageSliders();
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.downPayment.addEventListener('input', function () {
+            syncMortgageSliders();
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.loanAmount.addEventListener('input', function () {
+            const price = parseFloat(mortgageElements.propertyPrice.value);
+            const loan = parseFloat(this.value);
+            const down = price - loan;
+            mortgageElements.downPayment.value = down;
+            updateMortgageCalculations();
+        });
+
+        mortgageElements.loanPeriod.addEventListener('input', updateMortgageCalculations);
+        mortgageElements.interestRate.addEventListener('input', updateMortgageCalculations);
+
+        // Residency status buttons
+        statusButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                statusButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const rate = parseFloat(this.getAttribute('data-rate'));
+                // mortgageElements.interestRate.value = rate;
+                updateMortgageCalculations();
+            });
+        });
+
+        // ROI SLIDER EVENT LISTENERS
+        roiElements.purchasePrice.addEventListener('input', updateROICalculations);
+        roiElements.currentValue.addEventListener('input', updateROICalculations);
+        roiElements.annualRent.addEventListener('input', updateROICalculations);
+        roiElements.annualExpenses.addEventListener('input', updateROICalculations);
+        roiElements.holdingPeriod.addEventListener('input', updateROICalculations);
+
+        // Setup input listeners
+        setupInputListeners();
+
+        // Initialize both calculators
+        syncMortgageSliders();
+        updateMortgageCalculations();
+        updateROICalculations();
+    });
+</script>
+
+{% block extra_css %}
+
+
+<link rel="stylesheet" href="{% static 'css/index-styles.css' %}">
+
+<!-- <style> -->
+<!-- /* Hero Section - OBSIDIAN Style */ -->
+
+<!-- </style> -->
+
+
+<!-- <style> -->
+
+<!-- </style> -->
+
+<!-- <style> -->
+
+<!-- </style>   -->
+
+<!-- <style> -->
+
+<!-- </style> -->
+
+<!-- <style> -->
+<!-- /* ===== CTA Section ===== */ -->
+
+<!-- </style> -->
+
+<!-- <style> -->
+
+<!-- </style> -->
+{% endblock %}
+
+{% load custom_filters %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section id="home" class="hero">
+
+     <!-- Instant dark background (shows first) -->
+  <div class="hero-backdrop" aria-hidden="true"></div>
+
+    <video id="hero-video" autoplay muted loop playsinline preload="none" class="hero-video" width="100%" height="auto">
+        <source data-src="/static/videos/kif_web.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Optional particle overlay -->
+    <div class="hero-particles"></div>
+
+    <!-- Hero Content -->
+    <div class="hero-content-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-star" aria-hidden="true"></i>
+                Dubai's Premier Real Estate Partner
+            </div>
+            <h1>Property expert in Dubai, UAE</h1>
+            <p class="hero-subtitle">
+                Offplan | Ready to move project | Land broker | Property investment consultant |
+                Super Agent for new Developers
+            </p>
+            <div class="cta-buttons">
+                <a href="/properties" class="btn-1 btn-primary">Explore Properties</a>
+                <a href="/contact" class="btn-2 btn-secondary">Our Services</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="featured-properties">
+    <div class="heading">
+        <div class="heading-left">
+            <img src="static/images/logo-kif.png" alt="KIF Realty - Dubai Real Estate Logo" class="logo" loading="lazy">
+            <h2>Latest Properties</h2>
+        </div>
+        <div class="heading-right">
+            <p>
+                Find your perfect home in Dubai with KIF Realty — trusted listings, fair prices, and expert guidance
+            </p>
+            <a href="{% url 'properties' %}" class="view-all-btn">View All Properties</a>
+        </div>
+    </div>
+    <div class="properties-grid">
+        {% for property in featured_properties %}
+        <div class="property-card">
+            <img src="{{ property.cover|default:'/static/img/no-image.jpg' }}" alt="{{ property.title }}"
+                loading="lazy">
+            <div class="property-info">
+                <h3>{{ property.low_price }} <span>{{ property.currency|default:"AED" }}</span></h3>
+                <p>{{ property.city.name }}</p>
+                <div class="details">
+                </div>
+                {% endfor %}
+            </div>
+</section>
+
+<div class="properties-grid"></div>
+
+<script>
+    function loadFeaturedProperties() {
+        const grid = document.querySelector('.properties-grid');
+        grid.innerHTML = `<p>Loading Featured Properties...</p>`;
+
+        fetch('https://microservice.x-opp.com/api/properties/filter/', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                property_type: "Residential",
+                limit: 8,        // Try to limit results
+                page_size: 8     // Alternative parameter
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                grid.innerHTML = ""; // clear loading message
+
+                if (data?.data?.results?.length) {
+                    // ✅ Show only first 8 properties
+                    data.data.results.slice(0, 8).forEach(p => {
+
+                        // Create slug from API slug or title
+                        const slug = p.slug || createSlug(p.title?.en || 'property');
+                        const propertyUrl = `/property/${slug}-${p.id}/`;
+
+                        grid.innerHTML += `
+          <div class="property-card">
+            <img src="${p.cover || '/static/img/no-image.jpg'}" alt="${p.title?.en || 'Property'}" loading="lazy">
+            <div class="property-info">
+              <h3>${p.title?.en || 'Untitled Property'}</h3>
+              <h4>${p.low_price || 'Price on request'} <span>${p.currency || "AED"}</span></h4>
+              <p>${p.district?.name?.en || ""} / ${p.city?.name?.en || ""}</p>
+             
+              <a href="${propertyUrl}" class="learn-more" aria-label="Learn more about ${p.title?.en || 'this property'}">LEARN MORE</a>
+            </div>
+          </div>
+        `;
+                    });
+                } else {
+                    grid.innerHTML = `<p>No Featured Properties Found</p>`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading properties:', err);
+                grid.innerHTML = `<p>Error loading properties. Please try again later.</p>`;
+            });
+    } // ✅ Function properly closed here
+
+    // ✅ Helper function defined OUTSIDE loadFeaturedProperties
+    function createSlug(text) {
+        return text
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Remove special characters
+            .replace(/\s+/g, '-')      // Replace spaces with hyphens
+            .replace(/--+/g, '-')      // Replace multiple hyphens with single hyphen
+            .trim();
+    }
+
+    // ✅ Run on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        loadFeaturedProperties();
+        loadCitiesFromAPI(); // ✅ Also load cities
+    });
+
+    // ✅ Load cities function
+    function loadCitiesFromAPI() {
+        fetch('https://offplan.market/api/cities/')
+            .then(response => response.json())
+            .then(result => {
+                // Handle the nested structure: result.data.data
+                if (result && result.data && result.data.status && result.data.data) {
+                    citiesData = result.data.data;
+                    populateCitiesDropdown();
+                } else {
+                    console.error('Failed to load cities:', result.error || 'Invalid response structure');
+                    citiesData = [];
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cities:', error);
+                citiesData = [];
+            });
+    }
+
+    // ✅ Populate cities dropdown
+    function populateCitiesDropdown() {
+        const citySelect = document.getElementById('citySelect');
+
+        if (!citySelect) {
+            console.error('❌ City select element not found');
+            return;
+        }
+
+        if (!citiesData.length) {
+            console.error('❌ No cities data available');
+            return;
+        }
+
+        // Clear existing options except the first one
+        citySelect.innerHTML = '<option value="">All Cities</option>';
+
+        // Add cities from API - Use a Set to avoid duplicates
+        const uniqueCities = new Map();
+        citiesData.forEach(city => {
+            if (city.name && city.name.en) {
+                uniqueCities.set(city.name.en, city);
+            }
+        });
+
+        // Add unique cities to dropdown
+        uniqueCities.forEach((city, cityName) => {
+            const option = document.createElement('option');
+            option.value = cityName;
+            option.textContent = cityName;
+            citySelect.appendChild(option);
+        });
+    }
+
+    // ✅ Initialize citiesData variable
+    let citiesData = [];
+</script>
+
+<section class="services-1 fade-up">
+    <!-- Left Side -->
+    <div class="services-left">
+        <h2>Comprehensive Dubai Real Estate Services</h2>
+
+        <p>From luxury villas for sale in Dubai to off-plan properties with flexible payment plans - we provide
+            end-to-end solutions for every investor, family, and business owner in the UAE property market.</p>
+        <p>Buy Apartments in Dubai 2025: Studio apartments in JVC, luxury penthouses in Downtown Dubai, and waterfront
+            properties in Dubai Marina with expert ROI analysis and market insights.</p>
+        <img src="{% static 'images/kif-about.jpg' %}" alt="Dubai Real Estate" class="real-estate-image" loading="lazy">
+
+    </div>
+
+    <!-- Right Side -->
+    <div class="services-right">
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 3l8 6v12h-5v-6H9v6H4V9l8-6z" />
+            </svg>
+            <h3 style="margin-top: 15px;">Luxury Villas & Townhouses</h3>
+            <p>Beachfront villas in Palm Jumeirah, golf course homes in Dubai Hills, and affordable villas in Dubailand
+                with premium locations and exclusive communities.</p>
+
+        </div>
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+            </svg>
+            <h3>Off-Plan Investment Properties</h3>
+            <p>Direct from developers with flexible payment plans, high-growth communities, and guaranteed returns on
+                Dubai freehold property investments.</p>
+
+        </div>
+        <div class="service-card-1">
+            <h3 style="margin-top: 15px;">Commercial Property Dubai</h3>
+            <p>Office spaces in Business Bay, retail units in prime locations, and mixed-use buildings with strategic
+                commercial plots for business growth.</p>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M3 13h8V3H3v10zm10 8h8V3h-8v18zM3 21h8v-6H3v6z" />
+            </svg>
+        </div>
+        <div class="service-card-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M12 12c2.7 0 5.33-.67 7.5-1.92L12 2 4.5 10.08C6.67 11.33 9.3 12 12 12zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+            </svg>
+            <h3>Property Management</h3>
+            <p>End-to-end portfolio care, short-term rental management, and fully furnished properties with consistent
+                passive income generation.</p>
+        </div>
+    </div>
+</section>
+
+<h1 class="location-head ">Prime Dubai Locations We Cover</h1>
+<p class="section-title">From iconic Downtown Dubai to emerging Dubai South - discover the best property investment
+    opportunities across Dubai's most sought-after communities.</p>
+
+<div class="carousel-wrapper">
+    <button id="prevBtn" class="arrow left">&#10094;</button>
+
+    <div class="carousel-container" id="carouselContainer">
+        <ul class="carousel" id="dubaiCarousel">
+            <li class="day-card">
+                <img src="{% static 'images/bussinesbay.webp' %}" alt="Downtown Dubai" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Downtown Dubai</h2>
+                    <p class="desc">Burj Khalifa views & iconic lifestyle.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubai-marina.jpg' %}" alt="Dubai Marina" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai Marina</h2>
+                    <p class="desc">Waterfront living with nightlife & retail.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/Palm-Jumeirah.jpg' %}" alt="Palm Jumeirah" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Palm Jumeirah</h2>
+                    <p class="desc">Ultra-luxury beachfront properties.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubaihill.webp' %}" alt="Dubai Hills Estate" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai Hills Estate</h2>
+                    <p class="desc">Golf course communities & family living.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/bussinesbay.webp' %}" alt="Business Bay" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Business Bay</h2>
+                    <p class="desc">Central commercial & residential hub.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/dubaisouth.jpg' %}" alt="Dubai South" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Dubai South</h2>
+                    <p class="desc">Future growth near Al Maktoum Airport.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/Jumeirah-Village.jpg' %}" alt="JVC" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Jumeirah Village Circle</h2>
+                    <p class="desc">Affordable apartments & townhouses.</p>
+                </div>
+            </li>
+            <li class="day-card">
+                <img src="{% static 'images/ras.jpg' %}" alt="Ras Al Khaimah" loading="lazy">
+                <div class="meta">
+                    <h2 class="location">Ras Al Khaimah</h2>
+                    <p class="desc">Next frontier of luxury developments.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <button id="nextBtn" class="arrow right">&#10095;</button>
+</div>
+
+<!-- WHY CHOOSE KIF REALTY SECTION -->
+<section class="why-choose-kif">
+    <div class="why-choose-kif-container">
+        <!-- Left Golden Gradient Section -->
+        <div class="why-choose-kif-left">
+            <h2> Why Choose Kif Realty</h2>
+            <img src="{% static 'images/logo-kif.png' %}" loading="lazy" alt="KIF Realty Logo" />
+        </div>
+
+        <!-- Right Content -->
+        <div class="why-choose-kif-right">
+            <p class="intro">
+                Ranked among the top real estate brokers in Dubai, we deliver transparent,
+                reliable, and profitable property solutions since 2011.
+            </p>
+
+            <!-- Feature 1 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="13">0</div><span>+</span>
+                </div>
+                <div class="kif-text">
+                    <h3>Years of Market Leadership</h3>
+                    <p>Deep expertise in Dubai real estate market dynamics, developer relationships, and investment
+                        strategies.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="100">0</div><span>%</span>
+                </div>
+                <div class="kif-text">
+                    <h3>RERA Certified Team</h3>
+                    <p>Licensed real estate professionals ensuring compliance, transparency, and ethical business
+                        practices.</p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="kif-feature">
+                <div class="kif-count-wrapper">
+                    <div class="kif-count" data-target="24">0</div><span>/7</span>
+                </div>
+                <div class="kif-text">
+                    <h3>Customer Support</h3>
+                    <p>Dedicated support throughout your property journey - from initial consultation to post-purchase
+                        services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Investment Calculator Section -->
+<section class="calculators-section">
+    <div class="section-title-new">
+        <h2>UAE Property Investment Calculators</h2>
+        <p>Make informed decisions with our accurate calculators designed specifically for Dubai real estate
+            investments.</p>
+    </div>
+
+    <!-- Mortgage Calculator -->
+    <div id="mortgage-calculator" class="calculator-container">
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h3>UAE Mortgage Payment Calculator</h3>
+                <p>Calculate your monthly mortgage payments based on current UAE bank rates and regulations.</p>
+            </div>
+            <div class="calculator-grid">
+                <div class="calculator-left">
+
+                    <div class="calculator-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="property-price">Property Purchase Price</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="property-price-input" value="1,200,000"
+                                        class="editable-input">
+                                    <input type="range" id="property-price" min="300000" max="200000000" value="1200000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">300,000 AED</span>
+                                        <span class="max-value">200,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="residency-status">Residency Status</label>
+                                <div class="button-group">
+                                    <button type="button" class="status-btn" data-value="uae-national" data-rate="3.25">
+                                        UAE National
+                                        <span class="rate-badge">3.25%</span>
+                                    </button>
+                                    <button type="button" class="status-btn active" data-value="uae-resident"
+                                        data-rate="3.75">
+                                        UAE Resident
+                                        <span class="rate-badge">3.75%</span>
+                                    </button>
+                                    <button type="button" class="status-btn" data-value="non-resident" data-rate="4.54">
+                                        Non-Resident
+                                        <span class="rate-badge">4.54%</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="down-payment">Down Payment</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="down-payment-input" value="240,000" class="editable-input">
+                                    <input type="range" id="down-payment" min="240000" max="960000" value="240000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value" id="down-min-display">240,000 AED (20%)</span>
+                                        <span class="percentage-value" id="down-percentage">20%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="loan-amount">Loan Amount</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="loan-amount-input" value="960,000" class="editable-input">
+                                    <input type="range" id="loan-amount" min="240000" max="960000" value="960000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value" id="loan-min-display">240,000 AED (20%)</span>
+                                        <span class="percentage-value" id="loan-percentage">80%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="loan-period">Loan Period (Years)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="loan-period-input" value="25" class="editable-input">
+                                    <input type="range" id="loan-period" min="1" max="25" value="25" class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">1 year</span>
+                                        <span class="max-value">25 years</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="interest-rate">Annual Interest Rate (%)</label>
+                                <div class="input-slider-group">
+                                    <!-- Manual editable input -->
+                                    <input type="text" id="interest-rate-input" value="3.75" class="editable-input">
+
+                                    <!-- Slider (optional) -->
+                                    <!-- <input type="range" id="interest-rate" min="2.5" max="8" value="3.75" class="slider"> -->
+
+                                    <div class="slider-values">
+                                        <span class="min-value">1%</span>
+                                        <span class="max-value">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="calculator-right">
+                    <div class="result-display">
+                        <div class="result-main">
+                            <span class="result-label-small">Monthly payment</span>
+                            <div class="result-value-large" id="monthly-payment">4,936 AED</div>
+                        </div>
+                        <div class="result-secondary">
+                            <span class="result-label-small">Interest rate</span>
+                            <div class="result-value-medium" id="display-rate">3.75%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROI Calculator -->
+    <div id="roi-calculator" class="calculator-container">
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h3>Dubai Property ROI Calculator</h3>
+                <p>Analyze potential returns on your Dubai property investment with comprehensive ROI
+                    calculations.</p>
+            </div>
+
+            <div class="calculator-grid">
+                <div class="calculator-left">
+
+
+                    <div class="calculator-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="purchase-price">Purchase Price (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="purchase-price-input" value="2,500,000"
+                                        class="editable-input">
+                                    <input type="range" id="purchase-price" min="500000" max="10000000" value="2500000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">500,000 AED</span>
+                                        <span class="max-value">10,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="current-value">Current Market Value (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="current-value-input" value="3,000,000"
+                                        class="editable-input">
+                                    <input type="range" id="current-value" min="500000" max="15000000" value="3000000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">500,000 AED</span>
+                                        <span class="max-value">15,000,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="annual-rent">Annual Rental Income (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="annual-rent-input" value="180,000" class="editable-input">
+                                    <input type="range" id="annual-rent" min="30000" max="800000" value="180000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">30,000 AED</span>
+                                        <span class="max-value">800,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="annual-expenses">Annual Expenses (AED)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="annual-expenses-input" value="25,000" class="editable-input">
+                                    <input type="range" id="annual-expenses" min="5000" max="100000" value="25000"
+                                        class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">5,000 AED</span>
+                                        <span class="max-value">100,000 AED</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="holding-period">Investment Period (Years)</label>
+                                <div class="input-slider-group">
+                                    <input type="text" id="holding-period-input" value="5" class="editable-input">
+                                    <input type="range" id="holding-period" min="1" max="20" value="5" class="slider">
+                                    <div class="slider-values">
+                                        <span class="min-value">1 year</span>
+                                        <span class="max-value">20 years</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty for layout balance -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="calculator-right">
+                    <div class="result-display">
+                        <div class="result-main">
+                            <span class="result-label-small">Total ROI</span>
+                            <div class="result-value-large" id="total-roi-display">31.20%</div>
+                        </div>
+                        <div class="result-secondary">
+                            <span class="result-label-small">Annual return</span>
+                            <div class="result-value-medium" id="annual-roi-display">6.24%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="cta-overlay">
+        <div class="cta-content">
+            <h2>Ready to Invest in Dubai Real Estate?</h2>
+            <p>
+                Join thousands of satisfied investors who chose KIF Realty for their Dubai property investments.
+                Get expert guidance on buying apartments, luxury villas, and off-plan properties with guaranteed
+                returns.
+            </p>
+            <div class="cta-button">
+                <a href="/contact" class="btn-primary-custom">Start Your Investment Journey</a>
+                <a href="/properties" class="btn-secondary-custom">Browse Properties</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+
+
+<script>
+    const video = document.querySelector('.hero-video');
+    const source = video.querySelector('source');
+
+    // Create an IntersectionObserver to lazy load the video when it is in the viewport
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Load the video by setting the source attribute
+                source.src = source.dataset.src;
+                video.load(); // Start loading the video
+
+                // Once the video is loaded, start playing it and fade in
+                video.addEventListener('canplay', () => {
+                    video.style.opacity = 1; // Fade in the video
+                });
+
+                // Stop observing once the video has started loading
+                observer.disconnect();
+            }
+        });
+    }, {
+        rootMargin: '100px', // Trigger when the video is 100px from the viewport
+    });
+
+    // Observe the video element
+    observer.observe(video);
+</script>
+
+
+<script>
+    // UAE Property Investment Calculators - Fixed Implementation with Precise Input Handling
+    // UAE Property Investment Calculators - Fixed with Max Loan Positioning
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Utility Functions
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num));
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-AE').format(Math.round(num)) + ' AED';
+        }
+
+        function parseFormattedNumber(str) {
+            return parseFloat(str.toString().replace(/,/g, ''));
+        }
+        let manualRateChanged = false; // tracks if user typed the rate manually
+
+        // MORTGAGE CALCULATOR
+        function setupMortgageCalculator() {
+            const elements = {
+                propertyPrice: document.getElementById('property-price'),
+                downPayment: document.getElementById('down-payment'),
+                loanAmount: document.getElementById('loan-amount'),
+                loanPeriod: document.getElementById('loan-period'),
+                // interestRate: document.getElementById('interest-rate'),
+
+                propertyPriceInput: document.getElementById('property-price-input'),
+                downPaymentInput: document.getElementById('down-payment-input'),
+                loanAmountInput: document.getElementById('loan-amount-input'),
+                loanPeriodInput: document.getElementById('loan-period-input'),
+                interestRateInput: document.getElementById('interest-rate-input'),
+
+                monthlyPayment: document.getElementById('monthly-payment'),
+                displayRate: document.getElementById('display-rate'),
+                downPercentage: document.getElementById('down-percentage'),
+                loanPercentage: document.getElementById('loan-percentage')
+            };
+
+            // Store actual values 
+            let actualValues = {
+                propertyPrice: 1200000,
+                downPayment: 240000,     // Will be recalculated based on residency
+                loanAmount: 960000,      // Will be recalculated based on residency
+                loanPeriod: 25,
+                interestRate: 3.75
+            };
+
+            function getResidencyLimits() {
+                const activeStatusEl = document.querySelector('.status-btn.active');
+                if (!activeStatusEl) return { maxLoanPercent: 0.80, minDownPercent: 0.20 }; // default
+
+                const activeStatus = activeStatusEl.getAttribute('data-value');
+
+                if (activeStatus === 'uae-national') {
+                    return { maxLoanPercent: 0.85, minDownPercent: 0.15 };
+                } else if (activeStatus === 'uae-resident') {
+                    return { maxLoanPercent: 0.80, minDownPercent: 0.20 };
+                } else { // non-resident
+                    return { maxLoanPercent: 0.60, minDownPercent: 0.40 };
+                }
+            }
+
+            function setToMaxLoanPosition() {
+                const price = actualValues.propertyPrice;
+                const limits = getResidencyLimits();
+
+                // Set loan to maximum allowed and down payment to minimum required
+                actualValues.loanAmount = price * limits.maxLoanPercent;
+                actualValues.downPayment = price * limits.minDownPercent;
+            }
+
+            function updateSliderRanges() {
+                const price = actualValues.propertyPrice;
+                const limits = getResidencyLimits();
+
+                const minDown = price * limits.minDownPercent;
+                const maxDown = price * (1 - limits.minDownPercent);
+                const minLoan = price * limits.minDownPercent;
+                const maxLoan = price * limits.maxLoanPercent;
+
+                // Update slider ranges
+                elements.downPayment.min = minDown;
+                elements.downPayment.max = maxDown;
+                elements.loanAmount.min = minLoan;
+                elements.loanAmount.max = maxLoan;
+            }
+
+            function updateMortgageCalculations() {
+                const price = actualValues.propertyPrice;
+                const down = actualValues.downPayment;
+                const loan = actualValues.loanAmount;
+                const period = actualValues.loanPeriod;
+                const rate = actualValues.interestRate;
+
+                // Update slider ranges first
+                updateSliderRanges();
+
+                // Update input displays with precise values
+                elements.propertyPriceInput.value = formatNumber(price);
+                elements.downPaymentInput.value = formatNumber(down);
+                elements.loanAmountInput.value = formatNumber(loan);
+                elements.loanPeriodInput.value = period;
+                elements.interestRateInput.value = rate.toFixed(2);
+
+                // Update slider values to match actual values
+                elements.propertyPrice.value = price;
+                elements.downPayment.value = down;
+                elements.loanAmount.value = loan;
+                elements.loanPeriod.value = period;
+                // elements.interestRate.value = rate;
+
+                // Update percentages
+                const downPercent = (down / price) * 100;
+                const loanPercent = (loan / price) * 100;
+                if (elements.downPercentage) elements.downPercentage.textContent = downPercent.toFixed(1) + '%';
+                if (elements.loanPercentage) elements.loanPercentage.textContent = loanPercent.toFixed(1) + '%';
+
+                // Update min/max displays based on residency status
+                const limits = getResidencyLimits();
+                const minDown = price * limits.minDownPercent; // minimum down payment
+                const maxLoan = price * limits.maxLoanPercent; // maximum loan
+
+                const downMinDisplay = document.getElementById('down-min-display');
+                const loanMinDisplay = document.getElementById('loan-min-display');
+
+                // Set the minimum loan value to be equal to the minimum down payment (240,000 AED)
+                // Set the minimum down payment value to be displayed in the down-min-display span
+                if (downMinDisplay) {
+                    downMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
+                }
+                if (loanMinDisplay) {
+                    loanMinDisplay.textContent = formatNumber(minDown) + ' AED (' + (limits.minDownPercent * 100).toFixed(0) + '%)';
+                }
+
+
+
+                // Calculate monthly payment using standard amortization formula
+                const monthlyRate = rate / 100 / 12;
+                const numberOfPayments = period * 12;
+
+                let monthlyPayment = 0;
+                if (monthlyRate > 0) {
+                    monthlyPayment = loan * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                        (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                } else {
+                    monthlyPayment = loan / numberOfPayments;
+                }
+
+                if (elements.monthlyPayment) elements.monthlyPayment.textContent = formatCurrency(monthlyPayment);
+                if (elements.displayRate) elements.displayRate.textContent = rate.toFixed(2) + '%';
+
+                // Update fees breakdown
+                updateFeesBreakdown(price, down);
+            }
+
+            function updateFeesBreakdown(price, down) {
+                const landDeptFee = price * 0.04;
+                const processingFee = Math.min(2500, price * 0.001);
+                const totalUpfront = down + landDeptFee + 4000 + processingFee + 2500 + 5000;
+
+                const downPaymentFeeEl = document.getElementById('down-payment-fee');
+                const landDeptFeeEl = document.getElementById('land-dept-fee');
+                const processingFeeEl = document.getElementById('processing-fee');
+                const totalUpfrontEl = document.getElementById('total-upfront');
+
+                if (downPaymentFeeEl) downPaymentFeeEl.textContent = formatCurrency(down);
+                if (landDeptFeeEl) landDeptFeeEl.textContent = formatCurrency(landDeptFee);
+                if (processingFeeEl) processingFeeEl.textContent = formatCurrency(processingFee);
+                if (totalUpfrontEl) totalUpfrontEl.textContent = formatCurrency(totalUpfront);
+            }
+
+            // Property price slider
+            elements.propertyPrice.addEventListener('input', function () {
+                actualValues.propertyPrice = parseFloat(this.value);
+                setToMaxLoanPosition(); // Reset to max loan when property price changes
+                updateMortgageCalculations();
+            });
+
+            // Down payment slider
+            elements.downPayment.addEventListener('input', function () {
+                actualValues.downPayment = parseFloat(this.value);
+                actualValues.loanAmount = actualValues.propertyPrice - actualValues.downPayment;
+                updateMortgageCalculations();
+            });
+
+            // Loan amount slider
+            elements.loanAmount.addEventListener('input', function () {
+                actualValues.loanAmount = parseFloat(this.value);
+                actualValues.downPayment = actualValues.propertyPrice - actualValues.loanAmount;
+                updateMortgageCalculations();
+            });
+
+            // Loan period slider
+            elements.loanPeriod.addEventListener('input', function () {
+                actualValues.loanPeriod = parseFloat(this.value);
+                updateMortgageCalculations();
+            });
+
+
+            // Interest rate slider
+            // --- FIXED INTEREST RATE INPUT HANDLING ---
+            elements.interestRateInput.addEventListener('input', function () {
+                let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+
+                // Allow only one decimal point
+                const parts = value.split('.');
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts[1]; // drop extra dots
+                }
+
+                this.value = value; // let user type freely (like "3.", "3.7", etc.)
+            });
+
+            // On blur (finalize input)
+            elements.interestRateInput.addEventListener('blur', function () {
+                let value = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                const num = parseFloat(value);
+
+                if (isNaN(num)) {
+                    // reset to last valid value
+                    this.value = actualValues.interestRate.toFixed(2);
+                    return;
+                }
+
+                // Clamp and update
+                const clamped = Math.min(Math.max(num, 1), 10); // between 1% and 10%
+                actualValues.interestRate = clamped;
+                this.value = clamped.toFixed(2);
+                manualRateChanged = true;
+                updateMortgageCalculations();
+            });
+
+
+            elements.interestRateInput.addEventListener('blur', function () {
+                const value = this.value.replace(/,/g, '');
+                if (value === '' || isNaN(parseFloat(value))) {
+                    this.value = actualValues.interestRate.toFixed(2);
+                    return;
+                }
+                actualValues.interestRate = parseFloat(value);
+                this.value = actualValues.interestRate.toFixed(2);
+            });
+
+            // Residency status buttons - FIXED to set max loan position
+            document.querySelectorAll('.status-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Only auto-set rate if user hasn't manually changed it
+                    if (!manualRateChanged) {
+                        actualValues.interestRate = parseFloat(this.getAttribute('data-rate'));
+                    }
+
+                    setToMaxLoanPosition();
+                    updateMortgageCalculations();
+                });
+            });
+
+            // Input field synchronization
+            function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
+                if (!inputElement) return;
+
+                inputElement.addEventListener('input', function () {
+                    let value = this.value.replace(/,/g, '');
+                    if (isInteger) {
+                        value = value.replace(/[^0-9]/g, '');
+                    } else {
+                        value = value.replace(/[^0-9.]/g, '');
+                    }
+
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && value !== '') {
+                        if (numValue >= min && numValue <= max) {
+                            actualValues[valueKey] = numValue;
+
+                            if (valueKey === 'propertyPrice') {
+                                setToMaxLoanPosition();
+                            } else if (valueKey === 'downPayment') {
+                                actualValues.loanAmount = actualValues.propertyPrice - numValue;
+                            } else if (valueKey === 'loanAmount') {
+                                actualValues.downPayment = actualValues.propertyPrice - numValue;
+                            }
+                            updateMortgageCalculations();
+                        }
+                    }
+                });
+
+                inputElement.addEventListener('blur', function () {
+                    const value = this.value.replace(/,/g, '');
+                    if (value === '' || isNaN(parseFloat(value))) {
+                        this.value = isInteger ? actualValues[valueKey].toString() : formatNumber(actualValues[valueKey]);
+                        return;
+                    }
+
+                    const numValue = parseFloat(value);
+                    const clampedValue = Math.max(min, Math.min(max, numValue));
+
+                    actualValues[valueKey] = clampedValue;
+                    this.value = isInteger ? clampedValue.toString() : formatNumber(clampedValue);
+
+                    if (valueKey === 'propertyPrice') {
+                        setToMaxLoanPosition();
+                    } else if (valueKey === 'downPayment') {
+                        actualValues.loanAmount = actualValues.propertyPrice - clampedValue;
+                    } else if (valueKey === 'loanAmount') {
+                        actualValues.downPayment = actualValues.propertyPrice - clampedValue;
+                    }
+                    updateMortgageCalculations();
+                });
+            }
+
+            // Setup input synchronization
+            setupInputSync(elements.propertyPriceInput, 'propertyPrice', false, 100000, 200000000);
+            setupInputSync(elements.downPaymentInput, 'downPayment', false, 0, 200000000);
+            setupInputSync(elements.loanAmountInput, 'loanAmount', false, 0, 200000000);
+            setupInputSync(elements.loanPeriodInput, 'loanPeriod', true, 1, 30);
+            // setupInputSync(elements.interestRateInput, 'interestRate', false, 0, 20);
+
+            // Upfront costs toggle
+            const viewUpfrontButton = document.getElementById('view-upfront-costs');
+            if (viewUpfrontButton) {
+                viewUpfrontButton.addEventListener('click', function () {
+                    const breakdown = document.getElementById('fees-breakdown');
+                    if (breakdown) {
+                        breakdown.classList.toggle('show');
+                        this.textContent = breakdown.classList.contains('show') ?
+                            'Hide upfront costs' : 'View upfront costs & fees';
+                    }
+                });
+            }
+
+            // Initialize - set to max loan position for default residency (UAE Resident)
+            setToMaxLoanPosition();
+            updateMortgageCalculations();
+        }
+
+        // ROI CALCULATOR (unchanged)
+        // ROI CALCULATOR - EXACT FIX
+        // Replace your entire setupROICalculator() function with this code
+
+        function setupROICalculator() {
+            const elements = {
+                purchasePrice: document.getElementById('purchase-price'),
+                currentValue: document.getElementById('current-value'),
+                annualRent: document.getElementById('annual-rent'),
+                annualExpenses: document.getElementById('annual-expenses'),
+                holdingPeriod: document.getElementById('holding-period'),
+
+                purchasePriceInput: document.getElementById('purchase-price-input'),
+                currentValueInput: document.getElementById('current-value-input'),
+                annualRentInput: document.getElementById('annual-rent-input'),
+                annualExpensesInput: document.getElementById('annual-expenses-input'),
+                holdingPeriodInput: document.getElementById('holding-period-input'),
+
+                totalROIDisplay: document.getElementById('total-roi-display'),
+                annualROIDisplay: document.getElementById('annual-roi-display')
+            };
+
+            let actualROIValues = {
+                purchasePrice: 2500000,
+                currentValue: 3000000,
+                annualRent: 180000,
+                annualExpenses: 25000,
+                holdingPeriod: 5
+            };
+
+            function formatNumber(num) {
+                return new Intl.NumberFormat('en-AE').format(Math.round(num));
+            }
+
+            function calculateROI() {
+                const purchasePrice = actualROIValues.purchasePrice;
+                const currentValue = actualROIValues.currentValue;
+                const annualRent = actualROIValues.annualRent;
+                const annualExpenses = actualROIValues.annualExpenses;
+                const holdingPeriod = actualROIValues.holdingPeriod;
+
+                // Update input displays
+                if (elements.purchasePriceInput) elements.purchasePriceInput.value = formatNumber(purchasePrice);
+                if (elements.currentValueInput) elements.currentValueInput.value = formatNumber(currentValue);
+                if (elements.annualRentInput) elements.annualRentInput.value = formatNumber(annualRent);
+                if (elements.annualExpensesInput) elements.annualExpensesInput.value = formatNumber(annualExpenses);
+                if (elements.holdingPeriodInput) elements.holdingPeriodInput.value = holdingPeriod;
+
+                // Update slider values
+                if (elements.purchasePrice) elements.purchasePrice.value = purchasePrice;
+                if (elements.currentValue) elements.currentValue.value = currentValue;
+                if (elements.annualRent) elements.annualRent.value = annualRent;
+                if (elements.annualExpenses) elements.annualExpenses.value = annualExpenses;
+                if (elements.holdingPeriod) elements.holdingPeriod.value = holdingPeriod;
+
+                // Calculate ROI
+                const capitalAppreciation = currentValue - purchasePrice;
+                const netAnnualRent = annualRent - annualExpenses;
+                const totalRentalIncome = netAnnualRent * holdingPeriod;
+                const totalReturn = capitalAppreciation + totalRentalIncome;
+                const totalROI = (totalReturn / purchasePrice) * 100;
+                const annualROI = holdingPeriod > 0 ? totalROI / holdingPeriod : 0;
+
+                // Update displays
+                if (elements.totalROIDisplay) elements.totalROIDisplay.textContent = totalROI.toFixed(2) + '%';
+                if (elements.annualROIDisplay) elements.annualROIDisplay.textContent = annualROI.toFixed(2) + '%';
+            }
+
+            // ========== THIS IS THE FIX - Input field synchronization ==========
+            function setupInputSync(inputElement, valueKey, isInteger = false, min = 0, max = Infinity) {
+                if (!inputElement) return;
+
+                inputElement.addEventListener('input', function () {
+                    let value = this.value.replace(/,/g, '');
+                    if (isInteger) {
+                        value = value.replace(/[^0-9]/g, '');
+                    } else {
+                        value = value.replace(/[^0-9.]/g, '');
+                    }
+
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && value !== '') {
+                        if (numValue >= min && numValue <= max) {
+                            actualROIValues[valueKey] = numValue;
+                            calculateROI();
+                        }
+                    }
+                });
+
+                inputElement.addEventListener('blur', function () {
+                    const value = this.value.replace(/,/g, '');
+                    if (value === '' || isNaN(parseFloat(value))) {
+                        this.value = isInteger ? actualROIValues[valueKey].toString() : formatNumber(actualROIValues[valueKey]);
+                        return;
+                    }
+
+                    const numValue = parseFloat(value);
+                    const clampedValue = Math.max(min, Math.min(max, numValue));
+
+                    actualROIValues[valueKey] = clampedValue;
+                    this.value = isInteger ? clampedValue.toString() : formatNumber(clampedValue);
+                    calculateROI();
+                });
+            }
+            // ========== END OF FIX ==========
+
+            // Add slider event listeners
+            if (elements.purchasePrice) {
+                elements.purchasePrice.addEventListener('input', function () {
+                    actualROIValues.purchasePrice = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.currentValue) {
+                elements.currentValue.addEventListener('input', function () {
+                    actualROIValues.currentValue = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.annualRent) {
+                elements.annualRent.addEventListener('input', function () {
+                    actualROIValues.annualRent = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.annualExpenses) {
+                elements.annualExpenses.addEventListener('input', function () {
+                    actualROIValues.annualExpenses = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            if (elements.holdingPeriod) {
+                elements.holdingPeriod.addEventListener('input', function () {
+                    actualROIValues.holdingPeriod = parseFloat(this.value);
+                    calculateROI();
+                });
+            }
+
+            // ========== CALL THE FIX - Setup input synchronization ==========
+            setupInputSync(elements.purchasePriceInput, 'purchasePrice', false, 500000, 10000000);
+            setupInputSync(elements.currentValueInput, 'currentValue', false, 500000, 15000000);
+            setupInputSync(elements.annualRentInput, 'annualRent', false, 30000, 800000);
+            setupInputSync(elements.annualExpensesInput, 'annualExpenses', false, 5000, 100000);
+            setupInputSync(elements.holdingPeriodInput, 'holdingPeriod', true, 1, 20);
+            // ========== END ==========
+
+            // Initialize
+            calculateROI();
+        }
+
+        // Initialize both calculators
+        setupMortgageCalculator();
+        setupROICalculator();
+    });
+</script>
+
+
+<script>
+    const carousel = document.getElementById("dubaiCarousel");
+    const container = document.getElementById("carouselContainer");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    let scrollAmount = 0;
+    let cardWidth = 316; // 300 card + 16 gap
+    let autoSlide;
+
+    function calculateMaxScroll() {
+        const visibleCards = Math.floor(container.offsetWidth / cardWidth);
+        return Math.max((carousel.children.length - visibleCards) * cardWidth, 0);
+    }
+
+    function updateScroll() {
+        const maxScroll = calculateMaxScroll();
+        if (scrollAmount > maxScroll) scrollAmount = 0;
+        carousel.style.transform = `translateX(-${scrollAmount}px)`;
+    }
+
+    function autoScroll() {
+        scrollAmount += cardWidth;
+        updateScroll();
+    }
+
+    function startAutoScroll() {
+        autoSlide = setInterval(autoScroll, 2500);
+    }
+
+    function stopAutoScroll() {
+        clearInterval(autoSlide);
+    }
+
+    nextBtn.addEventListener("click", () => {
+        scrollAmount += cardWidth;
+        updateScroll();
+    });
+
+    prevBtn.addEventListener("click", () => {
+        scrollAmount -= cardWidth;
+        if (scrollAmount < 0) scrollAmount = calculateMaxScroll();
+        updateScroll();
+    });
+
+    container.addEventListener("mouseenter", stopAutoScroll);
+    container.addEventListener("mouseleave", startAutoScroll);
+
+    window.addEventListener("resize", () => {
+        updateScroll();
+    });
+
+    startAutoScroll();
+</script>
+
+
+<script>
+    // Counter Animation (slower and smoother)
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".kif-count");
+
+        counters.forEach((counter) => {
+            const updateCount = () => {
+                const target = +counter.getAttribute("data-target");
+                let count = +counter.innerText;
+
+                const speed = 300; // higher = slower (more time to reach target)
+                const increment = Math.max(1, Math.ceil(target / speed));
+
+                if (count < target) {
+                    counter.innerText = count + increment;
+                    setTimeout(updateCount, 50); // slower updates
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+<style>
+
+ .hero {
+        height: 100vh;
+        min-height: 700px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: linear-gradient(
+        rgba(2, 2, 2, 0.4), 
+        rgba(2, 2, 2, 0.4)   
+    );
+        overflow: hidden;
+        margin-top: 0;
+    }
+    .hero-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    background: linear-gradient(
+        rgba(10, 10, 10, 0.9), 
+        rgba(26, 26, 26, 0.95)
+    ),
+    radial-gradient(
+        circle at 30% 50%, 
+        rgba(232, 180, 160, 0.1) 0%, 
+        transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 1s ease-in;
+}
+    .hero-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background-color: #0f1419;
+        /* background: var(--glass-bg); */
+        border: 1px solid var(--border-subtle);
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        color: var(--bright-gold);          
+    }
+    .hero-content-container {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 3rem;
+    }
+    .hero-content {
+        text-align: center;
+        color: white;
+    }
+    .hero-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    margin-bottom: 2.5rem;
+    /* background: #EFBF04; */
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+    .hero-subtitle {
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+        /* color: var(--text-muted); */
+        /* font-weight: 300; */
+        line-height: 1.8;
+        opacity: 0.9;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-buttons {
+        display: flex;
+        /* gap: 2.5rem; */
+        justify-content: center;
+        flex-wrap: wrap;
+        /* margin-top: 1.2rem; */
+    }
+    /* Services Section - OBSIDIAN Style */
+    .services-section {
+        background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 2rem 1rem;
+    }
+    .services-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--accent-gradient);
+        opacity: 0.02;
+    }
+    .section-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+    .section-title h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem;
+        font-weight: 400;
+        color: var(--rose-gold);
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        letter-spacing: -0.01em;
+    }
+    .section-title p {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.8;
+        font-weight: 300;
+        margin-bottom: 20px;  
+    }
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+    .service-card {
+        background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+        border: 1px solid rgba(232, 180, 160, 0.1);
+        border-radius: 25px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--accent-gradient);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .service-card:hover::before {
+        opacity: 0.05;
+    }
+    .service-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        border-color: rgba(232, 180, 160, 0.3);
+    }
+    .service-content {
+        position: relative;
+        z-index: 1;
+    }
+    .service-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 2rem;
+        background: var(--accent-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.4s ease;
+    }
+
+    .service-icon i {
+        font-size: 2.2rem;
+        color: var(--obsidian-black);
+        transition: all 0.4s ease;
+    }
+
+    .service-card:hover .service-icon {
+        transform: scale(1.15) rotate(5deg);
+        box-shadow: 0 15px 30px rgba(232, 180, 160, 0.4);
+    }
+
+    .service-card h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.01em;
+    }
+    .service-card p {
+        color: var(--text-muted);
+        line-height: 1.7;
+        font-weight: 300;
+    }
+    /* Locations Section - OBSIDIAN Style */
+    .locations-section {
+        padding: 2rem 1rem;
+        position: relative;
+        background: var(--obsidian-black);
+        overflow: hidden;
+    }
+    .locations-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 70%, rgba(232, 180, 160, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(244, 208, 63, 0.06) 0%, transparent 50%);
+    }
+    .locations-content {
+        position: relative;
+        z-index: 2;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .locations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.2rem;
+        margin-top: 2rem;
+    }
+
+    .location-item {
+        background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(232, 180, 160, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .location-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--accent-gradient);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .location-item:hover::before {
+        opacity: 0.05;
+    }
+
+    .location-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(232, 180, 160, 0.3);
+    }
+
+    .location-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1.5rem;
+        background: var(--accent-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+        transition: all 0.4s ease;
+    }
+
+    .location-icon i {
+        font-size: 1.6rem;
+        color: var(--obsidian-black);
+    }
+
+    .location-item:hover .location-icon {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    .location-item h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 0.8rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .location-item p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        position: relative;
+        z-index: 1;
+        font-weight: 300;
+    }
+
+    /* Why Choose Section - OBSIDIAN Style */
+    .why-choose-section {
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, var(--medium-gray) 0%, var(--charcoal-gray) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .why-choose-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--accent-gradient);
+        opacity: 0.02;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.2rem;
+        max-width: 1200px;
+        margin: 2rem auto 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    .feature-card {
+        background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
+        padding: 1.5rem 1.5rem;
+        border-radius: 25px;
+        text-align: center;
+        border: 1px solid rgba(232, 180, 160, 0.1);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--accent-gradient);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .feature-card:hover::before {
+        opacity: 0.05;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        border-color: rgba(232, 180, 160, 0.3);
+    }
+
+    .feature-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-card h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-card p {
+        color: var(--text-muted);
+        line-height: 1.7;
+        font-weight: 300;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Calculator Container - Dark Theme Design */
+    .calculators-section {
+        padding: 3rem 2rem;
+        /* background: linear-gradient(135deg, #1a1a1a 0%, #0f1419 100%); */
+        position: relative;
+        overflow: hidden;
+        min-height: 100vh;
+    }
+
+    .calculators-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        opacity: 0.02;
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .section-title h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 400;
+        color: #e8b4a0;
+        margin: 0 0 1rem 0;
+        letter-spacing: -0.01em;
+    }
+
+    .section-title p {
+        color: rgba(255, 255, 255, 0.75);
+        line-height: 1.5;
+        font-weight: 300;
+        font-size: 1rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .calculator-container {
+        max-width: auto;
+        /* margin: 0 auto 3rem; */
+        position: relative;
+        z-index: 2;
+    }
+
+    .calculator-card {
+        /* background: linear-gradient(145deg, #1a1a1a, #2a2a2a); */
+         background: linear-gradient(145deg, #1a1a1a, #1f1f1f);
+        border: 1px solid rgba(232, 180, 160, 0.1);
+        border-radius: 10px;
+        padding: 2rem;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        backdrop-filter: blur(10px);
+        box-sizing: border-box;
+    }
+
+    .calculator-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .calculator-card:hover::before {
+        opacity: 0.03;
+    }
+
+    .calculator-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(232, 180, 160, 0.3);
+    }
+
+    .calculator-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .calculator-header h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin: 0 0 0.8rem 0;
+        letter-spacing: -0.01em;
+    }
+
+    .calculator-header p {
+        color: rgba(255, 255, 255, 0.75);
+        line-height: 1.4;
+        font-weight: 300;
+        font-size: 0.95rem;
+    }
+
+    .result-display {
+        display: flex;
+        flex-direction: column;
+        /* justify-content: space-between; */
+        justify-content: center;
+        gap: 3.5rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 2rem;
+        background: linear-gradient(145deg, #0f1419, #1a1a1a);
+        border-radius: 15px;
+        border: 1px solid rgba(232, 180, 160, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .result-main,
+    .result-secondary {
+        text-align: center;
+    }
+
+    .result-label-small {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.75);
+        display: block;
+        margin-bottom: 0.5rem;
+        /* text-transform: lowercase; */
+    }
+
+    .result-value-large {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #e8b4a0;
+        line-height: 1.1;
+        text-shadow: 0 2px 8px rgba(232, 180, 160, 0.3);
+    }
+
+    .result-value-medium {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: #e8b4a0;
+        line-height: 1.1;
+        text-shadow: 0 1px 5px rgba(232, 180, 160, 0.2);
+    }
+
+    .calculator-form {
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .calculator-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1rem;
+    }
+
+    .calculator-right {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .calculator-left {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .form-group label {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #ffffff;
+        margin-bottom: 0.8rem;
+    }
+
+    .input-slider-group {
+        position: relative;
+    }
+
+    .editable-input {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: linear-gradient(145deg, #0f1419, #1a1a1a);
+        border: 2px solid rgba(232, 180, 160, 0.2);
+        border-radius: 10px;
+        outline: none;
+        transition: all 0.3s ease;
+        text-align: center;
+        margin-bottom: 0.8rem;
+        box-sizing: border-box;
+    }
+
+    .editable-input:focus {
+        border-color: #e8b4a0;
+        box-shadow: 0 0 0 3px rgba(232, 180, 160, 0.1);
+    }
+
+    .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(232, 180, 160, 0.2);
+        background: linear-gradient(145deg, #0f1419, #1a1a1a);
+        margin-top: 0.8rem;
+    }
+
+    .status-btn {
+        padding: 1rem;
+        border: none;
+        background: transparent;
+        font-family: 'Playfair Display', serif;
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.75);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-right: 1px solid rgba(232, 180, 160, 0.2);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.3rem;
+    }
+
+    .status-btn:last-child {
+        border-right: none;
+    }
+
+    .status-btn .rate-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #f4d03f;
+        opacity: 0.9;
+    }
+
+    .status-btn.active {
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        color: #0f1419;
+        font-weight: 600;
+    }
+
+    .status-btn.active .rate-badge {
+        color: #0f1419;
+        opacity: 1;
+    }
+
+    .status-btn:not(.active):hover {
+        background: rgba(232, 180, 160, 0.1);
+        color: #ffffff;
+    }
+
+    .slider {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #0f1419, #1a1a1a);
+        outline: none;
+        cursor: pointer;
+        margin: 0.8rem 0;
+        border: 1px solid rgba(232, 180, 160, 0.2);
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        cursor: pointer;
+        border: 2px solid #0f1419;
+        box-shadow: 0 3px 8px rgba(232, 180, 160, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(232, 180, 160, 0.6);
+    }
+
+    .slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        cursor: pointer;
+        border: 2px solid #0f1419;
+        box-shadow: 0 3px 8px rgba(232, 180, 160, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .slider-values {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .percentage-value {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 600;
+        color: #e8b4a0;
+        font-size: 0.95rem;
+    }
+
+    .upfront-costs-section {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .btn-upfront-costs {
+        background: linear-gradient(135deg, #f4d03f, #e8b4a0);
+        color: #0f1419;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .btn-upfront-costs:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(244, 208, 63, 0.4);
+    }
+
+    .btn-upfront-costs:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(244, 208, 63, 0.3);
+    }
+
+    .btn-upfront-costs i {
+        font-size: 0.9rem;
+    }
+
+    /* Additional fees breakdown */
+    .fees-breakdown {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(145deg, #0f1419, #1a1a1a);
+        border-radius: 15px;
+        border: 1px solid rgba(232, 180, 160, 0.2);
+        display: none;
+    }
+
+    .fees-breakdown.show {
+        display: block;
+    }
+
+    .fees-breakdown h4 {
+        color: #e8b4a0;
+        margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem;
+    }
+
+    .fee-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(232, 180, 160, 0.1);
+    }
+
+    .fee-item:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        color: #e8b4a0;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        /* border-top: 1px solid rgba(232, 180, 160, 0.2); */
+    }
+
+    .fee-label {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.9rem;
+    }
+
+    .fee-value {
+        color: #ffffff;
+        font-weight: 600;
+        font-family: monospace;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .button-group {
+            grid-template-columns: 1fr;
+        }
+
+        .status-btn {
+            border-right: none;
+            border-bottom: 1px solid rgba(232, 180, 160, 0.2);
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: left;
+            padding: 0.8rem 1rem;
+        }
+
+        .status-btn:last-child {
+            border-bottom: none;
+        }
+
+        .result-display {
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .result-value-large {
+            font-size: 2.5rem;
+        }
+
+        .result-value-medium {
+            font-size: 1.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .calculators-section {
+            padding: 2rem 1rem;
+        }
+
+        .calculator-card {
+            padding: 1.5rem;
+        }
+
+        .result-value-large {
+            font-size: 2rem;
+        }
+
+        .result-value-medium {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* CTA Section - OBSIDIAN Style */
+    .cta-section {
+        padding: 2rem 1rem;
+        background: var(--obsidian-black);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, rgba(232, 180, 160, 0.1) 0%, transparent 70%);
+    }
+
+    .cta-content {
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .cta-content h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.1rem;
+        font-weight: 400;
+        color: var(--text-light);
+        margin-bottom: 2rem;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    .cta-content p {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        line-height: 1.8;
+        margin-bottom: 2rem;
+        font-weight: 300;
+    }
+
+    .btn-primary-custom {
+        background: var(--accent-gradient);
+        color: white;
+        padding: 1rem 1.2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-block;
+        transition: all 0.4s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        position: relative;
+        overflow: hidden;
+        margin-right: 2rem;
+    }
+
+    .btn-primary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-primary-custom:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 45px rgba(232, 180, 160, 0.6);
+        color: white;
+    }
+
+    .btn-secondary{
+            color:white
+        }
+
+    .btn-secondary-custom {
+        background: transparent;
+        color: var(--rose-gold);
+        padding: 1rem 1.2rem;
+        border: 2px solid var(--rose-gold);
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+        transition: all 0.4s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--rose-gold);
+        color: var(--obsidian-black);
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(232, 180, 160, 0.4);
+    }
+
+    /* Enhanced animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    /* Loading animations */
+    .services-grid .service-card {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .services-grid .service-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .services-grid .service-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .services-grid .service-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .services-grid .service-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .services-grid .service-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .services-grid .service-card:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+    /* Mobile responsive design */
+    @media (max-width: 1200px) {
+        .calculators-container {
+            grid-template-columns: 1fr;
+            max-width: 800px;
+        }
+    }
+    /* Responsive override for mobile/tablet */
+    @media (max-width: 991px) {
+        .calculator-card {
+            flex-direction: column;
+            max-height: none;
+            height: auto;
+        }
+
+        .calculator-left,
+        .calculator-right {
+            max-height: none;
+            height: auto;
+            padding: 1.2rem;
+            border-radius: 0;
+        }
+        .calculator-right {
+            border-left: none;
+            /* border-top: 1px solid rgba(232, 180, 160, 0.2); */
+        }
+    }
+    @media (max-width: 992px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+        }
+
+        .services-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .locations-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .calculators-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 700px;
+        }
+
+        .calculator-card {
+            height: 800px;
+            max-height: 800px;
+        }
+
+        .calculator-left,
+        .calculator-right {
+            height: 100%;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+    }
+    @media (max-width: 768px) {
+        .hero {
+            height: 80vh;
+            min-height: 500px;
+            padding: 2rem 0;
+            margin-top: 80px;
+        }
+
+        .hero-content-container {
+            margin-top: 2%;
+            padding: 0 1.5rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.8rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+        }
+
+        .services-section,
+        .locations-section,
+        .why-choose-section,
+        .cta-section,
+        .calculators-section {
+            padding: 3rem 1rem;
+        }
+
+        .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            width: 100%;
+            max-width: 300px;
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+
+        .cta-content h2 {
+            font-size: 2.5rem;
+        }
+
+        /* Calculator mobile styles */
+        .calculators-container {
+            max-width: 100%;
+            margin: 1.5rem auto 0;
+            padding: 0 1rem;
+            gap: 1.5rem;
+        }
+
+        .calculator-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .calculator-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .calculator-header p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .result-display {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .result-value-large {
+            font-size: 1.8rem;
+        }
+
+        .result-value-medium {
+            font-size: 1.2rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .status-btn {
+            border-right: none;
+            border-bottom: 1px solid rgba(232, 180, 160, 0.2);
+            padding: 0.8rem 1rem;
+        }
+
+        .status-btn:last-child {
+            border-bottom: none;
+        }
+
+        .slider-values {
+            font-size: 0.75rem;
+        }
+
+        .current-value,
+        .percentage-value {
+            font-size: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+    }
+    @media (max-width: 480px) {
+        .hero-content h1 {
+            font-size: 2.2rem;
+        }
+        .section-title h2 {
+            font-size: 1.5rem;
+        }
+        .service-card,
+        .feature-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .cta-content h2 {
+            font-size: 2rem;
+        }
+
+        .calculators-section {
+            padding: 2rem 0.5rem;
+        }
+
+        .calculator-card {
+            padding: 1.2rem;
+            margin: 0 0.5rem;
+        }
+
+        .calculator-header h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .calculator-header p {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .result-display {
+            padding: 1rem;
+            gap: 0.8rem;
+        }
+
+        .result-value-large {
+            font-size: 2rem;
+        }
+
+        .result-value-medium {
+            font-size: 1.4rem;
+        }
+
+        .result-label-small {
+            font-size: 0.9rem;
+        }
+
+        .form-group label {
+            font-size: 0.95rem;
+        }
+
+        .slider-values {
+            font-size: 0.8rem;
+        }
+
+        .current-value,
+        .percentage-value {
+            font-size: 0.85rem;
+        }
+
+        .status-btn {
+            font-size: 0.9rem;
+            padding: 0.7rem 0.8rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .hero-content h1 {
+            font-size: 2rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+        }
+
+        .calculators-section {
+            padding: 1.5rem 0.25rem;
+        }
+
+        .calculator-card {
+            padding: 1rem;
+            margin: 0 0.25rem;
+        }
+
+        .calculator-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .calculator-header p {
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .result-display {
+            padding: 0.8rem;
+            gap: 0.6rem;
+        }
+
+        .result-value-large {
+            font-size: 1.8rem;
+        }
+
+        .result-value-medium {
+            font-size: 1.2rem;
+        }
+
+        .result-label-small {
+            font-size: 0.85rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+        }
+
+        .slider-values {
+            font-size: 0.75rem;
+        }
+
+        .current-value,
+        .percentage-value {
+            font-size: 0.8rem;
+        }
+
+        .status-btn {
+            font-size: 0.85rem;
+            padding: 0.6rem 0.7rem;
+        }
+    }
+    @media (max-width: 768px) {
+    /* Stack the calculator sections vertically */
+    .calculator-card {
+        padding: 1rem;
+        max-height: none;
+        height: auto;
+        box-sizing: border-box;
+        margin-bottom: 1rem;
+    }
+    .calculator-grid {
+        display: block; /* instead of grid or flex, this stacks left/right */
+        gap: 0;
+    }
+    .calculator-left,
+    .calculator-right {
+        display: block;
+        width: 100%;
+        padding: 0;
+        border-radius: 0;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+    .calculator-header {
+        text-align: left;
+        margin-bottom: 1rem;
+    }
+    .result-display {
+        flex-direction: column !important;
+        align-items: center;
+        text-align: left;
+        padding: 1rem;
+        gap: 1rem;
+        margin-bottom: 1.2rem;
+    }
+    .result-label-small {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    .result-value-large {
+        font-size: 1.5rem;
+    }
+    .result-value-medium {
+        font-size: 1.2rem;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .slider-values {
+        font-size: 0.85rem;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .editable-input {
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .slider {
+        height: 6px;
+        margin: 0.5rem 0;
+    }
+    .button-group {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .status-btn {
+        padding: 0.7rem 0.7rem;
+        font-size: 0.95rem;
+        border-right: none;
+        border-bottom: 1px solid rgba(232, 180, 160, 0.18);
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        gap: 0.3rem;
+    }
+    .status-btn:last-child {
+        border-bottom: none;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.btn-1{
+             display: inline-block;
+            padding: 0.8rem 1.2rem;
+            text-decoration: none;
+            border-radius: 2px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+    }
+    .btn-2{
+            display: inline-block;
+            padding: 0.8rem 1.2rem;
+            text-decoration: none;
+            border-radius: 2px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.4s ease;
+            cursor: pointer;
+       
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+    }
+
+
+
+
+
+
+section.services-1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch; /* Equal height */
+      padding: 80px 6%;
+      position: relative;
+      overflow: hidden;
+      gap: 40px;
+      
+    }
+
+    /* Fade-up animation */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 1.2s ease-out forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Left Side */
+    .services-left {
+      flex: 1;
+      max-width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .services-left h2 {
+      font-size: 2.2rem;
+      font-weight: 600;
+     background: linear-gradient(135deg, #d7bcb2, #f4d03f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .services-left p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      color: #ddd;
+    }
+
+    .real-estate-image {
+      width: 100%;
+      max-width: 550px;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Right Side Cards */
+    .services-right {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      max-width: 55%;
+      position: relative;
+    }
+.service-card-1 svg {
+  width: 70px;              /* size of icons */
+  height: 70px;
+  fill: rgba(88, 70, 0, 0.15);            /* golden color */
+  margin-bottom: 5px;      /* spacing below */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;       /* center align */
+  transition: transform 0.3s ease, fill 0.3s ease;
+}
+
+
+    .service-card-1 {
+      background: rgba(88, 70, 0, 0.15);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      backdrop-filter: blur(6px);
+      padding: 10px;
+      border-radius: 15px;
+      transition: all 0.4s ease;
+      cursor: pointer;
+      height: 100%;
+      position: relative;
+    }
+
+    .service-card-1:hover {
+      transform: translateY(-8px);
+    }
+
+    /* Zig-Zag Effect */
+    .service-card-1:nth-child(odd) {
+      margin-top: 30px;
+    }
+
+    .service-card-1:nth-child(even) {
+      margin-bottom: 30px;
+    }
+
+    .service-card-1 h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .service-card-1 p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #ccc;
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+      section.services-1 {
+        flex-direction: column;
+        align-items: center;
+        gap: 60px;
+      }
+
+      .services-left {
+        max-width: 100%;
+        text-align: center;
+      }
+
+      .real-estate-image {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .services-right {
+        max-width: 100%;
+        grid-template-columns: 1fr;
+      }
+
+      .service-card-1:nth-child(odd),
+      .service-card-1:nth-child(even) {
+        margin: 0;
+      }
+    }
+  /*</style>
+
+<style>*/
+    .carousel-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 40px 60px;
+  box-sizing: border-box;
+  background: #111;
+}
+
+.carousel-container {
+  overflow: hidden;
+}
+
+.carousel {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  gap: 30px;
+}
+
+.day-card {
+               /* Set fixed width */
+  min-width: 300px;
+  max-width: 300px;           /* Prevent it from growing */
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+.day-card:hover {
+  transform: translateY(-8px);
+}
+
+.day-card img {
+  width:100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.meta {
+  padding: 15px;
+  color: #fff;
+}
+
+.meta .location {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+    color: #b48a57;
+}
+
+.meta .desc {
+  font-size: 0.95rem;
+  color: #ccc;
+}
+/* Hide description initially */
+.meta .desc {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  margin-top: 0;
+}
+
+/* Show description on hover */
+.day-card:hover .desc {
+  max-height: 100px; /* or enough height to fit full paragraph */
+  opacity: 1;
+  margin-top: 8px;
+}
+
+/* Arrows */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  font-size: 2rem;
+  padding: 10px 15px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.arrow:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+.arrow.left {
+  left: 15px;
+}
+
+.arrow.right {
+  right: 15px;
+}
+.location-head{
+        font-size: 2.2rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    text-align: center;
+}
+.section-title {
+        line-height: 1.5;
+    font-weight: 300;
+    font-size: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .day-card {
+    min-width: 250px;
+  }
+
+  .arrow {
+    font-size: 1.5rem;
+    padding: 8px 12px;
+  }
+}
+
+
+
+
+
+.why-choose-kif {
+  position: relative;
+  padding: 80px 60px;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Container */
+.why-choose-kif-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Left */
+.why-choose-kif-left {
+  flex: 1;
+  text-align: center;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  border-radius: 12px;
+}
+
+.why-choose-kif-left h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+ background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+  text-transform: capitalize;
+  margin-bottom: 20px;
+}
+
+.why-choose-kif-left img {
+  max-width: 200px;
+  margin-top: 15px;
+}
+
+/* Right */
+.why-choose-kif-right {
+  flex: 2;
+  min-width: 350px;
+  padding-left: 60px;
+}
+
+.why-choose-kif-right .intro {
+  margin-bottom: 40px;
+  color: #ddd;
+  line-height: 1.6;
+}
+
+/* Features */
+.kif-feature {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.4);
+  padding-bottom: 15px;
+}
+
+/* Wrapper keeps number + symbol tight */
+.kif-count-wrapper {
+  display: flex;
+  align-items: baseline;
+  margin-right: 15px;
+}
+
+.kif-count {
+  font-size: 2.8rem;
+  font-weight: bold;
+   background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+}
+
+.kif-count-wrapper span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #d4af37;
+  margin-left: 3px; /* very small spacing */
+}
+
+.kif-text h3 {
+  margin: 0 0 5px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.kif-text p {
+  margin: 0;
+  color: #ccc;
+  font-size: 0.95rem;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .why-choose-kif {
+    padding: 60px 30px;
+  }
+
+  .why-choose-kif-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .why-choose-kif-left {
+    padding: 20px 15px;
+  }
+
+  .why-choose-kif-right {
+    padding-left: 0;
+    margin-top: 30px;
+    min-width: 100%;
+  }
+
+  .why-choose-kif-right .intro {
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+  }
+
+  .kif-feature {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 12px;
+  }
+
+  .kif-count-wrapper {
+    margin-bottom: 8px;
+    margin-right: 0;
+  }
+
+  .kif-count {
+    font-size: 2.2rem;
+  }
+
+  .kif-count-wrapper span {
+    font-size: 1.2rem;
+  }
+
+  .kif-text h3 {
+    font-size: 1rem;
+  }
+
+  .kif-text p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .why-choose-kif {
+    padding: 40px 20px;
+  }
+
+  .why-choose-kif-left h2 {
+    font-size: 1.4rem;
+  }
+
+  .why-choose-kif-left img {
+    max-width: 150px;
+  }
+
+  .kif-count {
+    font-size: 1.8rem;
+  }
+
+  .kif-text h3 {
+    font-size: 0.95rem;
+  }
+}
+
+
+
+
+
+
+.cta-section {
+  position: relative;
+  background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(34, 26, 2, 0.5)),
+              url("/static/images/cta-img.webp") center/cover no-repeat;
+  padding: 100px 80px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Inner Overlay Box */
+.cta-overlay {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.84), rgba(48, 36, 4, 0.523));
+  padding: 60px 40px;
+  border-radius: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.cta-content {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.cta-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.cta-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 35px;
+  color: #ddd;
+}
+
+/* Buttons */
+.cta-button {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-primary-custom {
+  background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  color: #000;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  background: #b9972f;
+  color: #fff;
+}
+
+.btn-secondary-custom {
+  border: 2px solid #d4af37;
+  color: #d4af37;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.btn-secondary-custom:hover {
+  background: #d4af37;
+  color: #000;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 992px) {
+  .cta-section {
+    padding: 80px 40px;
+    background-position: center;
+  }
+
+  .cta-overlay {
+    padding: 50px 30px;
+  }
+
+  .cta-content h2 {
+    font-size: 2rem;
+  }
+
+  .cta-content p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cta-section {
+    padding: 60px 25px;
+  }
+
+  .cta-overlay {
+    padding: 40px 20px;
+    border-radius: 12px;
+  }
+
+  .cta-content h2 {
+    font-size: 1.7rem;
+  }
+
+  .cta-content p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .cta-button {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn-primary-custom, .btn-secondary-custom {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-section {
+    padding: 50px 15px;
+  }
+
+  .cta-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .cta-content p {
+    font-size: 0.9rem;
+  }
+
+  .cta-overlay {
+    padding: 30px 15px;
+  }
+}
+
+
+
+
+.featured-properties {
+  padding: 60px 100px;
+  background: #111;
+  color: #fff;
+}
+
+/* Heading section */
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.heading-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.heading-left .logo {
+  width: 60px;
+  height: auto;
+}
+
+.heading-left h2 {
+      font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+   background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+}
+
+.heading-right {
+  max-width: 500px;
+  font-size: 15px;
+  color: #bbb;
+  line-height: 1.6;
+}
+
+/* Grid layout */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Card styles */
+.property-card {
+  background: #1a1a1a;
+  overflow: hidden;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-card:hover {
+  transform: translateY(-5px);
+}
+
+.property-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: filter 0.5s ease;
+}
+
+.property-card:hover img {
+  filter: grayscale(0%);   /* show color on hover */
+}
+
+.property-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.property-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+
+  margin: 0;
+  color: #b48a57;
+}
+
+.property-info h4 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  color: #fff;
+}
+
+.property-info h4 span {
+  font-size: 13px;
+  color: #ccc;
+}
+
+.property-info p {
+  font-size: 14px;
+  color: #aaa;
+  margin: 0 0 8px;
+}
+/* Learn more link */
+.learn-more {
+  display: inline-end;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #b48a57;
+  text-decoration: none;
+  margin-top: auto;  /* pushes to bottom */
+  align-self: flex-end; /* move to right */
+  transition: color 0.3s ease;
+}
+
+.learn-more::after {
+  content: "➝"; /* thin arrow */
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.learn-more:hover {
+  color: #fff;
+}
+
+.learn-more:hover::after {
+  transform: translateX(3px);
+}
+
+/* ----------------- Responsive Styles ----------------- */
+@media (max-width: 1200px) {
+  .properties-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .featured-properties {
+    padding: 40px 40px;
+  }
+  .properties-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .heading-left h2 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 600px) {
+  .featured-properties {
+    padding: 30px 20px;
+  }
+  .heading {
+    flex-direction: column;
+    text-align: center;
+  }
+  .heading-left {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .heading-left h2 {
+    font-size: 22px;
+  }
+  .heading-right {
+    font-size: 14px;
+    max-width: 100%;
+  }
+  .properties-grid {
+    grid-template-columns: 1fr;
+  }
+  .property-card img {
+    height: 180px;
+  }
+  .property-info h3 {
+    font-size: 16px;
+  }
+  .property-info h4 {
+    font-size: 14px;
+  }
+}
+.section-title-new h2{
+        /* font-family: 'Playfair Display', serif; */
+    font-size: 2.2rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #dad0cd, #998f5f, #cd7f32);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* for Firefox */
+  color: transparent;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+.section-title-new  p{
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
+    font-weight: 300;
+    font-size: 1rem;
+   text-align: center;
+    margin: 0 auto;
+    padding-bottom: 20px;
+}
+.view-all-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  border: 1px solid #b9972f;
+  color: #111;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 2px;
+  text-decoration: none;
+  margin-top: 12px;
+  transition: background 0.3s ease;
+}
+
+.view-all-btn:hover {
+  background: #8c6b43;
+}
+/* Existing CTA styles remain the same */
+
+/* 📱 Mobile Responsive */
+@media (max-width: 768px) {
+  .cta-section {
+    padding: 60px 20px; /* less padding for small screens */
+  }
+
+  .cta-overlay {
+    padding: 40px 20px; /* reduce overlay padding */
+  }
+
+  .cta-content h2 {
+    font-size: 1.8rem; /* smaller heading */
+    margin-bottom: 15px;
+  }
+
+  .cta-content p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+  }
+
+  .cta-button {
+    flex-direction: column; /* stack buttons vertically */
+
+  }
+
+  .btn-primary-custom,
+  .btn-secondary-custom {
+    width: 100%; /* full width on mobile */
+    text-align: center;
+    padding: 12px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-content h2 {
+    font-size: 1.5rem; /* even smaller on very small screens */
+  }
+
+  .cta-content p {
+    font-size: 0.9rem;
+  }
+}
+
+</style>

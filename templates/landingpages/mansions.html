@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Exclusive Dubai Mansions for Sale{% endblock %}
+
+<meta name="description" content="{% block description %}
+Discover Mansions for Sale in Dubai | Luxury Properties in Prime Locations | Exclusive Villas with Stunning Views and World-Class Amenities | Investment Opportunities
+{% endblock %}">
+
+<!-- canonical -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/mansions-for-sale">
+{% endblock %}
+
+
 {% block content %}
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1651,29 +1663,25 @@ Exclusive Dubai mansions for sale, including Palm Jumeirah and Dubai Hills. Expe
 
         <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
             <!-- Web3Forms Access Key -->
-            <input type="hidden" name="access_key" value="8449e901-8d0d-4108-a9b3-fb8716cd275d">
+            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
             <input type="hidden" name="subject" value="New Contact Form Submission">
             <input type="hidden" name="replyto" value="{{ email }}" />
-
+            <input type="hidden" name="page_url" id="modal_page_url">
 
             <input type="text" name="name" placeholder="Name" required>
 
-
             <input type="email" name="email" placeholder="Email" required>
-
 
             <input type="tel" id="phone" name="phone" placeholder="Phone" required>
 
 
             <select name="area_of_interest" id="area_of_interest" required>
-                <option value="">Select Location</option>
+                <option value="">Select Preferred Location</option>
                 <option value="Palm Jumeirah">Palm Jumeirah</option>
                 <option value="Dubai Hills Estate">Dubai Hills Estate</option>
                 <option value="District One">District One</option>
                 <option value="Jumeirah Islands">Jumeirah Islands</option>
                 <option value="Tilal Al Ghaf">Tilal Al Ghaf</option>
-
-
             </select>
 
             <button type="submit">Submit Inquiry</button>
@@ -1734,6 +1742,14 @@ Exclusive Dubai mansions for sale, including Palm Jumeirah and Dubai Hills. Expe
         });
     }
 
+ //Auto-fill page URL
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlInput = document.getElementById("modal_page_url");
+        if (urlInput) {
+            urlInput.value = window.location.href;
+        }
+    });
+
     // Handle form submission
     document.getElementById("propertyForm").addEventListener("submit", function (e) {
         e.preventDefault();
@@ -1764,6 +1780,200 @@ Exclusive Dubai mansions for sale, including Palm Jumeirah and Dubai Hills. Expe
                 submitBtn.disabled = false;
             });
     });
+</script>
+
+
+
+<!-- ----------------------------------------------------------auto popup form ------------------------------------------------------>
+
+<!-- Modal Popup Form -->
+<div id="blogPopupForm" class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn2">&times;</span>
+    <h2>Find the Right Property – Contact Us Today!</h2>
+    <p>Fill in your details and we’ll contact you shortly.</p>
+    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+      <input type="hidden" name="page_url" id="page_url">
+
+
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone" required>
+      <textarea name="message" placeholder="Message" required></textarea>
+
+      <button type="submit">Send</button>
+    </form>
+    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.modal-content {
+    background-color: #111;
+    color: #fff;
+    border-radius: 6px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-bottom: 10px;
+    color: #eeb32b;
+    font-size: 24px;
+    line-height: 1.7;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #000!important;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #a3a3a3;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b;
+    outline: none;
+}
+
+.modal-content input, .modal-content select {
+    background-color: #000!important;
+}
+/* Remove Chrome Autofill White/Yellow Background */
+.modal-content input:-webkit-autofill,
+.modal-content textarea:-webkit-autofill,
+.modal-content select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+/* Normal focus style */
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    outline: none;
+}
+
+/*.modal-content button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-content button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(232, 180, 160, 0.4);
+} */
+
+.close-btn2 {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 24px;
+    color: #eeb32b;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.95);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .modal-content {
+        padding: 20px 20px;
+    }
+    .modal-content h2 { font-size: 20px; }
+    .modal-content p { font-size: 13px; }
+}
+</style>
+
+<!-- JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById('blogPopupForm');
+    const closeBtn = document.querySelector('.close-btn2');
+    const form = document.getElementById('web3Form');
+    const formMessage = document.getElementById('formMessage');
+
+    function showPopup() { popup.style.display = 'flex'; }
+    function hidePopup() { 
+        popup.style.display = 'none';
+        //setTimeout(showPopup, 30000); // reappear after 30s
+    }
+
+    document.getElementById('page_url').value = window.location.href;
+
+
+    // Auto show popup after 12s
+    setTimeout(showPopup, 20000);
+
+    closeBtn.addEventListener('click', hidePopup);
+    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
+    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
+
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
+
+        const formData = new FormData(form);
+        try {
+            const res = await fetch(form.action, { method: form.method, body: formData });
+            const data = await res.json();
+
+            if(data.success){
+                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
+                form.reset();
+                setTimeout(hidePopup, 2000);
+            } else {
+                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+            }
+        } catch (err) {
+            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
+        }
+    });
+});
 </script>
 
 

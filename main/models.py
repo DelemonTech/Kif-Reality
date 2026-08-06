@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from PIL import Image
 import os
 
-
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
@@ -146,23 +145,23 @@ class Newsletter(models.Model):
     def __str__(self):
         return self.email
 
-# class ContactMessage(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.EmailField(validators=[EmailValidator()])
-#     phone = models.CharField(
-#         max_length=15, 
-#         validators=[RegexValidator(regex=r'^\+?1?\d{9,15}$')]
-#     )
-#     subject = models.CharField(max_length=200)
-#     message = models.TextField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     is_read = models.BooleanField(default=False)
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(validators=[EmailValidator()])
+    phone = models.CharField(
+        max_length=15, 
+        validators=[RegexValidator(regex=r'^\+?1?\d{9,15}$')]
+    )
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
-#     class Meta:
-#         ordering = ['-created_at']
+    class Meta:
+        ordering = ['-created_at']
 
-#     def __str__(self):
-#         return f"{self.name} - {self.subject}"
+    def __str__(self):
+        return f"{self.name} - {self.subject}"
 
 # class Newsletter(models.Model):
 #     email = models.EmailField(unique=True, validators=[EmailValidator()])
@@ -372,3 +371,182 @@ class ContactFormView(forms.Form):
         }),
         required=False
     )
+    
+    
+
+    
+    
+    
+# Add this to your main/models.py file
+
+
+class Property(models.Model):
+    """Store properties from external API for sitemap generation"""
+    
+    # API ID (unique identifier from external API)
+    api_id = models.IntegerField(unique=True, db_index=True, help_text="Property ID from external API")
+    
+    # Basic Information (multilingual fields stored as JSON)
+    title = models.CharField(max_length=500, help_text="Property title in English")
+    slug = models.SlugField(max_length=550, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    
+    # Property Details
+    property_type = models.CharField(
+        max_length=50, 
+        blank=True,
+        choices=[
+            ('residential', 'Residential'),
+            ('commercial', 'Commercial'),
+        ],
+        help_text="Property type: residential (20) or commercial (3)"
+    )
+    unit_type = models.CharField(max_length=100, blank=True)
+    
+    # Location (stored as text, extracted from multilingual API response)
+    city = models.CharField(max_length=100, blank=True, db_index=True)
+    district = models.CharField(max_length=100, blank=True)
+    
+    # Pricing & Area
+    low_price = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Minimum price in AED"
+    )
+    high_price = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Maximum price in AED"
+    )
+    min_area = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Minimum area in sq ft"
+    )
+    max_area = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Maximum area in sq ft"
+    )
+    
+    # Property Features
+    bedrooms = models.IntegerField(null=True, blank=True)
+    bathrooms = models.IntegerField(null=True, blank=True)
+    rooms = models.CharField(max_length=50, blank=True)
+    
+    # Images
+    cover_image = models.URLField(max_length=500, blank=True, help_text="Cover image URL from API")
+    
+    # Status Fields
+    property_status = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="e.g., Ready, Under Construction"
+    )
+    sales_status = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="Sales status from API"
+    )
+    delivery_year = models.IntegerField(null=True, blank=True)
+    
+    # Developer
+    developer = models.CharField(max_length=200, blank=True, db_index=True)
+    
+    # Featured Status
+    is_featured = models.BooleanField(default=False, db_index=True)
+    
+    # SEO
+    meta_description = models.CharField(max_length=160, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_synced = models.DateTimeField(auto_now=True, help_text="Last time synced from API")
+    
+    # Visibility
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    class Meta:
+        db_table = 'properties'
+        verbose_name = 'Property'
+        verbose_name_plural = 'Properties'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['api_id']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['is_active', '-created_at']),
+            models.Index(fields=['property_type']),
+            models.Index(fields=['city']),
+            models.Index(fields=['is_featured']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.api_id})"
+    
+    def save(self, *args, **kwargs):
+        # Auto-generate unique slug from title
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Property.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        
+        # Auto-generate meta description if empty
+        if not self.meta_description and self.title:
+            desc = f"{self.title}"
+            if self.city and self.district:
+                desc += f" in {self.city}, {self.district}"
+            elif self.city:
+                desc += f" in {self.city}"
+            if self.low_price:
+                desc += f". Starting from {self.low_price:,.0f} AED"
+            self.meta_description = desc[:160]
+        
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        """Return the URL for this property's detail page"""
+        # This matches your property_detail URL pattern
+        return reverse('property_detail', kwargs={'pk': self.api_id})
+    
+    @property
+    def location(self):
+        """Return formatted location string"""
+        if self.city and self.district:
+            return f"{self.city}, {self.district}"
+        return self.city or self.district or "Dubai"
+    
+    @property
+    def price_range(self):
+        """Return formatted price range"""
+        if self.low_price and self.high_price:
+            return f"{self.low_price:,.0f} - {self.high_price:,.0f} AED"
+        elif self.low_price:
+            return f"From {self.low_price:,.0f} AED"
+        return "Price on request"
+    
+    @property
+    def area_range(self):
+        """Return formatted area range"""
+        if self.min_area and self.max_area:
+            return f"{self.min_area:,.0f} - {self.max_area:,.0f} sq ft"
+        elif self.min_area:
+            return f"From {self.min_area:,.0f} sq ft"
+        return "Area on request"
+    
+    @property
+    def property_type_display(self):
+        """Return readable property type"""
+        return self.get_property_type_display() if self.property_type else "Property"    

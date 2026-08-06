@@ -552,7 +552,7 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: rgb(215, 38, 38);
     font-size: 1.8rem;
     box-shadow: 0 10px 30px rgba(215, 181, 109, 0.5);
     transition: all 0.3s ease;

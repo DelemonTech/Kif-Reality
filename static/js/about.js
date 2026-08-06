@@ -24,30 +24,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Intersection Observer for animations
-// const observerOptions = {
-//     threshold: 0.1,
-//     rootMargin: '0px 0px -50px 0px'
-// };
-
-// const observer = new IntersectionObserver(function(entries) {
-//     entries.forEach(entry => {
-//         if (entry.isIntersecting) {
-//             entry.target.style.opacity = '1';
-//             entry.target.style.transform = 'translateY(0)';
-//             entry.target.classList.add('animate-in');
-//         }
-//     });
-// }, observerOptions);
-
-// Observe all animated elements
-// document.querySelectorAll('.vm-card, .timeline-item, .expertise-card, .leader-card, .story-image').forEach(element => {
-//     element.style.opacity = '0';
-//     element.style.transform = 'translateY(30px)';
-//     element.style.transition = 'all 0.8s ease';
-//     // observer.observe(element);
-// });
-
 // Timeline animation
 const timelineItems = document.querySelectorAll('.timeline-item');
 timelineItems.forEach((item, index) => {

@@ -2,6 +2,7 @@ import requests
 import logging
 from django.conf import settings
 from typing import Dict, Optional
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,9 @@ ALLOWED_FILTER_KEYS = {
     'property_status',
     'sales_status',
     'title',
-    'developer'
+    'developer',
+    'limit',      # ← Add this
+    'page_size'   # ← Add this
 }
 
 class PropertyService:
@@ -59,12 +62,10 @@ class PropertyService:
                 timeout=settings.API_TIMEOUT
             )
 
-
             response.raise_for_status()
             data = response.json()
             print("📤 Payload being sent to API:", payload)
             print("📤 Response being received:", data)
-
 
             return {
                 'success': True,
@@ -119,7 +120,14 @@ class PropertyService:
     def get_cities() -> Dict:
         """
         Get cities with districts from external API.
+        Caches successful responses for 1 hour to avoid hammering a slow/dead microservice.
         """
+        cache_key = "cities_api_data"
+        cached = cache.get(cache_key)
+        if cached:
+            logger.debug("Cities data served from cache")
+            return {'success': True, 'data': cached, 'error': None}
+
         try:
             response = requests.get(
                 settings.CITIES_API_URL,
@@ -127,13 +135,13 @@ class PropertyService:
             )
             response.raise_for_status()
             data = response.json()
-            
+            cache.set(cache_key, data, 60 * 60)  # cache for 1 hour
             return {
                 'success': True,
                 'data': data,
                 'error': None
             }
-            
+
         except requests.exceptions.RequestException as e:
             logger.error(f"Cities API request failed: {str(e)}")
             return {
@@ -141,6 +149,7 @@ class PropertyService:
                 'data': [],
                 'error': 'Unable to fetch cities data.'
             }
+
         except Exception as e:
             logger.error(f"Unexpected error fetching cities: {str(e)}")
             return {
@@ -153,7 +162,14 @@ class PropertyService:
     def get_developers() -> Dict:
         """
         Get developers list from external API.
+        Caches successful responses for 1 hour to avoid hammering a slow/dead microservice.
         """
+        cache_key = "developers_api_data"
+        cached = cache.get(cache_key)
+        if cached:
+            logger.debug("Developers data served from cache")
+            return {'success': True, 'data': cached, 'error': None}
+
         try:
             response = requests.get(
                 settings.DEVELOPERS_API_URL,
@@ -161,13 +177,13 @@ class PropertyService:
             )
             response.raise_for_status()
             data = response.json()
-            
+            cache.set(cache_key, data, 60 * 60)  # cache for 1 hour
             return {
                 'success': True,
                 'data': data,
                 'error': None
             }
-            
+
         except requests.exceptions.RequestException as e:
             logger.error(f"Developers API request failed: {str(e)}")
             return {
@@ -175,6 +191,7 @@ class PropertyService:
                 'data': [],
                 'error': 'Unable to fetch developers data.'
             }
+
         except Exception as e:
             logger.error(f"Unexpected error fetching developers: {str(e)}")
             return {

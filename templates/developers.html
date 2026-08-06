@@ -1,0 +1,710 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Developers | KIF Realty – Trusted Dubai Property Partners{% endblock %}
+
+{% block description %}Explore KIF Realty's network of world-class property developers in Dubai and Sharjah. Browse top-tier projects from industry-leading names across UAE.{% endblock %}
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/developers/">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* ── Page Hero ── */
+.dev-hero {
+    padding: 9rem 2rem 5rem;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,180,160,0.08) 0%, var(--obsidian-black) 70%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.dev-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(232,180,160,0.03) 0px,
+            rgba(232,180,160,0.03) 1px,
+            transparent 1px,
+            transparent 80px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(232,180,160,0.03) 0px,
+            rgba(232,180,160,0.03) 1px,
+            transparent 1px,
+            transparent 80px
+        );
+    pointer-events: none;
+}
+.dev-hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 820px;
+    margin: 0 auto;
+}
+.dev-hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    margin-bottom: 1.4rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s forwards;
+}
+.dev-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 1.4rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+}
+.dev-hero p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.8;
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.35s forwards;
+}
+.dev-stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 3.5rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.5s forwards;
+}
+.dev-stat {
+    text-align: center;
+}
+.dev-stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+.dev-stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+}
+
+/* ── Search / Filter Bar ── */
+.dev-toolbar {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+}
+.dev-search-wrap {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+}
+.dev-search-wrap i {
+    position: absolute;
+    left: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--rose-gold);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+#devSearch {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,180,160,0.2);
+    border-radius: 40px;
+    padding: 0.75rem 1.2rem 0.75rem 2.8rem;
+    color: var(--text-light);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.3s, background 0.3s;
+}
+#devSearch::placeholder { color: var(--text-muted); }
+#devSearch:focus {
+    border-color: rgba(232,180,160,0.5);
+    background: rgba(255,255,255,0.07);
+}
+.dev-sort-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,180,160,0.2);
+    border-radius: 40px;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-muted);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e8b4a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+.dev-sort-select:focus { border-color: rgba(232,180,160,0.5); }
+.dev-sort-select option { background: #1a1a1a; color: #fff; }
+
+.dev-count-badge {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.dev-count-badge span {
+    color: var(--rose-gold);
+    font-weight: 600;
+}
+
+/* ── Grid ── */
+.dev-section {
+    padding: 0 2rem 6rem;
+}
+.dev-grid {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.6rem;
+}
+
+/* ── Developer Card ── */
+.dev-card {
+    background: linear-gradient(145deg, rgba(26,26,26,0.9), rgba(15,15,15,0.95));
+    border: 1px solid rgba(232,180,160,0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    cursor: pointer;
+    position: relative;
+    text-decoration: none;
+    display: block;
+}
+.dev-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity 0.35s;
+    border-radius: 16px;
+    z-index: 0;
+}
+.dev-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(232,180,160,0.35);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,180,160,0.1);
+}
+.dev-card:hover::after { opacity: 0.03; }
+.dev-card > * { position: relative; z-index: 1; }
+
+.dev-card-logo {
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(232,180,160,0.08);
+    padding: 1.5rem;
+    overflow: hidden;
+}
+.dev-card-logo img {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+    filter: brightness(0.95) contrast(1.05);
+    transition: transform 0.35s ease, filter 0.35s ease;
+}
+.dev-card:hover .dev-card-logo img {
+    transform: scale(1.06);
+    filter: brightness(1.1) contrast(1.05);
+}
+.dev-logo-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(232,180,160,0.15), rgba(205,127,50,0.1));
+    border: 1px solid rgba(232,180,160,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    background-clip: text;
+    color: var(--rose-gold);
+    transition: transform 0.35s;
+}
+.dev-card:hover .dev-logo-placeholder { transform: scale(1.08); }
+
+.dev-card-body {
+    padding: 1.4rem 1.5rem 1.6rem;
+}
+.dev-card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.35rem;
+    line-height: 1.3;
+}
+.dev-card-location {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.dev-card-location i { font-size: 0.7rem; }
+
+.dev-card-meta {
+    display: flex;
+    gap: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.dev-card-meta-item {
+    text-align: center;
+    flex: 1;
+}
+.dev-card-meta-item .num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1;
+}
+.dev-card-meta-item .lbl {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.dev-card-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    font-weight: 500;
+    transition: gap 0.3s;
+}
+.dev-card:hover .dev-card-cta { gap: 0.8rem; }
+.dev-card-cta i { font-size: 0.75rem; }
+
+/* ── Loading State ── */
+.dev-skeleton {
+    background: linear-gradient(145deg, rgba(26,26,26,0.9), rgba(15,15,15,0.95));
+    border: 1px solid rgba(232,180,160,0.07);
+    border-radius: 16px;
+    overflow: hidden;
+}
+.skeleton-block {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: 6px;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.sk-logo { height: 130px; border-radius: 0; margin-bottom: 0; }
+.sk-body { padding: 1.4rem 1.5rem; }
+.sk-title { height: 22px; width: 70%; margin-bottom: 0.6rem; }
+.sk-sub { height: 14px; width: 45%; margin-bottom: 1rem; }
+.sk-row { display: flex; gap: 1rem; }
+.sk-meta { height: 42px; flex: 1; }
+
+/* ── Empty / Error State ── */
+.dev-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 5rem 2rem;
+}
+.dev-empty-icon {
+    font-size: 3rem;
+    color: rgba(232,180,160,0.3);
+    margin-bottom: 1rem;
+}
+.dev-empty h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+}
+.dev-empty p { color: var(--text-muted); font-size: 0.9rem; opacity: 0.7; }
+.dev-retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0.75rem 2rem;
+    border: 1px solid rgba(232,180,160,0.3);
+    border-radius: 30px;
+    color: var(--rose-gold);
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+    font-family: 'Montserrat', sans-serif;
+}
+.dev-retry-btn:hover {
+    background: rgba(232,180,160,0.08);
+    border-color: rgba(232,180,160,0.5);
+}
+
+/* ── CTA Banner ── */
+.dev-cta-banner {
+    background: linear-gradient(135deg, rgba(26,26,26,0.8), rgba(10,10,10,0.95));
+    border: 1px solid rgba(232,180,160,0.15);
+    border-radius: 20px;
+    padding: 4rem 3rem;
+    text-align: center;
+    max-width: 1320px;
+    margin: 2rem auto 5rem;
+    position: relative;
+    overflow: hidden;
+}
+.dev-cta-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(232,180,160,0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+.dev-cta-banner h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.8rem;
+}
+.dev-cta-banner p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+.btn-gold-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2.4rem;
+    border: 1px solid rgba(232,180,160,0.4);
+    border-radius: 40px;
+    color: var(--rose-gold);
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 0.4rem;
+}
+.btn-gold-outline:hover {
+    background: rgba(232,180,160,0.1);
+    border-color: rgba(232,180,160,0.6);
+    color: var(--rose-gold);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+.btn-gold-fill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2.4rem;
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 40px;
+    color: var(--obsidian-black);
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin: 0.4rem;
+}
+.btn-gold-fill:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(232,180,160,0.3);
+    color: var(--obsidian-black);
+    text-decoration: none;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.dev-card-appear {
+    opacity: 0;
+    animation: fadeUp 0.45s forwards;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .dev-hero { padding: 8rem 1.5rem 4rem; }
+    .dev-stats-row { gap: 2rem; }
+    .dev-toolbar { padding: 0 1.5rem; }
+    .dev-section { padding: 0 1.5rem 5rem; }
+    .dev-cta-banner { margin: 2rem 1.5rem 4rem; padding: 3rem 1.8rem; }
+    .dev-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+}
+@media (max-width: 480px) {
+    .dev-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="dev-hero">
+    <div class="dev-hero-inner">
+        <p class="dev-hero-eyebrow"><i class="bi bi-building"></i> &nbsp; Curated Partnerships</p>
+        <h1>Our Developer<br>Network</h1>
+        <p>KIF Realty partners with the UAE's most distinguished property developers — delivering exceptional residential and commercial projects across Dubai and Sharjah.</p>
+        <div class="dev-stats-row">
+            <div class="dev-stat">
+                <div class="dev-stat-num" id="statDevCount">—</div>
+                <div class="dev-stat-label">Developers</div>
+            </div>
+            <div class="dev-stat">
+                <div class="dev-stat-num">13+</div>
+                <div class="dev-stat-label">Years Active</div>
+            </div>
+            <div class="dev-stat">
+                <div class="dev-stat-num">AED</div>
+                <div class="dev-stat-label">Transactions</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Toolbar -->
+<div style="max-width:1320px;margin:3rem auto 0;padding:0 2rem;">
+    <div class="dev-toolbar" style="padding:0;">
+        <div class="dev-search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" id="devSearch" placeholder="Search developers…">
+        </div>
+        <select class="dev-sort-select" id="devSort">
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+        </select>
+        <p class="dev-count-badge">Showing <span id="devShownCount">—</span> developers</p>
+    </div>
+</div>
+
+<!-- Grid -->
+<section class="dev-section">
+    <div class="dev-grid" id="devGrid">
+        <!-- Skeletons shown while loading -->
+        {% for i in "12345678"|make_list %}
+        <div class="dev-skeleton dev-skeleton-item">
+            <div class="skeleton-block sk-logo"></div>
+            <div class="sk-body">
+                <div class="skeleton-block sk-title"></div>
+                <div class="skeleton-block sk-sub"></div>
+                <div class="sk-row">
+                    <div class="skeleton-block sk-meta"></div>
+                    <div class="skeleton-block sk-meta"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- CTA Banner -->
+<div style="padding:0 2rem;">
+    <div class="dev-cta-banner">
+        <h2>Ready to Invest with a Trusted Developer?</h2>
+        <p>Our advisors connect you with the right project for your goals — from luxury villas to off-plan investments.</p>
+        <a href="{% url 'contact' %}" class="btn-gold-fill">
+            <i class="bi bi-chat-dots"></i> Speak to an Advisor
+        </a>
+        <a href="{% url 'properties' %}" class="btn-gold-outline">
+            <i class="bi bi-building"></i> Browse Properties
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const MICROSERVICE_API = "{{ MICROSERVICE_API|default:'' }}";
+    const DEVELOPERS_URL = MICROSERVICE_API
+        ? MICROSERVICE_API.replace(/\/$/, '') + '/developers/'
+        : '/developers/';  /* fallback to local proxy */
+
+    const grid = document.getElementById('devGrid');
+    const searchInput = document.getElementById('devSearch');
+    const sortSelect = document.getElementById('devSort');
+    const shownCount = document.getElementById('devShownCount');
+    const statDevCount = document.getElementById('statDevCount');
+
+    let allDevelopers = [];
+    let filteredDevelopers = [];
+
+    /* ── Fetch ── */
+    async function loadDevelopers() {
+        try {
+            const res = await fetch('/api/developers-local/');
+            const json = await res.json();
+            const data = json.data || json;
+            if (Array.isArray(data) && data.length) {
+                allDevelopers = data;
+            } else {
+                /* try the internal list from properties model */
+                allDevelopers = [];
+            }
+        } catch (e) {
+            allDevelopers = [];
+        }
+        render();
+    }
+
+    /* ── Render ── */
+    function render() {
+        const query = searchInput.value.trim().toLowerCase();
+        const sort  = sortSelect.value;
+
+        filteredDevelopers = allDevelopers.filter(d => {
+            const name = getName(d).toLowerCase();
+            return !query || name.includes(query);
+        });
+
+        filteredDevelopers.sort((a, b) => {
+            const na = getName(a), nb = getName(b);
+            return sort === 'az' ? na.localeCompare(nb) : nb.localeCompare(na);
+        });
+
+        grid.innerHTML = '';
+        statDevCount.textContent = allDevelopers.length || '—';
+        shownCount.textContent = filteredDevelopers.length;
+
+        if (!filteredDevelopers.length) {
+            grid.innerHTML = `
+              <div class="dev-empty">
+                <div class="dev-empty-icon"><i class="bi bi-buildings"></i></div>
+                <h3>${query ? 'No results for "' + escHtml(query) + '"' : 'Developers unavailable'}</h3>
+                <p>${query ? 'Try a different search term.' : 'Please try again shortly.'}</p>
+                ${!query ? `<button class="dev-retry-btn" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Retry</button>` : ''}
+              </div>`;
+            return;
+        }
+
+        filteredDevelopers.forEach((dev, idx) => {
+            const card = buildCard(dev, idx);
+            grid.appendChild(card);
+        });
+    }
+
+    /* ── Build Card ── */
+    function buildCard(dev, idx) {
+        const name     = getName(dev);
+        const logo     = dev.logo || dev.image || dev.logo_url || '';
+        const location = dev.city || dev.location || 'Dubai, UAE';
+        const projects = dev.projects_count ?? dev.properties_count ?? dev.total_projects ?? '';
+        const units    = dev.units_count ?? dev.total_units ?? '';
+
+        const link = document.createElement('a');
+        link.className = 'dev-card dev-card-appear';
+        link.href = `/developers/?name=${encodeURIComponent(name)}`;
+        link.style.animationDelay = `${Math.min(idx * 0.05, 0.8)}s`;
+        link.setAttribute('aria-label', `View properties by ${name}`);
+
+        const logoHtml = logo
+            ? `<img src="${escHtml(logo)}" alt="${escHtml(name)} logo" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'dev-logo-placeholder\\'>${escHtml(name[0] || '?')}</div>'">`
+            : `<div class="dev-logo-placeholder">${escHtml(name[0] || '?')}</div>`;
+
+        const metaItems = [
+            projects !== '' ? `<div class="dev-card-meta-item"><div class="num">${projects}</div><div class="lbl">Projects</div></div>` : '',
+            units    !== '' ? `<div class="dev-card-meta-item"><div class="num">${units}</div><div class="lbl">Units</div></div>` : '',
+        ].filter(Boolean).join('');
+
+        link.innerHTML = `
+          <div class="dev-card-logo">${logoHtml}</div>
+          <div class="dev-card-body">
+            <div class="dev-card-name">${escHtml(name)}</div>
+            <div class="dev-card-location"><i class="bi bi-geo-alt-fill"></i>${escHtml(location)}</div>
+            ${metaItems ? `<div class="dev-card-meta">${metaItems}</div>` : ''}
+            <div class="dev-card-cta">View Properties <i class="bi bi-arrow-right"></i></div>
+          </div>`;
+
+        return link;
+    }
+
+    /* ── Helpers ── */
+    function getName(dev) {
+        if (typeof dev === 'string') return dev;
+        return dev.name?.en || dev.name || dev.developer_name || dev.title || 'Unknown Developer';
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /* ── Events ── */
+    searchInput.addEventListener('input', render);
+    sortSelect.addEventListener('change', render);
+
+    /* ── Boot ── */
+    loadDevelopers();
+})();
+</script>
+{% endblock %}

@@ -641,7 +641,9 @@
         border: 1px solid rgba(232, 180, 160, 0.1);
         position: relative;
         overflow: hidden;
-        transition: all 0.4s ease;
+        /*transition: all 0.4s ease;*/
+        transition: box-shadow 0.4s ease, border-color 0.4s ease; /* ✅ CHANGED */
+
     }
 
     .sidebar-card::before {
@@ -656,7 +658,7 @@
     }
 
     .sidebar-card:hover {
-        transform: translateY(-5px);
+        /*transform: translateY(-5px);*/
         box-shadow: 0 30px 70px rgba(232, 180, 160, 0.15);
         border-color: rgba(232, 180, 160, 0.2);
     }
@@ -713,6 +715,10 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.9rem;
+        cursor: pointer !important; /* ✅ CRITICAL */
+    pointer-events: auto !important; /* ✅ CRITICAL */
+    position: relative; /* ✅ ADD THIS */
+    z-index: 10; /* ✅ ADD THIS - ensures button is on top */
     }
 
     .view-property-btn:hover {
@@ -956,13 +962,20 @@
 </style>
 
 <!-- Breadcrumb -->
+<!-- Breadcrumb -->
 <div class="breadcrumb">
     <div class="breadcrumb-container">
         <a href="{% url 'index' %}">Home</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'property_detail' property.id %}">{{ property.title.en }}</a>
+        {% if property.id and property.slug %}
+            <a href="{% url 'property_detail' slug=property.slug pk=property.id %}">
+                {{ property.title.en|default:"Property" }}
+            </a>
+        {% else %}
+            <span>Property</span>
+        {% endif %}
         <i class="fas fa-chevron-right"></i>
-        <span>{{ unit.unit_type.en }} - {{ unit.rooms.en }}{% if unit.rooms.en != "Studio" %} Bedroom{% endif %}</span>
+        <span>{{ unit.unit_type.en|default:"Unit" }} - {{ unit.rooms.en }}{% if unit.rooms.en != "Studio" %} Bedroom{% endif %}</span>
     </div>
 </div>
 
@@ -1132,15 +1145,28 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- Property Info -->
-        <div class="sidebar-card property-info fade-in">
-            <img src="{{ property.cover }}" alt="{{ property.title.en }}" class="property-thumbnail">
-            <h3 class="property-name">{{ property.title.en }}</h3>
-            <p class="property-location">{{ property.district.name.en }}, {{ property.city.name.en }}</p>
-            <a href="{% url 'property_detail' property.id %}" class="view-property-btn">
-                <i class="fas fa-eye"></i>
-                View Full Property
-            </a>
+        <!-- Property Info -->
+<div class="sidebar-card property-info fade-in">
+    <img src="{{ property.cover }}" alt="{{ property.title.en }}" class="property-thumbnail" loading="lazy">
+    <h3 class="property-name">{{ property.title.en }}</h3>
+    <p class="property-location">{{ property.district.name.en }}, {{ property.city.name.en }}</p>
+    
+    <!-- ✅ SIMPLIFIED BUTTON - Direct href construction -->
+    {% if property.slug and property.id %}
+        <a href="/property/{{ property.slug }}-{{ property.id }}/" 
+           class="view-property-btn"
+           style="cursor: pointer !important; pointer-events: auto !important;">
+            <i class="fas fa-eye"></i>
+            View Full Property
+        </a>
+    {% else %}
+        <!-- Debug: Show what's missing -->
+        <div style="color: red; font-size: 12px;">
+            Slug: {{ property.slug|default:"MISSING" }}<br>
+            ID: {{ property.id|default:"MISSING" }}
         </div>
+    {% endif %}
+</div>
 
         <!-- Quick Info -->
         <div class="sidebar-card fade-in">
@@ -1194,16 +1220,34 @@
 </div>
 
 <script>
-    // Initialize animations and interactions
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Initializing unit page with obsidian theme...');
-
-        // Intersection Observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
+(function() {
+    'use strict';
+    
+    console.log('🚀 Unit page initializing...');
+    
+    // Wait for DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    function init() {
+        // Setup animations
+        setupAnimations();
+        setupInteractiveElements();
+        setupPricingCard();
+        setupThumbnail();
+        setupScrollEffects();
+        setupVisibilityHandling();
+        setupKeyboardNav();
+        
+        // ⚠️ DO NOT add ripple effect to ANY links - it breaks navigation
+        
+        console.log('✅ Unit page initialized');
+    }
+    
+    function setupAnimations() {
         const observer = new IntersectionObserver(function(entries) {
             entries.forEach((entry, index) => {
                 if (entry.isIntersecting) {
@@ -1212,56 +1256,48 @@
                     }, index * 200);
                 }
             });
-        }, observerOptions);
-
-        // Observe all fade-in elements
+        }, { 
+            threshold: 0.1, 
+            rootMargin: '0px 0px -50px 0px' 
+        });
+        
         document.querySelectorAll('.fade-in').forEach(element => {
             observer.observe(element);
         });
-
-        // Enhanced hover effects for interactive elements
-        const interactiveElements = document.querySelectorAll('.stat-item, .payment-plan, .amenity-item, .info-item, .sidebar-card');
-        interactiveElements.forEach(element => {
+    }
+    
+    function setupInteractiveElements() {
+        const elements = document.querySelectorAll('.stat-item, .payment-plan, .amenity-item, .info-item');
+        elements.forEach(element => {
             element.addEventListener('mouseenter', function() {
                 this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             });
         });
-
-        // Pricing card enhanced animation
+    }
+    
+    function setupPricingCard() {
         const pricingCard = document.querySelector('.pricing-card');
-        if (pricingCard) {
-            pricingCard.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px) scale(1.02)';
-            });
-            
-            pricingCard.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        }
-
-        // Property thumbnail hover effect
-        const thumbnail = document.querySelector('.property-thumbnail');
-        if (thumbnail) {
-            thumbnail.addEventListener('error', function() {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMWExYTFhIi8+CjxyZWN0IHg9IjE3NSIgeT0iNzUiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI2U4YjRhMCIgcng9IjI1Ii8+CjwvU3ZnPgo=';
-            });
-        }
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
+        if (!pricingCard) return;
+        
+        pricingCard.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
         });
-
-        // Stagger animations for sections
+        
+        pricingCard.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+    
+    function setupThumbnail() {
+        const thumbnail = document.querySelector('.property-thumbnail');
+        if (!thumbnail) return;
+        
+        thumbnail.addEventListener('error', function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMWExYTFhIi8+CjxyZWN0IHg9IjE3NSIgeT0iNzUiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI2U4YjRhMCIgcng9IjI1Ii8+CjwvU3ZnPgo=';
+        });
+    }
+    
+    function setupScrollEffects() {
         const sections = document.querySelectorAll('.content-section, .sidebar-card');
         sections.forEach((section, index) => {
             setTimeout(() => {
@@ -1269,70 +1305,41 @@
                 section.style.transform = 'translateY(0)';
             }, index * 150);
         });
-
-        // Contact button click effects
-        const contactBtns = document.querySelectorAll('.contact-btn');
-        contactBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const ripple = document.createElement('span');
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                ripple.classList.add('ripple');
-                
-                this.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            }
+        });
+    }
+    
+    function setupVisibilityHandling() {
+        document.addEventListener('visibilitychange', function() {
+            const animations = document.querySelectorAll('.float-animation');
+            animations.forEach(el => {
+                el.style.animationPlayState = document.hidden ? 'paused' : 'running';
             });
         });
-
-        console.log('Unit page initialization complete');
-    });
-
-    // Handle scroll effects
-    window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
+    }
+    
+    function setupKeyboardNav() {
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
             }
-        }
-    });
-
-    // Handle visibility change for performance
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            // Pause any heavy animations when tab is not visible
-            document.querySelectorAll('.float-animation').forEach(el => {
-                el.style.animationPlayState = 'paused';
-            });
-        } else {
-            // Resume animations when tab becomes visible
-            document.querySelectorAll('.float-animation').forEach(el => {
-                el.style.animationPlayState = 'running';
-            });
-        }
-    });
-
-    // Keyboard navigation support
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') {
-            document.body.classList.add('keyboard-navigation');
-        }
-    });
-
-    document.addEventListener('mousedown', function() {
-        document.body.classList.remove('keyboard-navigation');
-    });
+        });
+        
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-navigation');
+        });
+    }
+})();
 </script>
 
 <style>

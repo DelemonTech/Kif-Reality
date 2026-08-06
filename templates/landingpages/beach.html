@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
 
+
+{% block title %}Beachfront Properties in Dubai | KIF Realty{% endblock %}
+
+<meta name="description" content="{% block description %}Discover Stunning Beachfront Properties in Dubai | Luxury Villas, Apartments & Off-Plan Developments for Investment | Explore Prime Locations on Palm Jumeirah & More
+
+{% endblock %}">
+
+<!-- canonical -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/beachfront-Properties">
+{% endblock %}
+
+
+
+
 {% block content %}
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -637,7 +652,7 @@
     <div class="locations-grid">
         <div class="location-card">
             <div class="location-icon">
-                <img src="{% static 'images/location.svg' %}" alt="Palm Jumeirah Icon">
+                <img src="{% static 'images/location.svg' %}" alt="Palm Jumeirah Icon" loading="lazy">
             </div>
             <h3>Palm Jumeirah</h3>
             <p>Luxury signature villas for sale; high property prices reflect global demand.</p>
@@ -645,7 +660,7 @@
 
         <div class="location-card">
             <div class="location-icon">
-                <img src="{% static 'images/location.svg' %}" alt="Emaar Beachfront Icon">
+                <img src="{% static 'images/location.svg' %}" alt="Emaar Beachfront Icon" loading="lazy">
             </div>
             <h3>Emaar Beachfront</h3>
             <p>Stylish apartments & villas for sale with Golden Visa options.</p>
@@ -653,7 +668,7 @@
 
         <div class="location-card">
             <div class="location-icon">
-                <img src="{% static 'images/location.svg' %}" alt="Bluewaters Island Icon">
+                <img src="{% static 'images/location.svg' %}" alt="Bluewaters Island Icon" loading="lazy">
             </div>
             <h3>Bluewaters Island</h3>
             <p>Premium residences for sale with strong rental yields.</p>
@@ -661,7 +676,7 @@
 
         <div class="location-card">
             <div class="location-icon">
-                <img src="{% static 'images/location.svg' %}" alt="Dubai Marina & JBR Icon">
+                <img src="{% static 'images/location.svg' %}" alt="Dubai Marina & JBR Icon" loading="lazy">
             </div>
             <h3>Dubai Marina & JBR</h3>
             <p>Popular sea view apartments and beachfront properties for sale.</p>
@@ -688,22 +703,22 @@
 
         <div class="cards-grid">
             <div class="card">
-                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="Rental Yields"></div>
+                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="Rental Yields" loading="lazy"></div>
                 <h3>5–7% Rental Yields</h3>
             </div>
 
             <div class="card">
-                <div class="icon"><img src="{% static 'images/profit1.svg' %}" alt="Capital Appreciation"></div>
+                <div class="icon"><img src="{% static 'images/profit1.svg' %}" alt="Capital Appreciation" loading="lazy"></div>
                 <h3>Palm Jumeirah Villas Doubled in Value</h3>
             </div>
 
             <div class="card">
-                <div class="icon"><img src="{% static 'images/villa.svg' %}" alt="Limited Supply"></div>
+                <div class="icon"><img src="{% static 'images/villa.svg' %}" alt="Limited Supply" loading="lazy"></div>
                 <h3>Limited Supply of Beachfront Villas</h3>
             </div>
 
             <div class="card">
-                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="High Demand"></div>
+                <div class="icon"><img src="{% static 'images/annual.svg' %}" alt="High Demand" loading="lazy"></div>
                 <h3>High Demand & Rental Stability</h3>
             </div>
         </div>
@@ -1000,7 +1015,7 @@
     <div class="trends-grid">
         <div class="trend-card">
             <div class="trend-icon">
-                <img src="{% static 'images/globe.svg' %}" alt="Overseas Demand Icon" />
+                <img src="{% static 'images/globe.svg' %}" alt="Overseas Demand Icon" loading="lazy" />
             </div>
             <h3>High Overseas Demand</h3>
             <ul>
@@ -1011,7 +1026,7 @@
 
         <div class="trend-card">
             <div class="trend-icon">
-                <img src="{% static 'images/growth.svg' %}" alt="Fast-Selling Properties Icon" />
+                <img src="{% static 'images/growth.svg' %}" alt="Fast-Selling Properties Icon" loading="lazy" />
             </div>
             <h3>Fast-Selling Properties</h3>
             <ul>
@@ -1022,7 +1037,7 @@
 
         <div class="trend-card">
             <div class="trend-icon">
-                <img src="{% static 'images/group.svg' %}" alt="Tourism-Driven Demand Icon" />
+                <img src="{% static 'images/group.svg' %}" alt="Tourism-Driven Demand Icon" loading="lazy" />
             </div>
             <h3>Rising Inquiries</h3>
             <ul>
@@ -1202,8 +1217,6 @@
 </section>
 
 
-
-
 <!-- ---------------------------------------------7 SECTION--------------------------------------- -->
 
 <section class="kif-why-choose">
@@ -1221,21 +1234,21 @@
         <div class="kif-cards-grid">
             <div class="kif-card">
                 <div class="kif-card-icon">
-                    <img src="{% static 'images/shield.svg' %}" alt="Exclusive Listings">
+                    <img src="{% static 'images/shield.svg' %}" alt="Exclusive Listings" loading="lazy">
                 </div>
                 <p>Access to exclusive Emaar Beachfront apartments and Bluewaters residences for sale</p>
             </div>
 
             <div class="kif-card">
                 <div class="kif-card-icon">
-                    <img src="{% static 'images/calculator.svg' %}" alt="Expert Guidance">
+                    <img src="{% static 'images/calculator.svg' %}" alt="Expert Guidance" loading="lazy">
                 </div>
                 <p>Expertise in property prices in Palm Jumeirah and ROI calculation for seafront investments</p>
             </div>
 
             <div class="kif-card">
                 <div class="kif-card-icon">
-                    <img src="{% static 'images/hand.svg' %}" alt="Trusted Partner">
+                    <img src="{% static 'images/hand.svg' %}" alt="Trusted Partner" loading="lazy">
                 </div>
                 <p>Trusted partner for both investors and luxury lifestyle buyers</p>
             </div>
@@ -1590,6 +1603,7 @@
         font-size: 24px;
         color: #eeb32b;
         cursor: pointer;
+        
     }
 
     /* Fade Animation */
@@ -1662,7 +1676,6 @@
 
     }
 
-
     .iti__country:hover {
         background-color: #222;
     }
@@ -1676,11 +1689,6 @@
         }
     }
 </style>
-
-
-
-
-
 <!-- Modal -->
 <div id="consultationModal" class="modal-overlay">
     <div class="modal-content">
@@ -1688,38 +1696,32 @@
         <h2>Investment Consultation</h2>
         <p>Fill in your details and our team will contact you within 24 hours.</p>
 
-
         <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
             <!-- Web3Forms Access Key -->
-            <input type="hidden" name="access_key" value="e6d0d24d-c0a0-466b-8df6-250fefd4205e">
+            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
             <input type="hidden" name="subject" value="New Contact Form Submission">
             <input type="hidden" name="replyto" value="{{ email }}" />
 
+            <input type="hidden" name="page_url" id="modal_page_url">
 
             <input type="text" name="name" placeholder="Name" required>
 
-
             <input type="email" name="email" placeholder="Email" required>
-
 
             <input type="tel" id="phone" name="phone" placeholder="Phone" required>
 
-
             <select name="area_of_interest" id="area_of_interest" required>
-                <option value="">Select Location</option>
+                <option value="">Select Preferred Location</option>
                 <option value="Palm Jumeirah">Palm Jumeirah</option>
                 <option value="Emaar Beachfront">Emaar Beachfront</option>
                 <option value="Bluewaters Island">Bluewaters Island</option>
                 <option value="Dubai Marina & JBR">Dubai Marina & JBR</option>
-
             </select>
 
             <button type="submit">Submit Inquiry</button>
         </form>
     </div>
 </div>
-
-
 
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
@@ -1739,8 +1741,7 @@
             modal.setAttribute("aria-hidden", "false");
         });
     });
-
-
+    
     // Close modal
     closeModalBtn.addEventListener("click", () => {
         modal.classList.remove("active");
@@ -1771,6 +1772,14 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
         });
     }
+
+    //Auto-fill page URL
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlInput = document.getElementById("modal_page_url");
+        if (urlInput) {
+            urlInput.value = window.location.href;
+        }
+    });
 
     // Handle form submission
     document.getElementById("propertyForm").addEventListener("submit", function (e) {
@@ -1805,12 +1814,196 @@
 </script>
 
 
+<!-- ----------------------------------------------------------auto popup form ------------------------------------------------------>
+
+<!-- Modal Popup Form -->
+<div id="blogPopupForm" class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn2">&times;</span>
+    <h2>Find the Right Property – Contact Us Today!</h2>
+    <p>Fill in your details and we’ll contact you shortly.</p>
+    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+      <input type="hidden" name="page_url" id="page_url">
+
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone" required>
+      <textarea name="message" placeholder="Message" required></textarea>
+
+      <button type="submit">Send</button>
+    </form>
+    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.modal-content {
+    background-color: #111;
+    color: #fff;
+    border-radius: 6px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-bottom: 10px;
+    color: #eeb32b;
+    font-size: 24px;
+    line-height: 1.7;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #000!important;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #a3a3a3;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b;
+    outline: none;
+}
+
+.modal-content input, .modal-content select {
+    background-color: #000!important;
+}
+/* Remove Chrome Autofill White/Yellow Background */
+.modal-content input:-webkit-autofill,
+.modal-content textarea:-webkit-autofill,
+.modal-content select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+/* Normal focus style */
+.modal-content input:focus,
+.modal-content textarea:focus {
+    border-color: #eeb32b !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    outline: none;
+}
+
+/*.modal-content button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-content button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(232, 180, 160, 0.4);
+} */
+
+.close-btn2 {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 24px;
+    color: #eeb32b;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.95);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .modal-content {
+        padding: 20px 20px;
+    }
+    .modal-content h2 { font-size: 20px; }
+    .modal-content p { font-size: 13px; }
+}
+</style>
+
+<!-- JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById('blogPopupForm');
+    const closeBtn = document.querySelector('.close-btn2');
+    const form = document.getElementById('web3Form');
+    const formMessage = document.getElementById('formMessage');
+    
+    function showPopup() { popup.style.display = 'flex'; }
+    function hidePopup() { 
+        popup.style.display = 'none';
+        //setTimeout(showPopup, 30000); // reappear after 30s
+    }
+
+    document.getElementById('page_url').value = window.location.href;
 
 
+    // Auto show popup after 12s
+    setTimeout(showPopup, 20000);
 
+    closeBtn.addEventListener('click', hidePopup);
+    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
+    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
 
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
 
+        const formData = new FormData(form);
+        try {
+            const res = await fetch(form.action, { method: form.method, body: formData });
+            const data = await res.json();
 
+            if(data.success){
+                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
+                form.reset();
+                setTimeout(hidePopup, 2000);
+            } else {
+                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+            }
+        } catch (err) {
+            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
+        }
+    });
+});
+</script>
 
 
 

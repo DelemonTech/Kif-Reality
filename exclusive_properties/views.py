@@ -1,3 +1,4 @@
+from main.utils import utf8_json_response as JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
@@ -7,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.utils import timezone
 from .models import ExclusiveProperty, PropertyInquiry
+from django.conf import settings
 import json
 
 def exclusive_properties_list(request):
@@ -229,6 +231,7 @@ def exclusive_properties_list(request):
             'max_price': clean_filter_value(max_price),
             'min_area': clean_filter_value(min_area),
             'max_area': clean_filter_value(max_area),
+            'MICROSERVICE_API': settings.MICROSERVICE_API,  
         }
     }
     
@@ -259,6 +262,7 @@ def exclusive_property_detail(request, slug):
         'related_properties': related_properties,
         'images': property_obj.images.all(),
         'amenities': property_obj.amenities.all(),
+        'MICROSERVICE_API':settings.MICROSERVICE_API,
     }
     
     return render(request, 'properties/exclusive_detail.html', context)
@@ -296,13 +300,13 @@ def submit_property_inquiry(request):
         return JsonResponse({
             'success': True,
             'message': 'Your inquiry has been submitted successfully. We will contact you soon.'
-        })
+        }, json_dumps_params={'ensure_ascii': False})
         
     except Exception as e:
         return JsonResponse({
             'success': False,
             'message': 'An error occurred. Please try again.'
-        }, status=400)
+        }, status=400, json_dumps_params={'ensure_ascii': False})
 
 
 @require_POST
@@ -453,13 +457,13 @@ def exclusive_properties_filter_api(request):
                 'next_page_url': page_obj.next_page_number() if page_obj.has_next() else None,
                 'prev_page_url': page_obj.previous_page_number() if page_obj.has_previous() else None,
             }
-        })
+        }, json_dumps_params={'ensure_ascii': False})
         
     except Exception as e:
         return JsonResponse({
             'status': 'error',
             'message': str(e)
-        }, status=400)
+        }, status=400, json_dumps_params={'ensure_ascii': False})
 
 
 def exclusive_properties_api(request):
@@ -518,10 +522,10 @@ def get_filter_options(request):
                 'developers': sorted(developers),
                 'completion_years': completion_years,
             }
-        })
+        }, json_dumps_params={'ensure_ascii': False})
         
     except Exception as e:
         return JsonResponse({
             'status': 'error',
             'message': str(e)
-        }, status=400)
+        }, status=400, json_dumps_params={'ensure_ascii': False})

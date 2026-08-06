@@ -6,34 +6,18 @@
 
 {% endblock %}">
 
+<!-- about.html -->
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/about/">
+{% endblock %}
+
 {% load static %}
 
 {% block extra_css %}
 <style>
-/* About Page - OBSIDIAN Style */
-/* About Page Styles - Matching Index Theme */
-/* :root {
-    --obsidian-black: #0B0C0F;
-    --charcoal-gray: #1A1D23;
-    --medium-gray: #2A2F36;
-    --text-light: #F5F7FA;
-    --text-muted: #B8BCC5;
-    --rose-gold: #E8B4A0;
-    --gold-accent: #F4D03F;
-    --accent-gradient: linear-gradient(135deg, #E8B4A0 0%, #F4D03F 100%);
-} */
 
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* Global Styles */
-/* body {
-    font-family: 'Inter', sans-serif;
-    background: var(--obsidian-black);
-    color: var(--text-light);
-    line-height: 1.6;
-    overflow-x: hidden;
-} */
 
 /* Page Header */
 .page-header {
@@ -43,7 +27,6 @@
     position: relative;
     overflow: hidden;
 }
-
 .page-header::before {
     content: '';
     position: absolute;
@@ -1018,7 +1001,7 @@
         </div>
         <div class="story-image">
             <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=800&q=80"
-                alt="Dubai Real Estate Market">
+                alt="Dubai Real Estate Market" loading="lazy">
         </div>
     </div>
 </section>
@@ -1203,7 +1186,9 @@
 
 <!-- Floating Contact Button -->
 <div class="floating-contact">
-    <a href="https://wa.me/971509647864" target="_blank" class="floating-btn">
+
+    <a href="https://wa.me/971567655599" target="_blank" class="floating-btn" rel="noopener">
+
         <i class="fab fa-whatsapp"></i>
     </a>
 </div>
