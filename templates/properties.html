@@ -1072,7 +1072,13 @@
                     resetBtn.innerHTML = originalText;
                 }, 1500);
             }
+
+            // Reload the unfiltered list so the grid reflects the reset
+            performSearch();
         }
+
+        // Expose for the inline onclick handler (function lives inside this IIFE)
+        window.resetFilters = resetFilters;
 
         // Debounce search to prevent multiple rapid calls
         let searchTimeout = null;
