@@ -280,11 +280,21 @@
     // ============================================================
     // SINGLE DECLARATION of MICROSERVICE_API — do not redeclare
     // ============================================================
-    const MICROSERVICE_API = "https://microservice.x-opp.com/api";
+    // Same-origin Django API (proxies the X-OPP partner catalog server-side)
+    const MICROSERVICE_API = "/api";
 
     // Cache constants
     const CACHE_KEY = 'properties_cache';
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    // Compact price formatter, locale-independent: 475000 -> "475K", 1500000 -> "1.5M"
+    window.fmtPriceShort = function (v) {
+        v = Number(v);
+        if (!v) return '';
+        if (v >= 1e6) return (v / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+        if (v >= 1e3) return Math.round(v / 1e3) + 'K';
+        return v.toLocaleString('en-US');
+    };
 
     function getCachedData(key) {
         try {
@@ -1219,8 +1229,21 @@
                 const districtName = property.district?.name?.en || property.district?.name || '';
                 const location = districtName ? `${districtName}, ${cityName}` : cityName || 'Premium Location, Dubai';
 
-                const price = property.low_price ? `AED ${property.low_price.toLocaleString()}` : 'Contact for Price';
-                const area = property.min_area ? `${property.min_area.toLocaleString()} sq ft` : 'N/A';
+                const price = property.low_price ? `AED ${window.fmtPriceShort(property.low_price)}` : 'Price on request';
+                const area = property.min_area ? `${Number(property.min_area).toLocaleString('en-US')} sq ft` : null;
+                const beds = (property.bedrooms && property.bedrooms !== 'N/A') ? property.bedrooms : null;
+                const delivery = property.delivery_date || null;
+                const developerName = property.developer?.name || '';
+                const availUnits = Number(property.available_units) || 0;
+                const salesStatus = (property.sales_status || '').toLowerCase();
+                let statusBadge = null;
+                let badgeClass = '';
+                if (salesStatus === 'sold out') {
+                    statusBadge = 'Sold Out';
+                    badgeClass = ' sold-out';
+                } else if (availUnits > 0) {
+                    statusBadge = `${availUnits} Unit${availUnits > 1 ? 's' : ''} Available`;
+                }
 
                 const image = property.cover || property.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
                 const optimizedImage = image.includes('?')
@@ -1230,33 +1253,36 @@
                 const slug = property.slug || 'property';
                 const propertyUrl = `/property/${slug}-${property.id}/`;
 
+                const chips = [
+                    beds ? `<span class="property-chip"><i class="fas fa-bed" aria-hidden="true"></i>${beds} BR</span>` : '',
+                    area ? `<span class="property-chip"><i class="fas fa-ruler-combined" aria-hidden="true"></i>${area}</span>` : '',
+                    delivery ? `<span class="property-chip"><i class="far fa-calendar-alt" aria-hidden="true"></i>${delivery}</span>` : '',
+                ].filter(Boolean).join('');
+
                 return `
-                    <div class="property-card">
-                        <div class="property-image" style="background-image: url('${optimizedImage}'); background-size: cover;">
-                            <div class="price-tag">Available</div>
+                    <div class="property-card" onclick="window.location.href='${propertyUrl}'">
+                        <div class="property-image">
+                            <div class="property-image-bg" style="background-image: url('${optimizedImage}');"></div>
                             <div class="property-type-badge">${propertyTypeText}</div>
+                            ${statusBadge ? `<div class="price-tag${badgeClass}">${statusBadge}</div>` : ''}
                         </div>
                         <div class="card-body">
                             <h3 class="property-title">${title}</h3>
+                            ${developerName ? `
+                            <div class="property-developer">
+                                <i class="fas fa-building" aria-hidden="true"></i>
+                                ${developerName}
+                            </div>` : ''}
                             <div class="property-location">
                                 <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                                 ${location}
                             </div>
-                            <div class="property-features">
-                                <div class="feature-item">
-                                    <div class="feature-icon">
-                                        <i class="fas fa-coins" aria-hidden="true"></i>
-                                    </div>
-                                    <div class="feature-text">${price}</div>
-                                </div>
-                                <div class="feature-item">
-                                    <div class="feature-icon">
-                                        <i class="fas fa-ruler-combined" aria-hidden="true"></i>
-                                    </div>
-                                    <div class="feature-text">${area}</div>
-                                </div>
+                            ${chips ? `<div class="property-chips">${chips}</div>` : ''}
+                            <div class="property-price-row">
+                                <span class="property-price-label">Starting from</span>
+                                <span class="property-price-value">${price}</span>
                             </div>
-                            <div class="property-actions">
+                            <div class="property-actions" onclick="event.stopPropagation()">
                                 <a href="${propertyUrl}" class="btn-primary-custom">
                                     <i class="fas fa-eye" aria-hidden="true"></i>
                                     View Details

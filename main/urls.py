@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/search/', views.search_properties_api, name='search_properties_api'),
     path('api/properties/filter/', views.filter_properties_api, name='filter_properties_api'),
     path('cities/', views.cities_api, name='cities_api'),  # Cities API for React frontend
+    path('api/cities/', views.cities_api, name='cities_api_alias'),
     path('api/developers/', views.developers_api, name='developers_api'),
     path('api/developers-local/', views.developers_from_properties, name='developers_local'),
     

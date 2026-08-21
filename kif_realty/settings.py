@@ -191,3 +191,7 @@ PROPERTIES_API_URL = f"{MICROSERVICE_API}/properties/filter/"
 CITIES_API_URL = f"{MICROSERVICE_API}/cities/"
 DEVELOPERS_API_URL = f"{MICROSERVICE_API}/developers/"
 API_TIMEOUT = 8
+
+# X-OPP Partner Property API (read-only partner catalog, X-API-Key auth)
+XOPP_API_BASE = config('XOPP_API_BASE', default='https://www.x-opperp.com/api/v1/partner')
+XOPP_API_KEY = config('XOPP_API_KEY', default='')

@@ -354,7 +354,8 @@
 
 <script>
     // ✅ FIX: Single declaration at the top — shared by all functions below
-   const MICROSERVICE_API = "https://microservice.x-opp.com/api";
+   // Same-origin Django API (proxies the X-OPP partner catalog server-side)
+   const MICROSERVICE_API = "/api";
 
     function loadFeaturedProperties() {
         const grid = document.querySelector('.properties-grid');
@@ -387,7 +388,7 @@
             <img src="${p.cover || '/static/img/no-image.jpg'}" alt="${p.title?.en || 'Property'}" loading="lazy">
             <div class="property-info">
               <h3>${p.title?.en || 'Untitled Property'}</h3>
-              <h4>${p.low_price || 'Price on request'} <span>${p.currency || "AED"}</span></h4>
+              <h4>${p.low_price ? fmtHomePrice(p.low_price) : 'Price on request'} <span>${p.low_price ? (p.currency || "AED") : ""}</span></h4>
               <p>${p.district?.name?.en || ""} / ${p.city?.name?.en || ""}</p>
               <a href="${propertyUrl}" class="learn-more" aria-label="Learn more about ${p.title?.en || 'this property'}">LEARN MORE</a>
             </div>
@@ -402,6 +403,15 @@
                 console.error('Error loading properties:', err);
                 grid.innerHTML = `<p>Error loading properties. Please try again later.</p>`;
             });
+    }
+
+    // Compact, locale-independent price formatting (avoids lakh-style grouping)
+    function fmtHomePrice(v) {
+        v = Number(v);
+        if (!v) return '';
+        if (v >= 1e6) return (v / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+        if (v >= 1e3) return Math.round(v / 1e3) + 'K';
+        return v.toLocaleString('en-US');
     }
 
     // ✅ Helper function defined OUTSIDE loadFeaturedProperties

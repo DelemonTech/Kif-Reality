@@ -426,116 +426,239 @@
     /* Properties Section    */
     /* ===================== */
     .properties-section {
-        max-width: 1300px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 3rem 1rem;
     }
 
     .properties-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.4rem;
         margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .properties-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .properties-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .properties-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* ===================== */
     /* Property Card         */
     /* ===================== */
     .property-card {
-        background: rgba(20, 20, 20, 0.7);
+        background: linear-gradient(160deg, rgba(30, 28, 26, 0.95), rgba(18, 17, 16, 0.98));
         backdrop-filter: blur(8px);
-        border-radius: 2px;
+        border-radius: 18px;
         overflow: hidden;
-        border: 1px solid rgba(232, 180, 160, 0.15);
-        transition: all 0.4s ease;
+        border: 1px solid rgba(232, 180, 160, 0.14);
+        transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         cursor: pointer;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+        display: flex;
+        flex-direction: column;
     }
 
     .property-card:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-        border-color: rgba(232, 180, 160, 0.35);
+        transform: translateY(-10px);
+        box-shadow: 0 28px 55px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(232, 180, 160, 0.25);
+        border-color: rgba(232, 180, 160, 0.4);
     }
 
     /* ===================== */
     /* Image Section         */
     /* ===================== */
     .property-image {
-        height: 220px;
+        height: 170px;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .property-image-bg {
+        position: absolute;
+        inset: 0;
         background-size: cover;
         background-position: center;
-        position: relative;
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .property-card:hover .property-image-bg {
+        transform: scale(1.08);
     }
 
     .property-image::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent 60%);
+        background: linear-gradient(to top, rgba(10, 10, 10, 0.75), transparent 55%);
+        z-index: 1;
+        pointer-events: none;
     }
 
     .price-tag {
         position: absolute;
-        bottom: 15px;
-        right: 15px;
+        bottom: 12px;
+        right: 12px;
         background: var(--accent-gradient);
         color: var(--obsidian-black);
-        padding: 0.5rem 1rem;
+        padding: 0.3rem 0.8rem;
         border-radius: 30px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        box-shadow: 0 4px 12px rgba(232, 180, 160, 0.4);
+        font-weight: 700;
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        box-shadow: 0 4px 14px rgba(232, 180, 160, 0.35);
+        z-index: 2;
+    }
+
+    .price-tag.sold-out {
+        background: linear-gradient(135deg, #6b1f1f, #451212);
+        color: #f5c9c9;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
     }
 
     .property-type-badge {
         position: absolute;
-        top: 15px;
-        left: 15px;
-        background: rgba(255, 255, 255, 0.434);
-        /* color: var(--rose-gold); */
-        color: #5f4a10;
-        padding: 0.35rem 0.9rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
+        top: 12px;
+        left: 12px;
+        background: rgba(12, 12, 12, 0.55);
+        backdrop-filter: blur(8px);
+        color: var(--rose-gold);
+        padding: 0.28rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.65rem;
         font-weight: 600;
-        text-transform: capitalize;
-        border: 1px solid rgba(232, 180, 160, 0.2);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid rgba(232, 180, 160, 0.35);
+        z-index: 2;
     }
 
     /* ===================== */
     /* Card Body             */
     /* ===================== */
     .card-body {
-        padding: 1.2rem 1.4rem;
+        padding: 1rem 1.1rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
     }
 
     .property-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.35rem;
+        font-size: 1.2rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.35rem;
         color: var(--text-light);
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
-    .property-location {
-        font-size: 0.9rem;
+    .property-developer {
+        font-size: 0.76rem;
         color: var(--text-muted);
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        margin-bottom: 1rem;
+        gap: 0.45rem;
+        margin-bottom: 0.35rem;
+        opacity: 0.85;
+    }
+
+    .property-developer i {
+        color: var(--rose-gold);
+        font-size: 0.78rem;
+    }
+
+    .property-location {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.75rem;
     }
 
     .property-location i {
         color: var(--rose-gold);
-        font-size: 0.9rem;
+        font-size: 0.82rem;
     }
 
     /* ===================== */
-    /* Features Grid         */
+    /* Spec chips            */
     /* ===================== */
+    .property-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .property-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 8px;
+        background: rgba(232, 180, 160, 0.07);
+        border: 1px solid rgba(232, 180, 160, 0.14);
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .property-chip i {
+        color: var(--rose-gold);
+        font-size: 0.75rem;
+    }
+
+    /* ===================== */
+    /* Price row             */
+    /* ===================== */
+    .property-price-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.6rem 0;
+        margin-bottom: 0.75rem;
+        margin-top: auto;
+        border-top: 1px solid rgba(232, 180, 160, 0.12);
+    }
+
+    .property-price-label {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .property-price-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--rose-gold);
+        white-space: nowrap;
+    }
+
+    /* Legacy features row (kept for other pages using these classes) */
     .property-features {
         display: flex;
         justify-content: space-between;
@@ -575,12 +698,13 @@
         flex: 1;
         background: var(--accent-gradient);
         color: var(--obsidian-black);
-        padding: 10px 16px;
+        padding: 8px 10px;
         border: none;
         border-radius: 8px;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
+        text-align: center;
         transition: all 0.3s ease;
     }
 
@@ -594,11 +718,12 @@
         background: transparent;
         border: 1px solid #4d3830;
         color: var(--rose-gold);
-        padding: 10px 16px;
+        padding: 8px 10px;
         border-radius: 8px;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
+        text-align: center;
         transition: all 0.3s ease;
     }
 

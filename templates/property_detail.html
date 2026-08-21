@@ -194,47 +194,93 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
             </div>
             {% endif %}
 
-            <!-- Units Section -->
-            {% if property.grouped_apartments %}
+            <!-- Units Section: unit-type summary cards; selecting one opens a panel with all its units -->
+            {% if property.unit_groups %}
             <div class="section fade-in" id="unitsSection">
                 <h2 class="section-title">
                     <i class="fas fa-building"></i>
                     Available Units
                 </h2>
-                <div class="units-grid">
-                    {% for unit in property.grouped_apartments %}
-                    <div class="unit-card"
-                        onclick="navigateToUnit('{{ property.slug }}','{{ property.id }}', '{{ unit.id }}')">
-                        <div class="unit-header">
-                            <div class="unit-type">
-                                {{ unit.unit_type.en }} - {{ unit.rooms.en }}{% if unit.rooms.en != "Studio" %}BR{%endif %}
-                            </div>
-                            <div class="unit-price">
-                                {{ unit.min_price|floatformat:0|add_commas }} AED
-                            </div>
+
+                <div class="unit-type-row">
+                    {% for group in property.unit_groups %}
+                    <div class="unit-type-card" onclick="selectUnitGroup({{ forloop.counter0 }})" role="button"
+                        tabindex="0" aria-expanded="false"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectUnitGroup({{ forloop.counter0 }});}">
+                        <div class="unit-type-icon"><i class="fas fa-bed"></i></div>
+                        <div class="unit-type-name">{{ group.title }}</div>
+                        <span class="unit-type-count"><i class="fas fa-hashtag"></i> {{ group.count }} unit{{ group.count|pluralize }}</span>
+                        <div class="unit-type-meta">
+                            <i class="fas fa-ruler-combined"></i>
+                            {% if group.area_range %}{{ group.area_range }} sq.ft{% else %}Area on request{% endif %}
                         </div>
-                        <div class="unit-details">
-                            <div class="unit-detail">
-                                <div class="unit-detail-value">{{ unit.min_area|floatformat:0 }}</div>
-                                <div class="unit-detail-label">sq ft</div>
-                            </div>
-                            <div class="unit-detail">
-                                <div class="unit-detail-value">{{ unit.rooms.en }}</div>
-                                <div class="unit-detail-label">
-                                    {% if unit.rooms.en == "Studio" %}
-                                        Studio
-                                    {% else %}
-                                        BR
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="unit-action">
-                                <i class="fas fa-arrow-right"></i>
-                            </div>
+                        <div class="unit-type-footer">
+                            <span class="unit-type-price">{{ group.price_range }}</span>
+                            <i class="fas fa-chevron-down unit-type-chevron"></i>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+
+                {% for group in property.unit_groups %}
+                <div class="unit-panel" id="unitPanel{{ forloop.counter0 }}" hidden>
+                    <div class="unit-panel-head">
+                        <div class="unit-panel-title">
+                            <span class="unit-type-icon"><i class="fas fa-bed"></i></span>
+                            <div>
+                                <h3>{{ group.title }}</h3>
+                                <p>{{ group.count }} unit{{ group.count|pluralize }} available</p>
+                            </div>
+                        </div>
+                        <button type="button" class="unit-panel-close" onclick="selectUnitGroup(-1)" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="unit-cards-grid">
+                        {% for unit in group.units %}
+                        <div class="unit-item-card">
+                            <div class="unit-item-head"
+                                onclick="navigateToUnit('{{ property.slug }}','{{ property.id }}', '{{ unit.id }}')">
+                                <div>
+                                    <div class="unit-item-title">{{ group.title }}</div>
+                                    <div class="unit-item-no">Unit <strong>{% if unit.unit_no %}{{ unit.unit_no }}{% else %}#{{ unit.id }}{% endif %}</strong></div>
+                                </div>
+                                {% if unit.status_display %}
+                                <span class="unit-status unit-status-{{ unit.status }}">{{ unit.status_display }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="unit-item-chips">
+                                <span class="unit-chip"><i class="fas fa-ruler-combined"></i> {{ unit.area_display }}</span>
+                                <span class="unit-chip"><i class="fas fa-bed"></i> {{ unit.bed_label }}</span>
+                            </div>
+                            <div class="unit-item-price">
+                                <span>Price</span>
+                                <strong>{{ unit.price_short }}</strong>
+                            </div>
+                            <div class="unit-item-actions">
+                                <a class="unit-btn unit-btn-wa" target="_blank" rel="noopener"
+                                    href="https://wa.me/971567655599?text={{ unit.wa_text|urlencode }}">
+                                    <i class="fab fa-whatsapp"></i> WA
+                                </a>
+                                <a class="unit-btn unit-btn-call" href="tel:+971567655599">
+                                    <i class="fas fa-phone"></i> Call
+                                </a>
+                                {% if unit.floor_plan_image %}
+                                <a class="unit-btn unit-btn-pdf" href="{{ unit.floor_plan_image }}" target="_blank" rel="noopener">
+                                    <i class="fas fa-download"></i> PDF
+                                </a>
+                                {% else %}
+                                <a class="unit-btn unit-btn-pdf" href="javascript:void(0)"
+                                    onclick="navigateToUnit('{{ property.slug }}','{{ property.id }}', '{{ unit.id }}')">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
 
@@ -597,6 +643,25 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
         }
           const url = `/property/${propertySlug}-${propertyId}/unit/${unitId}/`;
         window.location.href = url;
+    }
+
+    let openUnitGroup = -1;
+    function selectUnitGroup(idx) {
+        if (idx === openUnitGroup) idx = -1; // clicking the active card closes it
+        openUnitGroup = idx;
+
+        document.querySelectorAll('.unit-type-card').forEach((card, i) => {
+            card.classList.toggle('active', i === idx);
+            card.setAttribute('aria-expanded', i === idx ? 'true' : 'false');
+        });
+        document.querySelectorAll('.unit-panel').forEach((panel, i) => {
+            panel.hidden = i !== idx;
+        });
+
+        if (idx >= 0) {
+            const panel = document.getElementById('unitPanel' + idx);
+            if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }
 
     function requestBrochure() {

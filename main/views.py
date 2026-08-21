@@ -20,6 +20,10 @@ from urllib.parse import urlparse, parse_qs
 from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment
 from .forms import NewsletterForm, CommentForm
 from .services import PropertyService
+from .xopp_service import (
+    XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
+    get_available_counts, get_developers as xopp_get_developers,
+)
 
 import json
 import requests
@@ -382,120 +386,197 @@ def property_redirect(request, property_id):
     """
     Redirect old /property/ID/ URLs to new /property/slug-ID/ format
     """
-    url = f"{API_BASE}/{property_id}"
-
-    try:
-        resp = requests.get(url, timeout=8)
-
-        if resp.status_code == 200:
-            data = resp.json()
-
-            if data.get("status"):
-                prop = data.get("data") or {}
-
-                title_data = prop.get('title', {})
-                title = title_data.get('en', 'property') if isinstance(title_data, dict) else (title_data or 'property')
-                slug = prop.get('slug') or slugify(title)
-
-                return redirect('property_detail', slug=slug, pk=property_id, permanent=True)
-
-    except requests.RequestException:
-        pass
+    result = XOPPService.get_property(property_id)
+    if result['success']:
+        slug = slugify(result['data'].get('title') or 'property') or 'property'
+        return redirect('property_detail', slug=slug, pk=property_id, permanent=True)
 
     return redirect('property_detail', slug='property', pk=property_id, permanent=True)
 
 
+def _clean_description_html(raw_html):
+    """Strip editor markup/inline styles from an API description, re-paragraphed."""
+    if not raw_html:
+        return ''
+    raw_html = re.sub(r'style\s*=\s*["\'][^"\']*["\']?', '', raw_html, flags=re.IGNORECASE | re.DOTALL)
+    clean_text = strip_tags(raw_html)
+    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+
+    sentences = re.split(r'(?<=[.!?])\s+', clean_text)
+    paragraphs = []
+    for i in range(0, len(sentences), 3):
+        para_text = ' '.join(sentences[i:i + 3]).strip()
+        if para_text:
+            paragraphs.append(f'<p>{para_text}</p>')
+    return '\n'.join(paragraphs)
+
+
+def _map_unit_for_template(u):
+    """Map an X-OPP unit object to the shape unit_detail/property_detail expect."""
+    label = u.get('bedroom_label') or ''
+    if not label and u.get('bedrooms') is not None:
+        label = 'Studio' if u['bedrooms'] == 0 else str(u['bedrooms'])
+    rooms_text = 'Studio' if label.lower() == 'studio' else (f"{label} Bedroom" if label else '')
+    unit_type = f"Unit {u['unit_no']}" if u.get('unit_no') else (rooms_text or 'Unit')
+    return {
+        'id': u.get('id'),
+        'unit_type': {'en': unit_type},
+        'rooms': {'en': rooms_text or label},
+        'min_price': u.get('price'),
+        'min_area': u.get('area'),
+        'floor_no': u.get('floor_no'),
+        'bathrooms': u.get('bathrooms'),
+        'view': u.get('view'),
+        'status': u.get('status'),
+        'unit_image': u.get('unit_image'),
+        'floor_plan_image': u.get('floor_plan_image'),
+        'description': '',
+    }
+
+
+def _fmt_price_short(v):
+    """866000 -> '866K', 2298000 -> '2.3M'."""
+    if not v:
+        return None
+    if v >= 1_000_000:
+        s = f"{v / 1_000_000:.1f}".rstrip('0').rstrip('.')
+        return f"{s}M"
+    if v >= 1_000:
+        return f"{round(v / 1_000)}K"
+    return f"{v:,.0f}"
+
+
+def _group_units(units, main_type='Apartment', property_title=''):
+    """Group raw X-OPP units by bedroom label into summary cards with ranges."""
+    groups = {}
+    for u in units:
+        label = (u.get('bedroom_label') or '').strip()
+        if not label and u.get('bedrooms') is not None:
+            label = 'Studio' if u['bedrooms'] == 0 else str(u['bedrooms'])
+        if not label:
+            label = 'Other'
+
+        g = groups.setdefault(label, {'raw_units': [], 'prices': [], 'areas': []})
+        g['raw_units'].append(u)
+        if u.get('price'):
+            g['prices'].append(u['price'])
+        if u.get('area'):
+            g['areas'].append(u['area'])
+
+    def sort_key(label):
+        low = label.lower()
+        if low == 'studio':
+            return 0.0
+        try:
+            return float(label)
+        except ValueError:
+            return 999.0
+
+    result = []
+    for label in sorted(groups, key=sort_key):
+        g = groups[label]
+        prices, areas = g['prices'], g['areas']
+
+        if prices:
+            lo, hi = _fmt_price_short(min(prices)), _fmt_price_short(max(prices))
+            price_range = f"AED {lo}" if lo == hi else f"AED {lo} – {hi}"
+        else:
+            price_range = 'Price on request'
+
+        if areas:
+            lo, hi = min(areas), max(areas)
+            area_range = f"{lo:,.0f}" if lo == hi else f"{lo:,.0f} – {hi:,.0f}"
+        else:
+            area_range = None
+
+        display_label = label if sort_key(label) in (0.0, 999.0) else f"{label} Bedroom"
+        group_title = f"{display_label} {main_type}".strip()
+        bed_label = 'Studio' if display_label == 'Studio' else f"{label} Bed"
+
+        mapped_units = []
+        for u in sorted(g['raw_units'], key=lambda x: (x.get('price') is None, x.get('price') or 0)):
+            m = _map_unit_for_template(u)
+            m['unit_no'] = u.get('unit_no') or ''
+            m['price_display'] = f"{u['price']:,.0f} AED" if u.get('price') else 'On request'
+            m['price_short'] = f"AED {_fmt_price_short(u['price'])}" if u.get('price') else 'On request'
+            m['area_display'] = f"{u['area']:,.0f} sq.ft" if u.get('area') else '—'
+            m['bed_label'] = bed_label
+            status = (u.get('status') or '').lower()
+            m['status'] = status
+            m['status_display'] = status.title() if status in ('available', 'reserved', 'sold') else ''
+            unit_ref = u.get('unit_no') or u.get('id')
+            m['wa_text'] = (
+                f"Hi, I'm interested in {property_title} - {group_title}, "
+                f"Unit {unit_ref} ({m['price_display']}). Please share more details."
+            )
+            mapped_units.append(m)
+
+        result.append({
+            'label': display_label,
+            'title': group_title,
+            'count': len(mapped_units),
+            'price_range': price_range,
+            'area_range': area_range,
+            'units': mapped_units,
+        })
+    return result
+
+
+def _map_property_for_template(prop, units=None):
+    """Map an X-OPP property detail object to the nested shape the templates use."""
+    title = prop.get('title') or 'Property'
+    return {
+        'id': prop.get('id'),
+        'slug': slugify(title) or 'property',
+        'title': {'en': title},
+        'description': {'en': _clean_description_html(prop.get('description'))},
+        'cover': prop.get('cover') or '',
+        'property_images': [{'image': url} for url in (prop.get('images') or [])[:20]],
+        'city': {'name': {'en': prop.get('city') or ''}},
+        'district': {'name': {'en': prop.get('district') or ''}},
+        'developer': {'name': prop.get('developer_name') or '', 'description': ''},
+        'property_type': {'name': {'en': prop.get('property_type') or ''}},
+        'low_price': prop.get('price_from'),
+        'min_area': prop.get('area_from'),
+        'max_area': prop.get('area_to'),
+        'latitude': prop.get('latitude'),
+        'longitude': prop.get('longitude'),
+        'completion_rate': prop.get('completion_rate') or 0,
+        'delivery_date': prop.get('delivery_date') or '',
+        'residential_units': prop.get('residential_units') or 0,
+        'sales_status': {'name': {'en': prop.get('sales_status_name') or 'Available'}},
+        'facilities': [{'name': {'en': a}} for a in (prop.get('amenities') or [])],
+        'payment_plans': [
+            {'name': {'en': pl.get('name') or 'Payment Plan'}, **pl}
+            for pl in (prop.get('payment_plans') or [])
+        ],
+        'grouped_apartments': [_map_unit_for_template(u) for u in (units or [])],
+        'unit_groups': _group_units(
+            units or [],
+            main_type=(prop.get('property_type') or 'Apartment').split(',')[0].strip() or 'Apartment',
+            property_title=title,
+        ),
+        'property_units': [],
+    }
+
+
 def property_detail(request, slug, pk):
     """
-    Display property details using slug in URL but pk (ID) for API call.
+    Display property details using slug in URL but pk (ID) for the X-OPP API call.
     URL format: /property/luxury-villa-palm-jumeirah-2376/
-    API call: uses the pk (2376)
-
-    Caches the raw API response per property ID for 15 minutes.
     """
+    result = XOPPService.get_property(pk)
+    if not result['success']:
+        return render(request, "property_detail.html", {
+            "property_error": result['error'] or "Property not found or API error."
+        })
 
-    print(f"🔍 Property Detail View Called:")
-    print(f"   Slug from URL: {slug}")
-    print(f"   PK from URL: {pk}")
+    raw = result['data']
+    units = XOPPService.get_all_units(pk) if raw.get('units_count') else []
+    prop = _map_property_for_template(raw, units)
 
-    cache_key = f"property_api_{pk}"
-    prop = cache.get(cache_key)
-
-    if prop is None:
-        url = f"{API_BASE}/property/{pk}"
-        print(f"   API URL: {url} (cache miss)")
-
-        try:
-            resp = requests.get(url, timeout=8)
-            print(f"   API Response Status: {resp.status_code}")
-        except requests.RequestException as e:
-            print(f"   ❌ API Request Error: {e}")
-            return render(request, "property_detail.html", {
-                "property_error": "Failed to retrieve property data."
-            })
-
-        if resp.status_code != 200:
-            print(f"   ❌ API returned non-200 status")
-            return render(request, "property_detail.html", {
-                "property_error": "Property not found or API error."
-            })
-
-        data = resp.json()
-        print(f"   API Response Data Keys: {data.keys() if data else 'None'}")
-
-        if not data.get("status"):
-            print(f"   ❌ API status is False")
-            return render(request, "property_detail.html", {
-                "property_error": data.get("message") or "API returned error."
-            })
-
-        prop = data.get("data") or {}
-        cache.set(cache_key, prop, 60 * 15)
-        print(f"   ✅ Property data cached: {prop.get('title', {}).get('en', 'No title')}")
-    else:
-        print(f"   ✅ Property data served from cache: {prop.get('title', {}).get('en', 'No title')}")
-
-    # ✅ FIX: Normalize cover image URL to absolute remote URL
-    prop['cover'] = _fix_image_url(prop.get('cover'))
-
-    # ✅ FIX: Normalize all property_images URLs
-    if prop.get('property_images'):
-        for img in prop['property_images']:
-            if isinstance(img, dict):
-                if img.get('image'):
-                    img['image'] = _fix_image_url(img['image'])
-                if img.get('url'):
-                    img['url'] = _fix_image_url(img['url'])
-
-    # Clean the description
-    if prop.get('description'):
-        desc = prop['description']
-        if isinstance(desc, dict) and 'en' in desc:
-            raw_html = desc['en']
-
-            raw_html = re.sub(r'style\s*=\s*["\'][^"\']*["\']?', '', raw_html, flags=re.IGNORECASE | re.DOTALL)
-            raw_html = re.sub(r'(color-scheme|forced-color-adjust|font-family|position-anchor)[^>]*', '', raw_html, flags=re.IGNORECASE)
-
-            clean_text = strip_tags(raw_html)
-            clean_text = re.sub(r'<\s*p[^a-zA-Z0-9>]*', '', clean_text)
-            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-            clean_text = re.sub(r'unset[;:\s]+', '', clean_text)
-            clean_text = re.sub(r'(color-scheme|forced-color-adjust|mask|math-depth|position|appearance)[:\s]+[^;]*;?', '', clean_text)
-
-            sentences = re.split(r'(?<=[.!?])\s+', clean_text)
-            paragraphs = []
-            for i in range(0, len(sentences), 3):
-                para_sentences = sentences[i:i+3]
-                para_text = ' '.join(para_sentences).strip()
-                if para_text:
-                    paragraphs.append(f'<p>{para_text}</p>')
-
-            prop['description']['en'] = '\n'.join(paragraphs) if paragraphs else '<p>No description available.</p>'
-
-    # Get title and correct slug
-    title_data = prop.get('title', {})
-    title = title_data.get('en', 'property') if isinstance(title_data, dict) else (title_data or 'property')
-    correct_slug = prop.get('slug') or slugify(title)
+    title = prop['title']['en']
+    correct_slug = prop['slug']
 
     print(f"   URL slug: {slug}")
     print(f"   Correct slug: {correct_slug}")
@@ -553,124 +634,19 @@ def unit_detail(request, property_slug, property_id, unit_id):
     URL format: /property/luxury-villa-2376/unit/123/
     """
 
-    print(f"🔍 Unit Detail View:")
-    print(f"   Property Slug: {property_slug}")
-    print(f"   Property ID: {property_id}")
-    print(f"   Unit ID: {unit_id}")
-
-    api_patterns = [
-        f"{API_BASE}/units/{unit_id}",
-        f"{API_BASE}/apartment/{unit_id}",
-        f"{API_BASE}/property/{property_id}/unit/{unit_id}",
-        f"{API_BASE}/grouped-apartments/{unit_id}",
-        f"{API_BASE}/property-units/{unit_id}",
-    ]
-
-    unit = None
-    unit_data = None
-
-    for pattern_index, unit_url in enumerate(api_patterns, 1):
-        print(f"   🔄 Trying API Pattern #{pattern_index}: {unit_url}")
-
-        try:
-            unit_resp = requests.get(unit_url, timeout=8)
-            print(f"      Response Status: {unit_resp.status_code}")
-
-            if unit_resp.status_code == 200:
-                unit_data = unit_resp.json()
-
-                if unit_data.get("status"):
-                    unit = unit_data.get("data", {})
-                    print(f"   ✅ SUCCESS with Pattern #{pattern_index}!")
-                    print(f"   Unit Type: {unit.get('unit_type', 'Unknown')}")
-                    break
-                else:
-                    print(f"      ⚠️ Status is False: {unit_data.get('message', 'No message')}")
-            else:
-                print(f"      ❌ Failed with status {unit_resp.status_code}")
-
-        except requests.RequestException as e:
-            print(f"      ❌ Request error: {e}")
-            continue
-
-    # Fallback: search within property data
-    if not unit:
-        print(f"   ⚠️ All API patterns failed. Searching within property data...")
-
-        property_url = f"{API_BASE}/property/{property_id}"
-        print(f"   Fetching property: {property_url}")
-
-        try:
-            property_resp = requests.get(property_url, timeout=8)
-            if property_resp.status_code == 200:
-                property_data = property_resp.json()
-                if property_data.get("status"):
-                    property_obj = property_data.get("data", {})
-
-                    for apt in property_obj.get("grouped_apartments", []):
-                        if str(apt.get("id")) == str(unit_id):
-                            unit = apt
-                            print(f"   ✅ Found unit in grouped_apartments!")
-                            break
-
-                    if not unit:
-                        for apt in property_obj.get("property_units", []):
-                            if str(apt.get("id")) == str(unit_id):
-                                unit = apt
-                                print(f"   ✅ Found unit in property_units!")
-                                break
-        except requests.RequestException as e:
-            print(f"   ❌ Error fetching property: {e}")
+    units = XOPPService.get_all_units(property_id)
+    unit = next((u for u in units if str(u.get('id')) == str(unit_id)), None)
 
     if not unit:
-        print(f"   ❌ Unit not found in any source")
         return render(request, "unit_detail.html", {
             "unit_error": f"Unit #{unit_id} not found. Please contact us for availability."
         })
 
-    print(f"   📦 Unit data keys: {unit.keys() if unit else 'None'}")
-
-    # Fetch property data for the template
-    property_url = f"{API_BASE}/property/{property_id}"
-    print(f"   Fetching property details: {property_url}")
-
-    property_obj = None
-    try:
-        property_resp = requests.get(property_url, timeout=8)
-        if property_resp.status_code == 200:
-            property_data = property_resp.json()
-            if property_data.get("status"):
-                property_obj = property_data.get("data", {})
-
-                if not property_obj.get('slug'):
-                    title = property_obj.get('title', {})
-                    title_en = title.get('en', 'property') if isinstance(title, dict) else str(title)
-                    property_obj['slug'] = slugify(title_en)
-
-                print(f"   ✅ Property retrieved: {property_obj.get('title', {}).get('en', 'Unknown')}")
-
-                # ✅ FIX: Normalize cover image URL
-                property_obj['cover'] = _fix_image_url(property_obj.get('cover'))
-
-                property_obj.setdefault("facilities", [])
-                property_obj.setdefault("payment_plans", [])
-                property_obj.setdefault("title", {"en": "Property Details"})
-                property_obj.setdefault("district", {"name": {"en": "Dubai"}})
-                property_obj.setdefault("city", {"name": {"en": "Dubai"}})
-                property_obj.setdefault("developer", {"name": "Developer"})
-                property_obj.setdefault("delivery_date", None)
-                property_obj.setdefault("sales_status", {"name": {"en": "Available"}})
-                property_obj.setdefault("residential_units", 0)
-                property_obj.setdefault("completion_rate", 0)
-                property_obj.setdefault("cover", "")
-
-    except requests.RequestException as e:
-        print(f"   ⚠️ Error fetching property: {e}")
-
-    if not property_obj:
-        print(f"   ⚠️ Using fallback property data")
+    result = XOPPService.get_property(property_id)
+    if result['success']:
+        property_obj = _map_property_for_template(result['data'])
+    else:
         fallback_slug = property_slug if (property_slug and property_slug != 'property') else slugify(f"property-{property_id}")
-
         property_obj = {
             "id": property_id,
             "slug": fallback_slug,
@@ -687,10 +663,8 @@ def unit_detail(request, property_slug, property_id, unit_id):
             "cover": ""
         }
 
-    print(f"   ✅ Rendering template with unit and property data")
-
     return render(request, "unit_detail.html", {
-        "unit": unit,
+        "unit": _map_unit_for_template(unit),
         "property": property_obj
     })
 
@@ -765,109 +739,88 @@ def subscribe_newsletter(request):
 
 @require_http_methods(["GET"])
 def search_properties_api(request):
-    """API endpoint for property search"""
+    """API endpoint for property search (X-OPP catalog, title match)"""
     query = request.GET.get('q', '')
-    filters = {'search': query}
+    catalog = get_catalog()
 
-    result = PropertyService.search_properties(query, filters)
-
-    if result['success']:
-        return JsonResponse({
-            'success': True,
-            'properties': result['data'].get('results', []),
-            'total': result['data'].get('count', 0)
-        }, json_dumps_params={'ensure_ascii': False})
-    else:
+    if not catalog:
         return JsonResponse({
             'success': False,
-            'error': result['error']
+            'error': 'Unable to fetch properties. Please try again later.'
         }, json_dumps_params={'ensure_ascii': False})
+
+    matched = filter_catalog(catalog, {'title': query}) if query else catalog
+    return JsonResponse({
+        'success': True,
+        'properties': [to_card(p) for p in matched[:50]],
+        'total': len(matched)
+    }, json_dumps_params={'ensure_ascii': False})
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def filter_properties_api(request):
-    """API endpoint for property filtering with JSON body"""
+    """Property filtering over the X-OPP catalog (server-side, cached)."""
     try:
         data = json.loads(request.body)
 
-        print(f"🔍 Received filters from frontend: {data}")
         filters = {}
-
-        if data.get('property_type'):
-            filters['property_type'] = data.get('property_type')
-
-        string_fields = ['city', 'district', 'unit_type', 'rooms', 'sales_status', 'title', 'developer', 'property_status']
+        string_fields = ['property_type', 'city', 'district', 'unit_type', 'rooms',
+                         'sales_status', 'title', 'developer', 'property_status']
         for field in string_fields:
             value = data.get(field)
             if value and str(value).strip():
                 filters[field] = str(value).strip()
 
-        numeric_fields = ['delivery_year', 'low_price', 'max_price', 'min_area', 'max_area']
+        numeric_fields = ['delivery_year', 'low_price', 'min_price', 'max_price', 'min_area', 'max_area']
         for field in numeric_fields:
             value = data.get(field)
             if value and (isinstance(value, (int, float)) and value > 0):
                 filters[field] = value
 
-        print(f"🔍 Sending to external API: {filters}")
-
-        properties_result = PropertyService.get_properties(filters)
-
-        if properties_result['success'] and properties_result['data'].get('status') is True:
-            data_block = properties_result['data']['data']
-
-            mapped_properties = []
-            for prop in data_block.get('results', []):
-                title_data = prop.get('title', {})
-
-                property_type_id = prop.get('property_type')
-                property_type_text = 'Residential'
-                if property_type_id == '3' or property_type_id == 3:
-                    property_type_text = 'Commercial'
-                elif property_type_id == '20' or property_type_id == 20:
-                    property_type_text = 'Residential'
-
-                print(f"🏠 Backend property type mapping: ID={property_type_id} -> Text={property_type_text}")
-
-                mapped_properties.append({
-                    'id': prop.get('id'),
-                    'title': title_data.get('en', 'Luxury Property'),
-                    'location': prop.get('location', 'Premium Location, Dubai'),
-                    'bedrooms': prop.get('bedrooms', 'N/A'),
-                    'area': prop.get('area', 'N/A'),
-                    'price': prop.get('price'),
-                    'low_price': prop.get('low_price'),
-                    'min_area': prop.get('min_area'),
-                    'property_type': property_type_text,
-                    # ✅ FIX: Normalize cover and image URLs
-                    'cover': _fix_image_url(prop.get('cover')),
-                    'image': _fix_image_url(prop.get('image')),
-                    'city': prop.get('city'),
-                    'district': prop.get('district'),
-                    'detail_url': f"/property/{prop.get('id')}/"
-                })
-
-            pagination_data = {
-                'count': data_block.get('count', 0),
-                'current_page': data_block.get('current_page', 1),
-                'last_page': data_block.get('last_page', 1),
-                'next_page_url': data_block.get('next_page_url'),
-                'previous_page_url': data_block.get('previous_page_url')
-            }
-            print(f"📄 Backend pagination data: {pagination_data}")
-
-            return JsonResponse({
-                'status': True,
-                'data': {
-                    'results': mapped_properties,
-                    **pagination_data
-                }
-            }, json_dumps_params={'ensure_ascii': False})
-        else:
+        catalog = get_catalog()
+        if not catalog:
             return JsonResponse({
                 'status': False,
-                'error': properties_result.get('error', 'Unable to load properties.')
+                'error': 'Unable to load properties.'
             }, json_dumps_params={'ensure_ascii': False})
+
+        matched = filter_catalog(catalog, filters)
+
+        # page comes as a query param (?page=N) or in the body; page size from limit
+        try:
+            page = max(1, int(request.GET.get('page') or data.get('page') or 1))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            per_page = int(data.get('limit') or data.get('page_size') or 12)
+        except (TypeError, ValueError):
+            per_page = 12
+        per_page = max(1, min(per_page, 100))
+
+        count = len(matched)
+        last_page = max(1, -(-count // per_page))
+        page = min(page, last_page)
+        start = (page - 1) * per_page
+        page_items = matched[start:start + per_page]
+
+        cards = [to_card(p) for p in page_items]
+        avail_counts = get_available_counts([c['id'] for c in cards])
+        for c in cards:
+            c['available_units'] = avail_counts.get(c['id'])
+
+        base_url = '/api/properties/filter/'
+        return JsonResponse({
+            'status': True,
+            'data': {
+                'results': cards,
+                'count': count,
+                'current_page': page,
+                'last_page': last_page,
+                'next_page_url': f'{base_url}?page={page + 1}' if page < last_page else None,
+                'previous_page_url': f'{base_url}?page={page - 1}' if page > 1 else None,
+            }
+        }, json_dumps_params={'ensure_ascii': False})
 
     except json.JSONDecodeError:
         return JsonResponse({
@@ -1111,29 +1064,42 @@ def submit_comment_ajax(request, slug):
 @csrf_exempt
 @require_http_methods(["GET"])
 def cities_api(request):
-    """API endpoint to get cities with districts for React frontend"""
+    """Cities with districts, derived from the X-OPP catalog.
+
+    Response is double-wrapped ({data: {status, data}}) because the frontend
+    checks result.data.status / result.data.data.
+    """
     try:
-        result = PropertyService.get_cities()
+        catalog = get_catalog()
 
-        if result['success'] and result['data']:
-            return JsonResponse({
-                'status': True,
-                'data': result['data']
-            }, json_dumps_params={'ensure_ascii': False})
+        cities = {}
+        for p in catalog:
+            city = p['city'].strip()
+            if not city:
+                continue
+            districts = cities.setdefault(city, set())
+            if p['district'].strip():
+                districts.add(p['district'].strip())
 
-        # ✅ Fallback: microservice is down, return hardcoded UAE cities
-        fallback = [
-            {'id': 1, 'name': 'Dubai', 'districts': []},
-            {'id': 2, 'name': 'Abu Dhabi', 'districts': []},
-            {'id': 3, 'name': 'Sharjah', 'districts': []},
-            {'id': 4, 'name': 'Ajman', 'districts': []},
-            {'id': 5, 'name': 'Ras Al Khaimah', 'districts': []},
-            {'id': 6, 'name': 'Fujairah', 'districts': []},
-            {'id': 7, 'name': 'Umm Al Quwain', 'districts': []},
+        if not cities:
+            cities = {c: set() for c in [
+                'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman',
+                'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain',
+            ]}
+
+        cities_list = [
+            {
+                'id': i,
+                'name': {'en': city},
+                'districts': [{'name': {'en': d}} for d in sorted(districts)],
+            }
+            for i, (city, districts) in enumerate(sorted(cities.items()), start=1)
         ]
+
+        payload = {'status': True, 'data': cities_list}
         return JsonResponse({
             'status': True,
-            'data': fallback
+            'data': payload
         }, json_dumps_params={'ensure_ascii': False})
 
     except Exception as e:
@@ -1145,42 +1111,50 @@ def cities_api(request):
 # ✅ FIXED: developers_api — unwraps nested response { data: { data: [...] } }
 #    and falls back gracefully when microservice is down
 # ─────────────────────────────────────────────
+def _xopp_developers_response():
+    """Developers from the partner /developers/ endpoint, enriched with the
+    number of catalog projects per developer. None if the endpoint is down."""
+    devs = xopp_get_developers()
+    if not devs:
+        return None
+
+    from collections import Counter
+    counts = Counter(
+        p['developer_name'].strip() for p in get_catalog() if p['developer_name'].strip()
+    )
+
+    data = [{
+        'id': d.get('id'),
+        'name': d.get('name') or '',
+        'slug': d.get('slug') or '',
+        'logo': d.get('logo') or '',
+        'website': d.get('website') or '',
+        'email': d.get('email') or '',
+        'phone': d.get('phone') or '',
+        'location': d.get('address') or 'Dubai, UAE',
+        'overview': d.get('overview') or '',
+        'projects_count': counts.get((d.get('name') or '').strip(), 0),
+    } for d in devs if d.get('name')]
+
+    return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
+
+
 @csrf_exempt
 @require_http_methods(["GET"])
 def developers_api(request):
-    """API endpoint to get developers list for React frontend"""
+    """Developers list from the X-OPP partner API (catalog-derived fallback)."""
     try:
-        result = PropertyService.get_developers()
+        resp = _xopp_developers_response()
+        if resp:
+            return resp
 
-        if result['success'] and result['data']:
-            raw = result['data']
+        names = sorted({p['developer_name'].strip() for p in get_catalog() if p['developer_name'].strip()})
+        if names:
+            return JsonResponse({
+                'status': True,
+                'data': [{'name': n} for n in names]
+            }, json_dumps_params={'ensure_ascii': False})
 
-            # ✅ Unwrap nested response structure:
-            # The microservice returns { status: true, data: { status: true, data: [...] } }
-            # We need to drill into raw['data'] to get the actual array.
-            if isinstance(raw, dict):
-                inner = raw.get('data')
-                if isinstance(inner, list):
-                    # Pattern: { data: [...] }
-                    developers_list = inner
-                elif isinstance(inner, dict):
-                    # Pattern: { data: { data: [...] } }
-                    developers_list = inner.get('data', [])
-                else:
-                    developers_list = []
-            elif isinstance(raw, list):
-                # Already a flat list
-                developers_list = raw
-            else:
-                developers_list = []
-
-            if developers_list:
-                return JsonResponse({
-                    'status': True,
-                    'data': developers_list
-                }, json_dumps_params={'ensure_ascii': False})
-
-        # ✅ Fallback: microservice is down or returned empty
         return developers_from_properties(request)
 
     except Exception as e:
@@ -1252,18 +1226,23 @@ def preview_404(request):
     return render(request, '404.html', status=404)
 
 def developers(request):
+    # Templates build '<MICROSERVICE_API>/developers/' — point them at our own API
     if request.GET.get('name'):
         return render(request, 'developer_detail.html', {
-            'MICROSERVICE_API': settings.MICROSERVICE_API,
+            'MICROSERVICE_API': '/api',
         })
     return render(request, 'developers.html', {
-        'MICROSERVICE_API': settings.MICROSERVICE_API,
+        'MICROSERVICE_API': '/api',
     })
 
 
 @require_http_methods(["GET"])
 def developers_from_properties(request):
-    """Get developers - tries DB first, falls back to microservice, then hardcoded list"""
+    """Get developers - tries the X-OPP partner API first, then DB, then fallbacks"""
+    resp = _xopp_developers_response()
+    if resp:
+        return resp
+
     from .models import Property
 
     # Try DB first
