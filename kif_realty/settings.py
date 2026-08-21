@@ -127,8 +127,19 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'KIF Realty <noreply@kifrealty.com>'
 
 # Celery configuration (for background tasks)
-# CELERY_BROKER_URL = 'redis://localhost:6379'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+from celery.schedules import crontab
+
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default=CELERY_BROKER_URL)
+CELERY_TIMEZONE = 'Asia/Dubai'
+
+CELERY_BEAT_SCHEDULE = {
+    # Refresh the X-OPP property catalog + developers list every midnight (Dubai time)
+    'refresh-xopp-cache-nightly': {
+        'task': 'main.tasks.refresh_xopp_cache',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
 
 
 CACHES = {
