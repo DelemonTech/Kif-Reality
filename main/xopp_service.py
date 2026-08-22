@@ -136,7 +136,9 @@ class XOPPService:
 # fields we need), cache it, and filter server-side.
 
 CATALOG_CACHE_KEY = 'xopp_catalog_v1'
-CATALOG_TTL = 45 * 60
+# Long TTL: web requests always serve from cache; freshness comes from the
+# periodic Celery refresh (see CELERY_BEAT_SCHEDULE), not from user requests.
+CATALOG_TTL = 24 * 3600
 
 COMMERCIAL_TYPES = {
     'full floor', 'half floor', 'hotel', 'land / plot', 'office',
@@ -210,16 +212,17 @@ def _fetch_catalog_page(page: int, retries: int = 3) -> Optional[Dict]:
     return None
 
 
-def get_catalog() -> List[Dict]:
-    """The full property catalog (stripped), newest first. Cached 45 minutes.
+def get_catalog(force_refresh: bool = False) -> List[Dict]:
+    """The full property catalog (stripped), newest first.
 
-    A partial fetch is never cached over a known-good full catalog: on failure
-    the last complete catalog (kept 7 days) is served instead, and the retry
-    happens again in a few minutes.
+    Web requests serve straight from cache (long TTL); the periodic Celery task
+    calls this with force_refresh=True to rebuild in the background. A failed
+    or partial rebuild never replaces a known-good catalog.
     """
-    cached = cache.get(CATALOG_CACHE_KEY)
-    if cached is not None:
-        return cached
+    if not force_refresh:
+        cached = cache.get(CATALOG_CACHE_KEY)
+        if cached is not None:
+            return cached
 
     catalog, page, complete = [], 1, False
     while True:
@@ -238,6 +241,12 @@ def get_catalog() -> List[Dict]:
         logger.info(f"X-OPP catalog cached: {len(catalog)} properties")
         return catalog
 
+    # Fetch failed part-way: keep serving the best copy we already have.
+    existing = cache.get(CATALOG_CACHE_KEY)
+    if existing:
+        logger.error(f"Catalog refresh incomplete at page {page}; keeping existing {len(existing)}")
+        return existing
+
     backup = cache.get(CATALOG_BACKUP_KEY)
     best = backup if backup and len(backup) > len(catalog) else catalog
     logger.error(
@@ -252,21 +261,23 @@ def get_catalog() -> List[Dict]:
 DEVELOPERS_CACHE_KEY = 'xopp_developers_v1'
 
 
-def get_developers() -> List[Dict]:
-    """All developers from the partner API, sorted by name. Cached 45 minutes.
+def get_developers(force_refresh: bool = False) -> List[Dict]:
+    """All developers from the partner API, sorted by name.
 
-    Returns [] (uncached) if the walk cannot complete.
+    Served from cache (long TTL); refreshed in the background by Celery.
+    A failed walk never replaces a known-good cached list.
     """
-    cached = cache.get(DEVELOPERS_CACHE_KEY)
-    if cached is not None:
-        return cached
+    if not force_refresh:
+        cached = cache.get(DEVELOPERS_CACHE_KEY)
+        if cached is not None:
+            return cached
 
     devs, page = [], 1
     while True:
         result = XOPPService._get('/developers/', {'page': page, 'page_size': 100})
         if not result['success']:
             logger.error(f"Developers fetch failed on page {page}: {result['error']}")
-            return []  # incomplete — don't cache
+            return cache.get(DEVELOPERS_CACHE_KEY) or []  # keep serving the old list
         data = result['data']
         devs.extend(data.get('results', []))
         if not data.get('next'):

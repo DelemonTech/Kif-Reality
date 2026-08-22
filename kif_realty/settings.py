@@ -134,10 +134,12 @@ CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default=CELERY_BROKER_UR
 CELERY_TIMEZONE = 'Asia/Dubai'
 
 CELERY_BEAT_SCHEDULE = {
-    # Refresh the X-OPP property catalog + developers list every midnight (Dubai time)
-    'refresh-xopp-cache-nightly': {
+    # Refresh the X-OPP property catalog + developers list every 30 minutes.
+    # The web app serves from cache only (24h TTL), so this background refresh
+    # is what keeps listings fresh — visitors never wait on an API rebuild.
+    'refresh-xopp-cache': {
         'task': 'main.tasks.refresh_xopp_cache',
-        'schedule': crontab(hour=0, minute=0),
+        'schedule': crontab(minute='*/30'),
     },
 }
 
