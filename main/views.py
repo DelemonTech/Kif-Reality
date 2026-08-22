@@ -515,6 +515,9 @@ def _group_units(units, main_type='Apartment', property_title=''):
             'label': display_label,
             'title': group_title,
             'count': len(mapped_units),
+            'available_count': sum(
+                1 for u in g['raw_units'] if (u.get('status') or '').lower() == 'available'
+            ),
             'price_range': price_range,
             'area_range': area_range,
             'units': mapped_units,

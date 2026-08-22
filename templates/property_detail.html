@@ -209,7 +209,12 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectUnitGroup({{ forloop.counter0 }});}">
                         <div class="unit-type-icon"><i class="fas fa-bed"></i></div>
                         <div class="unit-type-name">{{ group.title }}</div>
-                        <span class="unit-type-count"><i class="fas fa-hashtag"></i> {{ group.count }} unit{{ group.count|pluralize }}</span>
+                        <div class="unit-type-badges">
+                            <span class="unit-type-count"><i class="fas fa-hashtag"></i> {{ group.count }} unit{{ group.count|pluralize }}</span>
+                            {% if group.available_count %}
+                            <span class="unit-type-avail"><i class="fas fa-check-circle"></i> {{ group.available_count }} Available</span>
+                            {% endif %}
+                        </div>
                         <div class="unit-type-meta">
                             <i class="fas fa-ruler-combined"></i>
                             {% if group.area_range %}{{ group.area_range }} sq.ft{% else %}Area on request{% endif %}

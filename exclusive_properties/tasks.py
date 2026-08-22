@@ -2,7 +2,7 @@ from celery import shared_task
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
-from ..main.models import PropertyInquiry, ExclusiveProperty
+from .models import PropertyInquiry, ExclusiveProperty
 
 @shared_task
 def send_inquiry_notification(inquiry_id):
