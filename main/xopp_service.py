@@ -1,5 +1,6 @@
 import logging
 import re
+import threading
 import time
 from typing import Dict, List, Optional
 
@@ -188,6 +189,36 @@ CATALOG_BACKUP_TTL = 7 * 24 * 3600
 CATALOG_PARTIAL_TTL = 5 * 60
 
 
+# ── Process-local memo ───────────────────────────────────────────────────────
+# The Django cache is DatabaseCache: every cache.get() of the catalog is a DB
+# round-trip plus unpickling thousands of dicts. Keep a short-lived copy in
+# process memory so a request pays that cost at most once a minute per worker.
+MEMO_TTL = 60
+_memo: Dict[str, tuple] = {}
+_memo_lock = threading.Lock()
+
+
+def memo_get(key: str, loader, ttl: int = MEMO_TTL):
+    """Return loader() result, cached in this process for `ttl` seconds."""
+    now = time.monotonic()
+    hit = _memo.get(key)
+    if hit and hit[1] > now:
+        return hit[0]
+    value = loader()
+    if value:  # never memoize an empty/failed load
+        with _memo_lock:
+            _memo[key] = (value, now + ttl)
+    return value
+
+
+def memo_clear(key: Optional[str] = None):
+    with _memo_lock:
+        if key is None:
+            _memo.clear()
+        else:
+            _memo.pop(key, None)
+
+
 def _fetch_catalog_page(page: int, retries: int = 3) -> Optional[Dict]:
     """One catalog page, retrying transient errors and honoring 429 Retry-After."""
     for attempt in range(retries):
@@ -220,7 +251,7 @@ def get_catalog(force_refresh: bool = False) -> List[Dict]:
     or partial rebuild never replaces a known-good catalog.
     """
     if not force_refresh:
-        cached = cache.get(CATALOG_CACHE_KEY)
+        cached = memo_get(CATALOG_CACHE_KEY, lambda: cache.get(CATALOG_CACHE_KEY))
         if cached is not None:
             return cached
 
@@ -238,6 +269,7 @@ def get_catalog(force_refresh: bool = False) -> List[Dict]:
     if complete:
         cache.set(CATALOG_CACHE_KEY, catalog, CATALOG_TTL)
         cache.set(CATALOG_BACKUP_KEY, catalog, CATALOG_BACKUP_TTL)
+        memo_clear(CATALOG_CACHE_KEY)
         logger.info(f"X-OPP catalog cached: {len(catalog)} properties")
         return catalog
 
@@ -268,7 +300,7 @@ def get_developers(force_refresh: bool = False) -> List[Dict]:
     A failed walk never replaces a known-good cached list.
     """
     if not force_refresh:
-        cached = cache.get(DEVELOPERS_CACHE_KEY)
+        cached = memo_get(DEVELOPERS_CACHE_KEY, lambda: cache.get(DEVELOPERS_CACHE_KEY))
         if cached is not None:
             return cached
 
@@ -285,25 +317,39 @@ def get_developers(force_refresh: bool = False) -> List[Dict]:
         page += 1
 
     cache.set(DEVELOPERS_CACHE_KEY, devs, CATALOG_TTL)
+    memo_clear(DEVELOPERS_CACHE_KEY)
     logger.info(f"X-OPP developers cached: {len(devs)}")
     return devs
 
 
-def get_available_counts(property_ids) -> Dict:
+AVAIL_TTL = 6 * 3600  # counts change rarely; the Celery refresh re-warms them
+_avail_inflight = set()
+_avail_lock = threading.Lock()
+
+
+def get_available_counts(property_ids, block: bool = False) -> Dict:
     """{property_id: n} of units with status 'available', or None when unknown.
 
-    Cached per property; cache misses are fetched concurrently so a page of
-    results enriches in one round-trip time instead of one per property.
+    Cached per property. By default a web request never waits on the partner
+    API: cache misses come back as None and are fetched in a background thread
+    so the *next* request has them. Pass block=True (Celery warm-up) to fetch
+    misses inline, concurrently.
     """
     from concurrent.futures import ThreadPoolExecutor
 
+    property_ids = list(property_ids)
+    cached_all = cache.get_many([f'xopp_avail_{pid}' for pid in property_ids])
     result, misses = {}, []
     for pid in property_ids:
-        cached = cache.get(f'xopp_avail_{pid}')
-        if cached is not None:
-            result[pid] = cached
+        val = cached_all.get(f'xopp_avail_{pid}')
+        if val is not None:
+            result[pid] = val
         else:
+            result[pid] = None
             misses.append(pid)
+
+    if not misses:
+        return result
 
     def fetch(pid):
         try:
@@ -321,13 +367,36 @@ def get_available_counts(property_ids) -> Dict:
             logger.warning(f"available-count fetch failed for {pid}: {e}")
         return pid, None
 
-    if misses:
-        with ThreadPoolExecutor(max_workers=min(8, len(misses))) as ex:
-            for pid, count in ex.map(fetch, misses):
-                result[pid] = count
-                if count is not None:
-                    cache.set(f'xopp_avail_{pid}', count, CACHE_TTL)
+    def fetch_all(ids):
+        try:
+            with ThreadPoolExecutor(max_workers=min(8, len(ids))) as ex:
+                for pid, count in ex.map(fetch, ids):
+                    if count is not None:
+                        cache.set(f'xopp_avail_{pid}', count, AVAIL_TTL)
+                        result[pid] = count
+        finally:
+            with _avail_lock:
+                _avail_inflight.difference_update(ids)
+
+    if block:
+        fetch_all(misses)
+        return result
+
+    # Non-blocking: warm the cache for next time, skipping ids already in flight.
+    with _avail_lock:
+        todo = [pid for pid in misses if pid not in _avail_inflight]
+        _avail_inflight.update(todo)
+    if todo:
+        threading.Thread(target=fetch_all, args=(todo,), daemon=True).start()
     return result
+
+
+def warm_available_counts(catalog: List[Dict], limit: int = 120):
+    """Pre-fetch availability for the newest `limit` residential and commercial
+    projects — the ones visitors actually land on."""
+    res = [p['id'] for p in catalog if classify_property_type(p['property_type']) == 'Residential'][:limit]
+    com = [p['id'] for p in catalog if classify_property_type(p['property_type']) == 'Commercial'][:limit // 2]
+    return get_available_counts(res + com, block=True)
 
 
 def to_card(p: Dict) -> Dict:

@@ -22,7 +22,7 @@ from .forms import NewsletterForm, CommentForm
 from .services import PropertyService
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
-    get_available_counts, get_developers as xopp_get_developers,
+    get_available_counts, get_developers as xopp_get_developers, memo_get,
 )
 
 import json
@@ -372,13 +372,67 @@ def extract_page_number(url):
         return None
 
 
+def _properties_page(filters, page=1, per_page=12):
+    """Filter the cached catalog and build one page of cards.
+
+    Returns the payload shape the frontend expects, or None when the catalog
+    is unavailable. Never blocks on the partner API (see get_available_counts).
+    """
+    catalog = get_catalog()
+    if not catalog:
+        return None
+
+    matched = filter_catalog(catalog, filters)
+
+    per_page = max(1, min(int(per_page or 12), 100))
+    count = len(matched)
+    last_page = max(1, -(-count // per_page))
+    page = min(max(1, int(page or 1)), last_page)
+    start = (page - 1) * per_page
+    cards = [to_card(p) for p in matched[start:start + per_page]]
+
+    avail_counts = get_available_counts([c['id'] for c in cards])
+    for c in cards:
+        c['available_units'] = avail_counts.get(c['id'])
+
+    base_url = '/api/properties/filter/'
+    return {
+        'results': cards,
+        'count': count,
+        'current_page': page,
+        'last_page': last_page,
+        'next_page_url': f'{base_url}?page={page + 1}' if page < last_page else None,
+        'previous_page_url': f'{base_url}?page={page - 1}' if page > 1 else None,
+    }
+
+
 def properties(request):
-    """Ultra-fast properties page - all data loaded by JavaScript"""
+    """Properties page. The first page of results is embedded in the HTML so a
+    new visitor sees listings without waiting for an extra API round-trip;
+    JavaScript takes over for filtering and pagination."""
+    initial_json = None
+    # Only pre-render the default view; URL-filtered views (?city=…) are fetched by JS.
+    if not (request.GET.get('city') or request.GET.get('district')):
+        try:
+            payload = memo_get(
+                'initial_props_residential_p1',
+                lambda: _properties_page({'property_type': 'residential'}, 1, 12),
+                ttl=120,
+            )
+            if payload:
+                # '</' → '<\/' so a title can never close the embedding <script> tag
+                initial_json = json.dumps(
+                    {'status': True, 'data': payload}, ensure_ascii=False
+                ).replace('</', '<\\/')
+        except Exception as e:
+            logger.warning(f"Initial properties pre-render failed: {e}")
+
     return render(request, 'properties.html', {
         'properties': [],
         'total_count': 0,
         'properties_error': None,
         'MICROSERVICE_API': settings.MICROSERVICE_API,
+        'initial_properties_json': initial_json,
     })
 
 
@@ -781,15 +835,6 @@ def filter_properties_api(request):
             if value and (isinstance(value, (int, float)) and value > 0):
                 filters[field] = value
 
-        catalog = get_catalog()
-        if not catalog:
-            return JsonResponse({
-                'status': False,
-                'error': 'Unable to load properties.'
-            }, json_dumps_params={'ensure_ascii': False})
-
-        matched = filter_catalog(catalog, filters)
-
         # page comes as a query param (?page=N) or in the body; page size from limit
         try:
             page = max(1, int(request.GET.get('page') or data.get('page') or 1))
@@ -799,31 +844,15 @@ def filter_properties_api(request):
             per_page = int(data.get('limit') or data.get('page_size') or 12)
         except (TypeError, ValueError):
             per_page = 12
-        per_page = max(1, min(per_page, 100))
 
-        count = len(matched)
-        last_page = max(1, -(-count // per_page))
-        page = min(page, last_page)
-        start = (page - 1) * per_page
-        page_items = matched[start:start + per_page]
+        payload = _properties_page(filters, page, per_page)
+        if payload is None:
+            return JsonResponse({
+                'status': False,
+                'error': 'Unable to load properties.'
+            }, json_dumps_params={'ensure_ascii': False})
 
-        cards = [to_card(p) for p in page_items]
-        avail_counts = get_available_counts([c['id'] for c in cards])
-        for c in cards:
-            c['available_units'] = avail_counts.get(c['id'])
-
-        base_url = '/api/properties/filter/'
-        return JsonResponse({
-            'status': True,
-            'data': {
-                'results': cards,
-                'count': count,
-                'current_page': page,
-                'last_page': last_page,
-                'next_page_url': f'{base_url}?page={page + 1}' if page < last_page else None,
-                'previous_page_url': f'{base_url}?page={page - 1}' if page > 1 else None,
-            }
-        }, json_dumps_params={'ensure_ascii': False})
+        return JsonResponse({'status': True, 'data': payload}, json_dumps_params={'ensure_ascii': False})
 
     except json.JSONDecodeError:
         return JsonResponse({
@@ -1066,6 +1095,34 @@ def submit_comment_ajax(request, slug):
 # ─────────────────────────────────────────────
 @csrf_exempt
 @require_http_methods(["GET"])
+def _build_cities_list():
+    catalog = get_catalog()
+
+    cities = {}
+    for p in catalog:
+        city = p['city'].strip()
+        if not city:
+            continue
+        districts = cities.setdefault(city, set())
+        if p['district'].strip():
+            districts.add(p['district'].strip())
+
+    if not cities:
+        cities = {c: set() for c in [
+            'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman',
+            'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain',
+        ]}
+
+    return [
+        {
+            'id': i,
+            'name': {'en': city},
+            'districts': [{'name': {'en': d}} for d in sorted(districts)],
+        }
+        for i, (city, districts) in enumerate(sorted(cities.items()), start=1)
+    ]
+
+
 def cities_api(request):
     """Cities with districts, derived from the X-OPP catalog.
 
@@ -1073,37 +1130,15 @@ def cities_api(request):
     checks result.data.status / result.data.data.
     """
     try:
-        catalog = get_catalog()
-
-        cities = {}
-        for p in catalog:
-            city = p['city'].strip()
-            if not city:
-                continue
-            districts = cities.setdefault(city, set())
-            if p['district'].strip():
-                districts.add(p['district'].strip())
-
-        if not cities:
-            cities = {c: set() for c in [
-                'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman',
-                'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain',
-            ]}
-
-        cities_list = [
-            {
-                'id': i,
-                'name': {'en': city},
-                'districts': [{'name': {'en': d}} for d in sorted(districts)],
-            }
-            for i, (city, districts) in enumerate(sorted(cities.items()), start=1)
-        ]
+        cities_list = memo_get('cities_list', _build_cities_list, ttl=300)
 
         payload = {'status': True, 'data': cities_list}
-        return JsonResponse({
+        resp = JsonResponse({
             'status': True,
             'data': payload
         }, json_dumps_params={'ensure_ascii': False})
+        resp['Cache-Control'] = 'public, max-age=600'
+        return resp
 
     except Exception as e:
         print(f"Cities API error: {e}")
@@ -1149,6 +1184,7 @@ def developers_api(request):
     try:
         resp = _xopp_developers_response()
         if resp:
+            resp['Cache-Control'] = 'public, max-age=600'
             return resp
 
         names = sorted({p['developer_name'].strip() for p in get_catalog() if p['developer_name'].strip()})

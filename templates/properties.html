@@ -274,7 +274,13 @@
     <div class="pagination-section" id="dynamicPagination" style="display: none;"></div>
 </section>
 
+{% endblock %}
+
 {% block extra_js %}
+{% if initial_properties_json %}
+<!-- First page of results, rendered server-side so no API round-trip is needed on first paint -->
+<script id="initialPropertiesData" type="application/json">{{ initial_properties_json|safe }}</script>
+{% endif %}
 <script>
 
     // ============================================================
@@ -455,7 +461,34 @@
         function loadInitialProperties() {
             console.log('🏠 Loading initial properties from API...');
 
-            // Check cache first
+            // 1) Server-embedded first page (freshest, zero network) — used once per page load
+            if (!window.location.search) {
+                const embedded = document.getElementById('initialPropertiesData');
+                if (embedded && !embedded.dataset.used) {
+                    embedded.dataset.used = '1';
+                    try {
+                        const result = JSON.parse(embedded.textContent);
+                        if (result?.status && result?.data) {
+                            const propertiesData = result.data;
+                            const properties = propertiesData.results || [];
+                            console.log('⚡ Using server-embedded properties:', properties.length);
+                            setCachedData(CACHE_KEY, {
+                                properties,
+                                pagination: propertiesData,
+                                totalCount: propertiesData.count
+                            });
+                            updatePropertiesGrid(properties);
+                            updatePagination(propertiesData);
+                            updateTotalCount(propertiesData.count);
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('Embedded properties unusable, falling back to API:', e);
+                    }
+                }
+            }
+
+            // 2) localStorage cache from a previous visit
             const cached = getCachedData(CACHE_KEY);
             if (cached && !window.location.search) {
                 console.log('✅ Using cached properties');
@@ -1646,6 +1679,4 @@
     });
 
 </script>
-{% endblock %}
-
 {% endblock %}
