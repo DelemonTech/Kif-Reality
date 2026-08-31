@@ -372,13 +372,13 @@ def extract_page_number(url):
         return None
 
 
-def _properties_page(filters, page=1, per_page=12):
+def _properties_page(filters, page=1, per_page=12, cached_only=False):
     """Filter the cached catalog and build one page of cards.
 
     Returns the payload shape the frontend expects, or None when the catalog
     is unavailable. Never blocks on the partner API (see get_available_counts).
     """
-    catalog = get_catalog()
+    catalog = get_catalog(cached_only=cached_only)
     if not catalog:
         return None
 
@@ -414,9 +414,11 @@ def properties(request):
     # Only pre-render the default view; URL-filtered views (?city=…) are fetched by JS.
     if not (request.GET.get('city') or request.GET.get('district')):
         try:
+            # cached_only: a cold cache must render an empty page (JS falls back
+            # to the API), never block the request on a 30s+ catalog rebuild
             payload = memo_get(
                 'initial_props_residential_p1',
-                lambda: _properties_page({'property_type': 'residential'}, 1, 12),
+                lambda: _properties_page({'property_type': 'residential'}, 1, 12, cached_only=True),
                 ttl=120,
             )
             if payload:
@@ -1093,8 +1095,6 @@ def submit_comment_ajax(request, slug):
 # ─────────────────────────────────────────────
 # ✅ FIXED: cities_api — fallback to hardcoded UAE cities when microservice is down
 # ─────────────────────────────────────────────
-@csrf_exempt
-@require_http_methods(["GET"])
 def _build_cities_list():
     catalog = get_catalog()
 
@@ -1123,6 +1123,8 @@ def _build_cities_list():
     ]
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
 def cities_api(request):
     """Cities with districts, derived from the X-OPP catalog.
 

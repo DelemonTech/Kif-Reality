@@ -243,17 +243,25 @@ def _fetch_catalog_page(page: int, retries: int = 3) -> Optional[Dict]:
     return None
 
 
-def get_catalog(force_refresh: bool = False) -> List[Dict]:
+def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[Dict]:
     """The full property catalog (stripped), newest first.
 
     Web requests serve straight from cache (long TTL); the periodic Celery task
     calls this with force_refresh=True to rebuild in the background. A failed
     or partial rebuild never replaces a known-good catalog.
+
+    cached_only=True never rebuilds inline: it returns the cache (or the weekly
+    backup, or []) immediately. Use it on page views — a full rebuild walks the
+    partner API for 30s+ and would hit the gunicorn/nginx timeout, turning a
+    cold cache into a 500 for every visitor.
     """
     if not force_refresh:
         cached = memo_get(CATALOG_CACHE_KEY, lambda: cache.get(CATALOG_CACHE_KEY))
         if cached is not None:
             return cached
+
+    if cached_only:
+        return cache.get(CATALOG_BACKUP_KEY) or []
 
     catalog, page, complete = [], 1, False
     while True:
