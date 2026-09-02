@@ -549,4 +549,117 @@ class Property(models.Model):
     @property
     def property_type_display(self):
         """Return readable property type"""
-        return self.get_property_type_display() if self.property_type else "Property"    
+        return self.get_property_type_display() if self.property_type else "Property"
+
+
+class JobVacancy(models.Model):
+    """Career openings posted by the super admin via Django admin"""
+
+    JOB_TYPE_CHOICES = [
+        ('full_time', 'Full Time'),
+        ('part_time', 'Part Time'),
+        ('contract', 'Contract'),
+        ('internship', 'Internship'),
+        ('remote', 'Remote'),
+    ]
+
+    DEPARTMENT_CHOICES = [
+        ('sales', 'Sales'),
+        ('marketing', 'Marketing'),
+        ('operations', 'Operations'),
+        ('finance', 'Finance'),
+        ('hr', 'Human Resources'),
+        ('it', 'IT & Technology'),
+        ('admin', 'Administration'),
+        ('other', 'Other'),
+    ]
+
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    department = models.CharField(max_length=30, choices=DEPARTMENT_CHOICES, default='sales')
+    location = models.CharField(max_length=100, default='Dubai, UAE')
+    job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES, default='full_time')
+    experience = models.CharField(max_length=100, blank=True, help_text="e.g. 2-4 years")
+    salary_range = models.CharField(max_length=100, blank=True, help_text="e.g. AED 8,000 - 12,000 (optional, leave blank to hide)")
+    description = models.TextField(help_text="Overview of the role")
+    responsibilities = models.TextField(blank=True, help_text="One responsibility per line")
+    requirements = models.TextField(blank=True, help_text="One requirement per line")
+    is_active = models.BooleanField(default=True, help_text="Only active vacancies are shown on the careers page")
+    deadline = models.DateField(null=True, blank=True, help_text="Optional application deadline")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Job Vacancy'
+        verbose_name_plural = 'Job Vacancies'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while JobVacancy.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('career_detail', kwargs={'slug': self.slug})
+
+    @property
+    def is_open(self):
+        if not self.is_active:
+            return False
+        if self.deadline and self.deadline < timezone.localdate():
+            return False
+        return True
+
+    @property
+    def responsibilities_list(self):
+        return [line.strip() for line in self.responsibilities.splitlines() if line.strip()]
+
+    @property
+    def requirements_list(self):
+        return [line.strip() for line in self.requirements.splitlines() if line.strip()]
+
+    @property
+    def applications_count(self):
+        return self.applications.count()
+
+
+class JobApplication(models.Model):
+    """Candidate applications submitted from the careers page"""
+
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('reviewed', 'Reviewed'),
+        ('shortlisted', 'Shortlisted'),
+        ('interviewed', 'Interviewed'),
+        ('hired', 'Hired'),
+        ('rejected', 'Rejected'),
+    ]
+
+    vacancy = models.ForeignKey(JobVacancy, on_delete=models.CASCADE, related_name='applications')
+    name = models.CharField(max_length=100)
+    email = models.EmailField(validators=[EmailValidator()])
+    phone = models.CharField(
+        max_length=20,
+        validators=[RegexValidator(regex=r'^\+?[\d\s\-]{7,20}$', message='Enter a valid phone number.')]
+    )
+    cv = models.FileField(upload_to='career_cvs/%Y/%m/', blank=True, null=True, help_text="Optional CV (PDF/DOC/DOCX)")
+    cover_message = models.TextField(blank=True, help_text="Optional message from the candidate")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Job Application'
+        verbose_name_plural = 'Job Applications'
+        ordering = ['-applied_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.vacancy.title}"

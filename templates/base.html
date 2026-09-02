@@ -1530,6 +1530,12 @@ Explore luxury Dubai properties with KIF Realty. Buy, sell, or invest in prime l
                 </a>
             </li>
             <li>
+                <a href="{% url 'careers' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'careers' or request.resolver_match.url_name == 'career_detail' %}active{% endif %}">
+                    Careers
+                </a>
+            </li>
+            <li>
                 <a href="{% url 'contact' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
                     Contact
@@ -1646,6 +1652,13 @@ Explore luxury Dubai properties with KIF Realty. Buy, sell, or invest in prime l
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'careers' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'careers' or request.resolver_match.url_name == 'career_detail' %}active{% endif %}">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Careers</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'contact' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
                         <i class="fas fa-envelope"></i>
@@ -1759,6 +1772,7 @@ Explore luxury Dubai properties with KIF Realty. Buy, sell, or invest in prime l
                     <a href="{% url 'privacy-policy' %}">Privacy Policy</a>
                     <a href="{% url 'terms-and-conditions' %}">Terms of Service</a>
                     <a href="{% url 'rera-compliance' %}">RERA Compliance</a>
+                    <a href="{% url 'careers' %}">Careers</a>
                 </div>
             </div>
         </div>

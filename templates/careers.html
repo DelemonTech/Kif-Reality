@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+
+{% block title %}Careers at KIF Realty | Join Our Dubai Real Estate Team{% endblock %}
+
+<meta name="description" content="{% block description %}Explore career opportunities at KIF Realty. Join Dubai's premier real estate team and build your future with us.{% endblock %}">
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/careers/">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Page Header */
+.careers-header {
+    padding: 9rem 2rem 4rem;
+    background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.careers-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent-gradient);
+    opacity: 0.05;
+}
+
+.careers-header-content {
+    max-width: 850px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.careers-header-content .eyebrow {
+    display: inline-block;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    margin-bottom: 1.2rem;
+    font-weight: 500;
+}
+
+.careers-header-content h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    margin-bottom: 1.2rem;
+    font-weight: 400;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.careers-header-content p {
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+}
+
+/* Perks strip */
+.careers-perks {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0 2rem;
+    margin: 0 auto 1rem;
+    max-width: 1100px;
+    position: relative;
+    z-index: 2;
+}
+
+.perk-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: linear-gradient(145deg, var(--charcoal-gray), rgba(26, 26, 26, 0.6));
+    border: 1px solid rgba(232, 180, 160, 0.15);
+    border-radius: 50px;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.perk-item i {
+    color: var(--rose-gold);
+}
+
+/* Openings Section */
+.openings-section {
+    padding: 4rem 2rem 6rem;
+    background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+    position: relative;
+}
+
+.openings-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.openings-title {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.openings-title h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 0.8rem;
+}
+
+.openings-title p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* Department filter */
+.dept-filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 3rem;
+}
+
+.dept-filter a {
+    padding: 0.55rem 1.4rem;
+    border-radius: 50px;
+    border: 1px solid rgba(232, 180, 160, 0.3);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.dept-filter a:hover,
+.dept-filter a.active {
+    background: var(--accent-gradient);
+    color: var(--obsidian-black);
+    border-color: transparent;
+    font-weight: 600;
+}
+
+/* Job Cards */
+.job-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.job-card {
+    background: linear-gradient(145deg, var(--charcoal-gray), rgba(26, 26, 26, 0.7));
+    border: 1px solid rgba(232, 180, 160, 0.12);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.job-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(232, 180, 160, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.job-card:hover::before {
+    opacity: 1;
+}
+
+.job-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.job-card-info h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+.job-card-info h3 a {
+    color: #f5f5f5;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.job-card-info h3 a:hover {
+    color: var(--rose-gold);
+}
+
+.job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+    margin-bottom: 0.9rem;
+}
+
+.job-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.job-meta i {
+    color: var(--rose-gold);
+    font-size: 0.85rem;
+}
+
+.job-excerpt {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-weight: 300;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.job-deadline {
+    margin-top: 0.8rem;
+    font-size: 0.82rem;
+    color: #e8b4a0;
+}
+
+.job-card-action {
+    flex-shrink: 0;
+}
+
+.apply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--accent-gradient);
+    color: var(--obsidian-black);
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    white-space: nowrap;
+}
+
+.apply-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+    color: var(--obsidian-black);
+}
+
+/* Empty state */
+.no-openings {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(145deg, var(--charcoal-gray), rgba(26, 26, 26, 0.7));
+    border: 1px solid rgba(232, 180, 160, 0.12);
+    border-radius: 16px;
+}
+
+.no-openings i {
+    font-size: 3rem;
+    color: var(--rose-gold);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.no-openings h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: #f5f5f5;
+    margin-bottom: 1rem;
+}
+
+.no-openings p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    font-weight: 300;
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+.no-openings a {
+    color: var(--rose-gold);
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .careers-header {
+        padding: 7rem 1.5rem 3rem;
+    }
+
+    .careers-header-content h1 {
+        font-size: 2.6rem;
+    }
+
+    .careers-header-content p {
+        font-size: 1.05rem;
+    }
+
+    .openings-section {
+        padding: 3rem 1.2rem 4rem;
+    }
+
+    .openings-title h2 {
+        font-size: 2.1rem;
+    }
+
+    .job-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.6rem;
+        gap: 1.2rem;
+    }
+
+    .job-card-action {
+        width: 100%;
+    }
+
+    .apply-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="careers-header">
+    <div class="careers-header-content">
+        <span class="eyebrow">Join Our Team</span>
+        <h1>Build Your Career With Us</h1>
+        <p>At KIF Realty, we're shaping the future of Dubai real estate. Join a team of passionate professionals and grow your career in one of the world's most dynamic property markets.</p>
+    </div>
+</section>
+
+<!-- Perks -->
+<section class="openings-section" style="padding-top: 3rem;">
+    <div class="careers-perks">
+        <div class="perk-item"><i class="fas fa-chart-line"></i> Career Growth</div>
+        <div class="perk-item"><i class="fas fa-hand-holding-usd"></i> Competitive Rewards</div>
+        <div class="perk-item"><i class="fas fa-users"></i> Collaborative Culture</div>
+        <div class="perk-item"><i class="fas fa-globe"></i> International Exposure</div>
+        <div class="perk-item"><i class="fas fa-graduation-cap"></i> Continuous Learning</div>
+    </div>
+
+    <div class="openings-container">
+        <div class="openings-title">
+            <h2>Current Openings</h2>
+            <p>Find a role that matches your ambition</p>
+        </div>
+
+        {% if department_choices|length > 1 %}
+        <div class="dept-filter">
+            <a href="{% url 'careers' %}" class="{% if not selected_department %}active{% endif %}">All Departments</a>
+            {% for value, label in department_choices %}
+            <a href="{% url 'careers' %}?department={{ value }}" class="{% if selected_department == value %}active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if vacancies %}
+        <div class="job-list">
+            {% for job in vacancies %}
+            <div class="job-card">
+                <div class="job-card-info">
+                    <h3><a href="{% url 'career_detail' job.slug %}">{{ job.title }}</a></h3>
+                    <div class="job-meta">
+                        <span><i class="fas fa-briefcase"></i> {{ job.get_department_display }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ job.location }}</span>
+                        <span><i class="fas fa-clock"></i> {{ job.get_job_type_display }}</span>
+                        {% if job.experience %}
+                        <span><i class="fas fa-user-tie"></i> {{ job.experience }}</span>
+                        {% endif %}
+                        {% if job.salary_range %}
+                        <span><i class="fas fa-coins"></i> {{ job.salary_range }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="job-excerpt">{{ job.description|striptags|truncatewords:30 }}</p>
+                    {% if job.deadline %}
+                    <div class="job-deadline"><i class="far fa-calendar-alt"></i> Apply before {{ job.deadline|date:"d M Y" }}</div>
+                    {% endif %}
+                </div>
+                <div class="job-card-action">
+                    <a href="{% url 'career_detail' job.slug %}" class="apply-btn">
+                        Apply Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-openings">
+            <i class="far fa-folder-open"></i>
+            <h3>No Openings Right Now</h3>
+            <p>We don't have any vacancies at the moment, but we're always looking for exceptional talent. Send your CV to <a href="mailto:info@kifrealty.com">info@kifrealty.com</a> and we'll keep you in mind for future opportunities.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

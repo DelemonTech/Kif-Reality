@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count
 from django import forms
 from tinymce.widgets import TinyMCE
-from .models import Contact, BlogPost, Category, Tag, Comment, Newsletter
+from .models import Contact, BlogPost, Category, Tag, Comment, Newsletter, JobVacancy, JobApplication
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -184,6 +184,120 @@ class NewsletterAdmin(admin.ModelAdmin):
         updated = queryset.update(is_active=False)
         self.message_user(request, f'{updated} subscriptions deactivated.')
     deactivate_subscriptions.short_description = 'Deactivate selected subscriptions'
+
+
+@admin.register(JobVacancy)
+class JobVacancyAdmin(admin.ModelAdmin):
+    list_display = [
+        'title', 'department', 'location', 'job_type', 'is_active',
+        'deadline', 'applications_link', 'created_at'
+    ]
+    list_filter = ['is_active', 'department', 'job_type', 'created_at']
+    search_fields = ['title', 'description', 'location']
+    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['created_at', 'updated_at']
+    list_editable = ['is_active']
+
+    fieldsets = (
+        ('Vacancy Details', {
+            'fields': ('title', 'slug', 'department', 'location', 'job_type', 'experience', 'salary_range')
+        }),
+        ('Job Description', {
+            'fields': ('description', 'responsibilities', 'requirements'),
+            'description': 'Enter one responsibility/requirement per line.'
+        }),
+        ('Publishing', {
+            'fields': ('is_active', 'deadline')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    actions = ['activate_vacancies', 'deactivate_vacancies']
+
+    # Only super admins can manage vacancies
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def applications_link(self, obj):
+        count = obj.applications.count()
+        if count > 0:
+            url = reverse('admin:main_jobapplication_changelist') + f'?vacancy__id__exact={obj.id}'
+            return format_html('<a href="{}">{} application(s)</a>', url, count)
+        return '0 applications'
+    applications_link.short_description = 'Applications'
+
+    def activate_vacancies(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f'{updated} vacancy(ies) activated.')
+    activate_vacancies.short_description = 'Activate selected vacancies'
+
+    def deactivate_vacancies(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f'{updated} vacancy(ies) deactivated.')
+    deactivate_vacancies.short_description = 'Deactivate selected vacancies'
+
+
+@admin.register(JobApplication)
+class JobApplicationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'vacancy', 'email', 'phone', 'cv_link', 'status', 'applied_at']
+    list_filter = ['status', 'vacancy', 'applied_at']
+    search_fields = ['name', 'email', 'phone', 'vacancy__title']
+    readonly_fields = ['vacancy', 'name', 'email', 'phone', 'cv', 'cover_message', 'applied_at']
+    list_editable = ['status']
+
+    fieldsets = (
+        ('Candidate', {
+            'fields': ('vacancy', 'name', 'email', 'phone', 'cv', 'cover_message')
+        }),
+        ('Review', {
+            'fields': ('status', 'applied_at')
+        }),
+    )
+
+    actions = ['export_as_csv']
+
+    def has_add_permission(self, request):
+        return False
+
+    def cv_link(self, obj):
+        if obj.cv:
+            return format_html('<a href="{}" target="_blank">Download CV</a>', obj.cv.url)
+        return 'No CV'
+    cv_link.short_description = 'CV'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('vacancy')
+
+    def export_as_csv(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="job_applications.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Email', 'Phone', 'Vacancy', 'Status', 'CV', 'Applied At'])
+        for app in queryset:
+            writer.writerow([
+                app.name,
+                app.email,
+                app.phone,
+                app.vacancy.title,
+                app.get_status_display(),
+                app.cv.url if app.cv else 'No CV',
+                app.applied_at.strftime('%Y-%m-%d %H:%M:%S'),
+            ])
+        return response
+    export_as_csv.short_description = 'Export selected applications as CSV'
 
 
 # Customize admin site header and title

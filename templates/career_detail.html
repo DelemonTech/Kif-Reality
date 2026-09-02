@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ vacancy.title }} | Careers at KIF Realty{% endblock %}
+
+<meta name="description" content="{% block description %}Apply for the {{ vacancy.title }} position at KIF Realty in {{ vacancy.location }}. {{ vacancy.description|striptags|truncatewords:20 }}{% endblock %}">
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com/careers/{{ vacancy.slug }}/">
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.career-detail-header {
+    padding: 9rem 2rem 3.5rem;
+    background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
+    position: relative;
+    overflow: hidden;
+}
+
+.career-detail-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent-gradient);
+    opacity: 0.05;
+}
+
+.career-detail-header .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb-nav {
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+}
+
+.breadcrumb-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-nav a:hover {
+    color: var(--rose-gold);
+}
+
+.breadcrumb-nav span {
+    color: var(--rose-gold);
+}
+
+.career-detail-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.2rem;
+    font-weight: 500;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+.job-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+}
+
+.job-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(232, 180, 160, 0.08);
+    border: 1px solid rgba(232, 180, 160, 0.25);
+    color: var(--text-muted);
+    border-radius: 50px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+}
+
+.job-tag i {
+    color: var(--rose-gold);
+}
+
+/* Body layout */
+.career-detail-body {
+    padding: 4rem 2rem 6rem;
+    background: linear-gradient(135deg, var(--charcoal-gray) 0%, var(--obsidian-black) 100%);
+}
+
+.career-detail-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.job-content-section {
+    margin-bottom: 2.8rem;
+}
+
+.job-content-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 1.2rem;
+}
+
+.job-content-section p {
+    color: var(--text-muted);
+    line-height: 1.85;
+    font-size: 1.02rem;
+    font-weight: 300;
+    white-space: pre-line;
+}
+
+.job-content-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.job-content-section ul li {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.7;
+    padding: 0.45rem 0 0.45rem 1.9rem;
+    position: relative;
+}
+
+.job-content-section ul li::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    color: var(--rose-gold);
+    font-size: 0.8rem;
+}
+
+/* Application form card */
+.apply-card {
+    background: linear-gradient(145deg, var(--charcoal-gray), rgba(26, 26, 26, 0.8));
+    border: 1px solid rgba(232, 180, 160, 0.15);
+    border-radius: 18px;
+    padding: 2.2rem;
+    position: sticky;
+    top: 110px;
+}
+
+.apply-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #f5f5f5;
+    margin-bottom: 0.5rem;
+}
+
+.apply-card > p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    font-weight: 300;
+    margin-bottom: 1.6rem;
+}
+
+.apply-form .form-group {
+    margin-bottom: 1.2rem;
+}
+
+.apply-form label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.45rem;
+    font-weight: 500;
+}
+
+.apply-form label .req {
+    color: var(--rose-gold);
+}
+
+.apply-form input[type="text"],
+.apply-form input[type="email"],
+.apply-form input[type="tel"],
+.apply-form textarea {
+    width: 100%;
+    background: rgba(10, 10, 10, 0.6);
+    border: 1px solid rgba(232, 180, 160, 0.2);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    color: #f5f5f5;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.apply-form input:focus,
+.apply-form textarea:focus {
+    outline: none;
+    border-color: var(--rose-gold);
+    box-shadow: 0 0 0 3px rgba(232, 180, 160, 0.1);
+}
+
+.apply-form input::placeholder,
+.apply-form textarea::placeholder {
+    color: rgba(176, 176, 176, 0.5);
+}
+
+/* File upload */
+.cv-upload {
+    position: relative;
+    border: 1.5px dashed rgba(232, 180, 160, 0.35);
+    border-radius: 10px;
+    padding: 1.4rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background 0.3s ease;
+    background: rgba(10, 10, 10, 0.4);
+}
+
+.cv-upload:hover {
+    border-color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.04);
+}
+
+.cv-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.cv-upload i {
+    font-size: 1.5rem;
+    color: var(--rose-gold);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.cv-upload .cv-label {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    display: block;
+}
+
+.cv-upload .cv-hint {
+    color: rgba(176, 176, 176, 0.5);
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+    display: block;
+}
+
+.cv-upload.has-file {
+    border-color: var(--rose-gold);
+    background: rgba(232, 180, 160, 0.06);
+}
+
+.submit-application-btn {
+    width: 100%;
+    background: var(--accent-gradient);
+    color: var(--obsidian-black);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.submit-application-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(232, 180, 160, 0.3);
+}
+
+.form-errors {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #f1a5ad;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.2rem;
+}
+
+.form-errors ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.field-error {
+    color: #f1a5ad;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+    display: block;
+}
+
+/* Flash messages */
+.career-messages {
+    max-width: 1100px;
+    margin: 0 auto 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.career-alert {
+    border-radius: 12px;
+    padding: 1rem 1.4rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.career-alert.success {
+    background: rgba(40, 167, 69, 0.12);
+    border: 1px solid rgba(40, 167, 69, 0.4);
+    color: #9be3ad;
+}
+
+.career-alert.error {
+    background: rgba(220, 53, 69, 0.12);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #f1a5ad;
+}
+
+/* Closed banner */
+.closed-banner {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.35);
+    color: #f1a5ad;
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+/* Related jobs */
+.related-jobs {
+    max-width: 1100px;
+    margin: 4rem auto 0;
+}
+
+.related-jobs h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--rose-gold);
+    margin-bottom: 1.8rem;
+    text-align: center;
+}
+
+.related-jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.related-job-card {
+    background: linear-gradient(145deg, var(--charcoal-gray), rgba(26, 26, 26, 0.7));
+    border: 1px solid rgba(232, 180, 160, 0.12);
+    border-radius: 14px;
+    padding: 1.6rem;
+    text-decoration: none;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    display: block;
+}
+
+.related-job-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(232, 180, 160, 0.4);
+}
+
+.related-job-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: #f5f5f5;
+    margin-bottom: 0.6rem;
+}
+
+.related-job-card span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-right: 1rem;
+}
+
+.related-job-card span i {
+    color: var(--rose-gold);
+}
+
+@media (max-width: 900px) {
+    .career-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .apply-card {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .career-detail-header {
+        padding: 7rem 1.5rem 2.5rem;
+    }
+
+    .career-detail-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .career-detail-body {
+        padding: 2.5rem 1.2rem 4rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="career-detail-header">
+    <div class="header-inner">
+        <div class="breadcrumb-nav">
+            <a href="{% url 'index' %}">Home</a> &nbsp;/&nbsp;
+            <a href="{% url 'careers' %}">Careers</a> &nbsp;/&nbsp;
+            <span>{{ vacancy.title }}</span>
+        </div>
+        <h1>{{ vacancy.title }}</h1>
+        <div class="job-tags">
+            <span class="job-tag"><i class="fas fa-briefcase"></i> {{ vacancy.get_department_display }}</span>
+            <span class="job-tag"><i class="fas fa-map-marker-alt"></i> {{ vacancy.location }}</span>
+            <span class="job-tag"><i class="fas fa-clock"></i> {{ vacancy.get_job_type_display }}</span>
+            {% if vacancy.experience %}
+            <span class="job-tag"><i class="fas fa-user-tie"></i> {{ vacancy.experience }}</span>
+            {% endif %}
+            {% if vacancy.salary_range %}
+            <span class="job-tag"><i class="fas fa-coins"></i> {{ vacancy.salary_range }}</span>
+            {% endif %}
+            {% if vacancy.deadline %}
+            <span class="job-tag"><i class="far fa-calendar-alt"></i> Apply before {{ vacancy.deadline|date:"d M Y" }}</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Body -->
+<section class="career-detail-body">
+    {% if messages %}
+    <div class="career-messages">
+        {% for message in messages %}
+        <div class="career-alert {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="career-detail-grid">
+        <!-- Job details -->
+        <div class="job-details">
+            <div class="job-content-section">
+                <h2>About The Role</h2>
+                <p>{{ vacancy.description }}</p>
+            </div>
+
+            {% if vacancy.responsibilities_list %}
+            <div class="job-content-section">
+                <h2>Key Responsibilities</h2>
+                <ul>
+                    {% for item in vacancy.responsibilities_list %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if vacancy.requirements_list %}
+            <div class="job-content-section">
+                <h2>Requirements</h2>
+                <ul>
+                    {% for item in vacancy.requirements_list %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Application form -->
+        <div class="apply-card" id="apply">
+            {% if vacancy.is_open %}
+            <h3>Apply for this Position</h3>
+            <p>Fill in your details below and our HR team will get in touch with you.</p>
+
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="apply-form" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Full Name <span class="req">*</span></label>
+                    {{ form.name }}
+                    {% for error in form.name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Email Address <span class="req">*</span></label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}">Phone Number <span class="req">*</span></label>
+                    {{ form.phone }}
+                    {% for error in form.phone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Upload CV <small>(optional)</small></label>
+                    <div class="cv-upload" id="cvUpload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span class="cv-label" id="cvLabel">Click or drop your CV here</span>
+                        <span class="cv-hint">PDF, DOC, or DOCX — max 5 MB</span>
+                        <input type="file" name="cv" id="{{ form.cv.id_for_label }}" accept=".pdf,.doc,.docx">
+                    </div>
+                    {% for error in form.cv.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.cover_message.id_for_label }}">Message <small>(optional)</small></label>
+                    {{ form.cover_message }}
+                    {% for error in form.cover_message.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <button type="submit" class="submit-application-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+            </form>
+            {% else %}
+            <div class="closed-banner">
+                <i class="fas fa-lock"></i> Applications for this position are now closed.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if related_vacancies %}
+    <div class="related-jobs">
+        <h2>Other Openings</h2>
+        <div class="related-jobs-grid">
+            {% for job in related_vacancies %}
+            <a href="{% url 'career_detail' job.slug %}" class="related-job-card">
+                <h4>{{ job.title }}</h4>
+                <span><i class="fas fa-briefcase"></i> {{ job.get_department_display }}</span>
+                <span><i class="fas fa-map-marker-alt"></i> {{ job.location }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var cvInput = document.querySelector('#cvUpload input[type="file"]');
+    var cvLabel = document.getElementById('cvLabel');
+    var cvUpload = document.getElementById('cvUpload');
+    if (cvInput) {
+        cvInput.addEventListener('change', function () {
+            if (cvInput.files.length > 0) {
+                cvLabel.textContent = cvInput.files[0].name;
+                cvUpload.classList.add('has-file');
+            } else {
+                cvLabel.textContent = 'Click or drop your CV here';
+                cvUpload.classList.remove('has-file');
+            }
+        });
+    }
+
+    // Scroll the success/error message into view after submitting
+    var alertBox = document.querySelector('.career-alert');
+    if (alertBox) {
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+</script>
+{% endblock %}

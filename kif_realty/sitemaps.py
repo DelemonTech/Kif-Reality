@@ -28,6 +28,7 @@ class StaticViewSitemap(Sitemap):
             'index',
             'about',
             'blogs',
+            'careers',
             'contact',
             'privacy-policy',
             'terms-and-conditions',

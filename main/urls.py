@@ -29,6 +29,10 @@ urlpatterns = [
     # Static pages
     path('about/', views.about, name='about'),
 
+    # Careers
+    path('careers/', views.careers, name='careers'),
+    path('careers/<slug:slug>/', views.career_detail, name='career_detail'),
+
     # Blogs
     path('blogs/', views.blog_list, name='blogs'),
     path('blogs/search/', views.blog_search, name='blog_search'),

@@ -17,8 +17,8 @@ from django.utils.text import slugify
 from django.utils.html import strip_tags
 from urllib.parse import urlparse, parse_qs
 
-from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment
-from .forms import NewsletterForm, CommentForm
+from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment, JobVacancy, JobApplication
+from .forms import NewsletterForm, CommentForm, JobApplicationForm
 from .services import PropertyService
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
@@ -738,6 +738,69 @@ def about(request):
 
 def basenw(request):
     return render(request, 'basenew.html')
+
+
+def careers(request):
+    """Careers page listing all active job vacancies"""
+    vacancies = JobVacancy.objects.filter(is_active=True)
+
+    department = request.GET.get('department', '')
+    if department:
+        vacancies = vacancies.filter(department=department)
+
+    departments = (
+        JobVacancy.objects.filter(is_active=True)
+        .values_list('department', flat=True)
+        .distinct()
+    )
+    department_choices = [
+        (value, label) for value, label in JobVacancy.DEPARTMENT_CHOICES
+        if value in departments
+    ]
+
+    context = {
+        'vacancies': vacancies,
+        'department_choices': department_choices,
+        'selected_department': department,
+    }
+    return render(request, 'careers.html', context)
+
+
+def career_detail(request, slug):
+    """Job vacancy detail page with application form"""
+    vacancy = get_object_or_404(JobVacancy, slug=slug, is_active=True)
+
+    if request.method == 'POST':
+        if not vacancy.is_open:
+            messages.error(request, 'Sorry, applications for this position are closed.')
+            return redirect('career_detail', slug=vacancy.slug)
+
+        form = JobApplicationForm(request.POST, request.FILES)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.vacancy = vacancy
+            application.save()
+            messages.success(
+                request,
+                'Thank you for applying! Our HR team will review your application and get back to you soon.'
+            )
+            return redirect('career_detail', slug=vacancy.slug)
+        else:
+            messages.error(request, 'Please correct the errors below and try again.')
+    else:
+        form = JobApplicationForm()
+
+    related_vacancies = (
+        JobVacancy.objects.filter(is_active=True)
+        .exclude(pk=vacancy.pk)[:3]
+    )
+
+    context = {
+        'vacancy': vacancy,
+        'form': form,
+        'related_vacancies': related_vacancies,
+    }
+    return render(request, 'career_detail.html', context)
 
 
 def blogs(request):
