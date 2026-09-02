@@ -48,18 +48,37 @@
         <form method="POST" class="filter-form" action="{% url 'properties' %}">
             {% csrf_token %}
 
-            <!-- Property Type Toggle -->
-            <div class="property-type-section">
-                <label class="filter-label">Property Type</label>
-                <div class="property-type-toggle">
-                    <button type="button" class="property-type-btn active" data-type="residential" id="residentialBtn">
-                        Residential
-                    </button>
-                    <button type="button" class="property-type-btn" data-type="commercial" id="commercialBtn">
-                        Commercial
-                    </button>
+            <!-- Top Row: Property Type + Bedrooms side by side -->
+            <div class="filter-top-row">
+                <div class="property-type-section">
+                    <label class="filter-label">Property Type</label>
+                    <div class="property-type-toggle">
+                        <button type="button" class="property-type-btn active" data-type="residential" id="residentialBtn">
+                            Residential
+                        </button>
+                        <button type="button" class="property-type-btn" data-type="commercial" id="commercialBtn">
+                            Commercial
+                        </button>
+                    </div>
+                    <input type="hidden" name="property_type" id="propertyTypeInput" value="residential">
                 </div>
-                <input type="hidden" name="property_type" id="propertyTypeInput" value="residential">
+
+                <!-- Bedrooms (Only for Residential) -->
+                <div class="bedrooms-section" id="bedroomsSection">
+                    <label class="filter-label">
+                        <i class="fas fa-bed filter-icon" aria-hidden="true"></i>
+                        Bedrooms
+                    </label>
+                    <div class="bedrooms-grid">
+                        <button type="button" class="bedroom-btn" data-bedrooms="1">1</button>
+                        <button type="button" class="bedroom-btn" data-bedrooms="2">2</button>
+                        <button type="button" class="bedroom-btn" data-bedrooms="3">3</button>
+                        <button type="button" class="bedroom-btn" data-bedrooms="4">4</button>
+                        <button type="button" class="bedroom-btn" data-bedrooms="5">5</button>
+                        <button type="button" class="bedroom-btn" data-bedrooms="6+">6+</button>
+                    </div>
+                    <input type="hidden" name="bedrooms" id="bedroomsInput" value="">
+                </div>
             </div>
 
             <!-- Main Filters Grid -->
@@ -75,6 +94,8 @@
                         <option value="villa">Villa</option>
                         <option value="townhouse">Townhouse</option>
                         <option value="penthouse">Penthouse</option>
+                        <option value="duplex">Duplex</option>
+                        <option value="studio">Studio</option>
                     </select>
                 </div>
 
@@ -116,32 +137,6 @@
                 </div>
             </div>
 
-            <!-- Bedrooms Section (Only for Residential) -->
-            <div class="bedrooms-section" id="bedroomsSection">
-                <label class="filter-label">
-                    <i class="fas fa-bed filter-icon" aria-hidden="true"></i>
-                    Bedrooms
-                </label>
-                <div class="bedrooms-grid">
-                    <button type="button" class="bedroom-btn" data-bedrooms="1">1</button>
-                    <button type="button" class="bedroom-btn" data-bedrooms="2">2</button>
-                    <button type="button" class="bedroom-btn" data-bedrooms="3">3</button>
-                    <button type="button" class="bedroom-btn" data-bedrooms="4">4</button>
-                    <button type="button" class="bedroom-btn" data-bedrooms="5">5</button>
-                    <button type="button" class="bedroom-btn" data-bedrooms="6+">6+</button>
-                </div>
-                <input type="hidden" name="bedrooms" id="bedroomsInput" value="">
-            </div>
-
-            <!-- Advanced Filters Toggle -->
-            <div class="advanced-filters-toggle">
-                <button type="button" class="advanced-toggle-btn" id="advancedToggle">
-                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
-                    Advanced Filters
-                    <i class="fas fa-chevron-down" id="advancedIcon" aria-hidden="true"></i>
-                </button>
-            </div>
-
             <!-- Advanced Filters Content -->
             <div class="advanced-filters-content" id="advancedContent">
                 <div class="advanced-filters-grid">
@@ -157,6 +152,9 @@
                             <option value="2026">2026</option>
                             <option value="2027">2027</option>
                             <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                            <option value="2030+">2030+</option>
                         </select>
                     </div>
 
@@ -235,16 +233,23 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="filter-actions">
-                <button type="button" class="reset-btn" onclick="resetFilters()">
-                    <i class="fas fa-refresh" aria-hidden="true"></i>
-                    Reset Filters
+            <!-- Bottom Bar: Advanced Toggle + Action Buttons -->
+            <div class="filter-bottom-row">
+                <button type="button" class="advanced-toggle-btn" id="advancedToggle">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                    Advanced Filters
+                    <i class="fas fa-chevron-down" id="advancedIcon" aria-hidden="true"></i>
                 </button>
-                <button type="submit" class="search-btn" id="searchBtn">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                    Search Properties
-                </button>
+                <div class="filter-actions">
+                    <button type="button" class="reset-btn" onclick="resetFilters()">
+                        <i class="fas fa-refresh" aria-hidden="true"></i>
+                        Reset
+                    </button>
+                    <button type="submit" class="search-btn" id="searchBtn">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Search Properties
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -544,11 +549,20 @@
                 },
                 body: JSON.stringify(filters)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
             .then(result => {
                 console.log('🏠 Initial properties API response:', result);
 
+                // Server catalog is refreshing — retry automatically
+                if (result?.warming) {
+                    if (scheduleInitialRetry()) return;
+                }
+
                 if (result?.status && result?.data) {
+                    initialLoadAttempts = 0;
                     const propertiesData = result.data;
                     const properties = propertiesData.results || [];
 
@@ -578,17 +592,20 @@
             })
             .catch(error => {
                 console.error('❌ Initial properties error:', error);
+                // Transient failure (server restarting / catalog refreshing):
+                // keep retrying quietly before showing anything to the visitor
+                if (scheduleInitialRetry()) return;
                 if (propertiesGrid) {
                     propertiesGrid.innerHTML = `
                         <div class="no-properties">
                             <div class="no-properties-icon">
-                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                <i class="fas fa-sync-alt fa-spin" aria-hidden="true"></i>
                             </div>
-                            <h4>Error Loading Properties</h4>
-                            <p>We encountered an error while loading properties. Please try refreshing the page.</p>
-                            <button onclick="loadInitialProperties()" class="btn-primary-custom" style="display: inline-flex;">
+                            <h4>Refreshing Our Listings</h4>
+                            <p>Our property catalog is being updated right now. This usually takes under a minute — thank you for your patience.</p>
+                            <button onclick="window.retryInitialLoad()" class="btn-primary-custom" style="display: inline-flex;">
                                 <i class="fas fa-refresh me-2" aria-hidden="true"></i>
-                                Try Again
+                                Reload Properties
                             </button>
                         </div>
                     `;
@@ -596,8 +613,37 @@
             });
         }
 
-        // Expose loadInitialProperties globally so the "Try Again" button can call it
+        // Auto-retry while the server-side catalog refresh completes.
+        // Backoff: 5s, 10s, 15s, 20s, 20s (~70s total — longer than a refresh).
+        let initialLoadAttempts = 0;
+
+        function scheduleInitialRetry() {
+            if (initialLoadAttempts >= 5) return false;
+            initialLoadAttempts++;
+            const delay = Math.min(5000 * initialLoadAttempts, 20000);
+            console.warn(`🏠 Catalog not ready — retrying initial load in ${delay / 1000}s (attempt ${initialLoadAttempts})`);
+            const grid = document.querySelector('.properties-grid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="no-properties">
+                        <div class="no-properties-icon">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        </div>
+                        <h4>Loading Properties...</h4>
+                        <p>Fetching the latest listings for you — just a moment.</p>
+                    </div>
+                `;
+            }
+            setTimeout(loadInitialProperties, delay);
+            return true;
+        }
+
+        // Expose loadInitialProperties globally so the "Reload" button can call it
         window.loadInitialProperties = loadInitialProperties;
+        window.retryInitialLoad = function () {
+            initialLoadAttempts = 0;  // manual click restarts the retry budget
+            loadInitialProperties();
+        };
 
         function setupEventListeners() {
             // Property type toggle
@@ -674,6 +720,15 @@
                 updateNeighborhoods(this.value);
             });
 
+            // Unit type change applies the filter immediately (debounced)
+            const unitTypeSelect = document.getElementById('unitTypeSelect');
+            if (unitTypeSelect) {
+                unitTypeSelect.addEventListener('change', function () {
+                    console.log('🏠 Unit type changed:', this.value, '- applying filter');
+                    handleSearch();
+                });
+            }
+
             // Range slider event listeners
             const minPriceRange = document.getElementById('minPriceRange');
             const maxPriceRange = document.getElementById('maxPriceRange');
@@ -727,13 +782,15 @@
             const bedroomsSection = document.getElementById('bedroomsSection');
 
             if (type === 'commercial') {
+                // Only types that exist in the X-OPP catalog (others always return 0 results)
                 const commercialOptions = [
                     { value: 'office', text: 'Office' },
-                    { value: 'shop', text: 'Shop' },
-                    { value: 'warehouse', text: 'Warehouse' },
                     { value: 'retail', text: 'Retail Space' },
-                    { value: 'showroom', text: 'Showroom' },
-                    { value: 'restaurant', text: 'Restaurant' }
+                    { value: 'shop', text: 'Shop' },
+                    { value: 'suite', text: 'Suite' },
+                    { value: 'floor', text: 'Full / Half Floor' },
+                    { value: 'plot', text: 'Land / Plot' },
+                    { value: 'hotel', text: 'Hotel' }
                 ];
 
                 commercialOptions.forEach(option => {
@@ -1164,7 +1221,8 @@
 
             const deliveryYear = formData.get('delivery_year');
             if (deliveryYear && deliveryYear.trim() && deliveryYear !== '0') {
-                filters.delivery_year = parseInt(deliveryYear);
+                // Send as string: "2030+" means that year or later
+                filters.delivery_year = deliveryYear.trim();
             }
 
             const minPrice = parseInt(formData.get('min_price')) || 0;
@@ -1200,7 +1258,10 @@
                 },
                 body: JSON.stringify(filters)
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
                 .then(result => {
                     console.log('🏠 Properties API response:', result);
 
@@ -1217,6 +1278,11 @@
                         if (propertiesData.count !== undefined) {
                             updateTotalCount(propertiesData.count);
                         }
+                    } else if (result?.warming) {
+                        // Catalog refreshing server-side — retry this search shortly
+                        console.warn('🏠 Catalog warming — retrying search in 5s');
+                        showSearchRetryState();
+                        setTimeout(() => performSearch(), 5000);
                     } else {
                         console.error('❌ Properties API error:', result?.error || result?.message || 'No properties found');
                         updatePropertiesGrid([]);
@@ -1226,9 +1292,33 @@
                 })
                 .catch(error => {
                     console.error('❌ Search error:', error);
-                    showError('An error occurred while searching properties');
-                    throw error;
+                    // Transient server hiccup: retry once quietly before telling the user
+                    if (!performSearch._retried) {
+                        performSearch._retried = true;
+                        showSearchRetryState();
+                        setTimeout(() => {
+                            performSearch().finally(() => { performSearch._retried = false; });
+                        }, 4000);
+                        return;
+                    }
+                    performSearch._retried = false;
+                    showError('Our listings are being refreshed. Please try again in a few seconds.');
                 });
+        }
+
+        function showSearchRetryState() {
+            const grid = document.querySelector('.properties-grid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="no-properties">
+                        <div class="no-properties-icon">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        </div>
+                        <h4>Loading Properties...</h4>
+                        <p>Fetching the latest listings for you — just a moment.</p>
+                    </div>
+                `;
+            }
         }
 
         // Global function to update properties grid
@@ -1292,7 +1382,15 @@
                 const slug = property.slug || 'property';
                 const propertyUrl = `/property/${slug}-${property.id}/`;
 
+                // Unit types offered by the project (e.g. "Apartment, Villa"); keep the chip short
+                let unitTypesText = null;
+                if (property.unit_types) {
+                    const allTypes = String(property.unit_types).split(',').map(t => t.trim()).filter(Boolean);
+                    unitTypesText = allTypes.slice(0, 2).join(', ') + (allTypes.length > 2 ? ` +${allTypes.length - 2}` : '');
+                }
+
                 const chips = [
+                    unitTypesText ? `<span class="property-chip"><i class="fas fa-home" aria-hidden="true"></i>${unitTypesText}</span>` : '',
                     beds ? `<span class="property-chip"><i class="fas fa-bed" aria-hidden="true"></i>${beds} BR</span>` : '',
                     area ? `<span class="property-chip"><i class="fas fa-ruler-combined" aria-hidden="true"></i>${area}</span>` : '',
                     delivery ? `<span class="property-chip"><i class="far fa-calendar-alt" aria-hidden="true"></i>${delivery}</span>` : '',
@@ -1507,7 +1605,8 @@
 
         const deliveryYear = formData.get('delivery_year');
         if (deliveryYear && deliveryYear.trim() && deliveryYear !== '0') {
-            filters.delivery_year = parseInt(deliveryYear);
+            // Send as string: "2030+" means that year or later
+            filters.delivery_year = deliveryYear.trim();
         }
 
         const minPrice = parseInt(formData.get('min_price')) || 0;

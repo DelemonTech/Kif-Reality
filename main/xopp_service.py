@@ -261,6 +261,8 @@ def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[
             return cached
 
     if cached_only:
+        # Main cache is cold: heal it in the background, serve the backup now.
+        refresh_catalog_async()
         return cache.get(CATALOG_BACKUP_KEY) or []
 
     catalog, page, complete = [], 1, False
@@ -298,19 +300,56 @@ def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[
     return best
 
 
+# ── Background refresh (safety net when the Celery refresh isn't running) ────
+# A cold/expired cache must never rebuild inline in a web request: the full
+# walk takes 30s+ and turns into a gunicorn/nginx timeout for every visitor.
+# Instead, endpoints serve whatever they have and kick off ONE background
+# rebuild; a few seconds later requests are served from the fresh cache.
+_refresh_lock = threading.Lock()
+_refresh_running = False
+
+
+def refresh_catalog_async():
+    """Rebuild catalog + developers in a daemon thread (single-flight)."""
+    global _refresh_running
+    with _refresh_lock:
+        if _refresh_running:
+            return
+        _refresh_running = True
+
+    def run():
+        global _refresh_running
+        try:
+            logger.warning("Catalog cache cold — rebuilding in background thread")
+            get_catalog(force_refresh=True)
+            get_developers(force_refresh=True)
+        except Exception as e:
+            logger.error(f"Background catalog refresh failed: {e}")
+        finally:
+            with _refresh_lock:
+                _refresh_running = False
+
+    threading.Thread(target=run, daemon=True).start()
+
+
 DEVELOPERS_CACHE_KEY = 'xopp_developers_v1'
 
 
-def get_developers(force_refresh: bool = False) -> List[Dict]:
+def get_developers(force_refresh: bool = False, cached_only: bool = False) -> List[Dict]:
     """All developers from the partner API, sorted by name.
 
     Served from cache (long TTL); refreshed in the background by Celery.
     A failed walk never replaces a known-good cached list.
+
+    cached_only=True never walks the partner API inline (see refresh_catalog_async).
     """
     if not force_refresh:
         cached = memo_get(DEVELOPERS_CACHE_KEY, lambda: cache.get(DEVELOPERS_CACHE_KEY))
         if cached is not None:
             return cached
+
+    if cached_only:
+        return []
 
     devs, page = [], 1
     while True:
@@ -478,7 +517,14 @@ def filter_catalog(catalog: List[Dict], filters: Dict) -> List[Dict]:
 
     year = filters.get('delivery_year')
     if year:
-        out = [p for p in out if delivery_year(p['delivery_date']) == int(year)]
+        year = str(year).strip()
+        if year.endswith('+'):
+            # "2030+" — delivered that year or later
+            base = int(year[:-1])
+            out = [p for p in out
+                   if (dy := delivery_year(p['delivery_date'])) is not None and dy >= base]
+        else:
+            out = [p for p in out if delivery_year(p['delivery_date']) == int(year)]
 
     low_price = filters.get('low_price') or filters.get('min_price')
     if low_price:

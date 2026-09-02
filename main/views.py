@@ -23,6 +23,7 @@ from .services import PropertyService
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
     get_available_counts, get_developers as xopp_get_developers, memo_get,
+    refresh_catalog_async,
 )
 
 import json
@@ -863,11 +864,13 @@ def subscribe_newsletter(request):
 def search_properties_api(request):
     """API endpoint for property search (X-OPP catalog, title match)"""
     query = request.GET.get('q', '')
-    catalog = get_catalog()
+    catalog = get_catalog(cached_only=True)
 
     if not catalog:
+        refresh_catalog_async()
         return JsonResponse({
             'success': False,
+            'warming': True,
             'error': 'Unable to fetch properties. Please try again later.'
         }, json_dumps_params={'ensure_ascii': False})
 
@@ -894,11 +897,16 @@ def filter_properties_api(request):
             if value and str(value).strip():
                 filters[field] = str(value).strip()
 
-        numeric_fields = ['delivery_year', 'low_price', 'min_price', 'max_price', 'min_area', 'max_area']
+        numeric_fields = ['low_price', 'min_price', 'max_price', 'min_area', 'max_area']
         for field in numeric_fields:
             value = data.get(field)
             if value and (isinstance(value, (int, float)) and value > 0):
                 filters[field] = value
+
+        # delivery_year: an int (2029) or a string like "2029" / "2030+" (that year or later)
+        delivery = str(data.get('delivery_year') or '').strip()
+        if re.fullmatch(r'\d{4}\+?', delivery):
+            filters['delivery_year'] = delivery
 
         # page comes as a query param (?page=N) or in the body; page size from limit
         try:
@@ -910,11 +918,16 @@ def filter_properties_api(request):
         except (TypeError, ValueError):
             per_page = 12
 
-        payload = _properties_page(filters, page, per_page)
+        # cached_only: never rebuild the catalog inline (a 30s+ walk of the
+        # partner API would hit the gunicorn timeout and 502 every visitor).
+        # A cold cache triggers a background refresh; the client retries.
+        payload = _properties_page(filters, page, per_page, cached_only=True)
         if payload is None:
+            refresh_catalog_async()
             return JsonResponse({
                 'status': False,
-                'error': 'Unable to load properties.'
+                'warming': True,
+                'error': 'Property catalog is refreshing, please retry shortly.'
             }, json_dumps_params={'ensure_ascii': False})
 
         return JsonResponse({'status': True, 'data': payload}, json_dumps_params={'ensure_ascii': False})
@@ -1216,14 +1229,18 @@ def cities_api(request):
 # ─────────────────────────────────────────────
 def _xopp_developers_response():
     """Developers from the partner /developers/ endpoint, enriched with the
-    number of catalog projects per developer. None if the endpoint is down."""
-    devs = xopp_get_developers()
+    number of catalog projects per developer. None if the endpoint is down.
+
+    Cached-only: a cold cache triggers a background refresh instead of walking
+    the partner API inline (which would hit the gunicorn timeout)."""
+    devs = xopp_get_developers(cached_only=True)
     if not devs:
+        refresh_catalog_async()
         return None
 
     from collections import Counter
     counts = Counter(
-        p['developer_name'].strip() for p in get_catalog() if p['developer_name'].strip()
+        p['developer_name'].strip() for p in get_catalog(cached_only=True) if p['developer_name'].strip()
     )
 
     data = [{
@@ -1252,7 +1269,7 @@ def developers_api(request):
             resp['Cache-Control'] = 'public, max-age=600'
             return resp
 
-        names = sorted({p['developer_name'].strip() for p in get_catalog() if p['developer_name'].strip()})
+        names = sorted({p['developer_name'].strip() for p in get_catalog(cached_only=True) if p['developer_name'].strip()})
         if names:
             return JsonResponse({
                 'status': True,
@@ -1361,27 +1378,9 @@ def developers_from_properties(request):
         data = [{'name': d} for d in qs]
         return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
 
-    # Fallback: try the microservice developers API
-    result = PropertyService.get_developers()
-    if result['success'] and result['data']:
-        raw = result['data']
-        if isinstance(raw, dict):
-            inner = raw.get('data')
-            if isinstance(inner, list):
-                developers_list = inner
-            elif isinstance(inner, dict):
-                developers_list = inner.get('data', [])
-            else:
-                developers_list = []
-        elif isinstance(raw, list):
-            developers_list = raw
-        else:
-            developers_list = []
-
-        if developers_list:
-            return JsonResponse({'status': True, 'data': developers_list}, json_dumps_params={'ensure_ascii': False})
-
     # Hardcoded fallback — top UAE developers
+    # (never call the retired microservice here: its 8s connect timeout would
+    # stall this endpoint; the X-OPP background refresh heals the real list)
     fallback = [
         {'name': 'Emaar Properties'},
         {'name': 'DAMAC Properties'},
