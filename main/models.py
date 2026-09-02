@@ -552,6 +552,25 @@ class Property(models.Model):
         return self.get_property_type_display() if self.property_type else "Property"
 
 
+class ApiSnapshot(models.Model):
+    """Durable copy of external API data (X-OPP catalog, developers list).
+
+    Unlike the cache (which expires and can be lost on restarts), this survives
+    everything: the site always has property data to serve, refreshed nightly
+    by the `refresh_xopp` management command (cron) or the Celery task.
+    """
+    key = models.CharField(max_length=100, unique=True, db_index=True)
+    data = models.JSONField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'API Snapshot'
+        verbose_name_plural = 'API Snapshots'
+
+    def __str__(self):
+        return f"{self.key} (updated {self.updated_at:%Y-%m-%d %H:%M})"
+
+
 class JobVacancy(models.Model):
     """Career openings posted by the super admin via Django admin"""
 

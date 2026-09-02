@@ -134,12 +134,14 @@ CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default=CELERY_BROKER_UR
 CELERY_TIMEZONE = 'Asia/Dubai'
 
 CELERY_BEAT_SCHEDULE = {
-    # Refresh the X-OPP property catalog + developers list every 30 minutes.
-    # The web app serves from cache only (24h TTL), so this background refresh
-    # is what keeps listings fresh — visitors never wait on an API rebuild.
+    # Refresh the X-OPP property catalog + developers list every midnight.
+    # Data is stored durably in the DB (ApiSnapshot), so the site always has
+    # listings to serve — visitors never wait on an API rebuild.
+    # (Primary refresh mechanism is the `refresh_xopp` cron job; this Celery
+    # schedule only applies if a Celery worker+beat is running.)
     'refresh-xopp-cache': {
         'task': 'main.tasks.refresh_xopp_cache',
-        'schedule': crontab(minute='*/30'),
+        'schedule': crontab(hour=0, minute=0),
     },
 }
 

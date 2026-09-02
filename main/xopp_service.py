@@ -260,8 +260,18 @@ def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[
         if cached is not None:
             return cached
 
+        # Cache cold — serve the durable DB snapshot (never expires) and
+        # re-warm the cache from it. Visitors get data instantly.
+        snap = _snapshot_get(SNAPSHOT_CATALOG_KEY)
+        if snap:
+            cache.set(CATALOG_CACHE_KEY, snap, CATALOG_TTL)
+            memo_clear(CATALOG_CACHE_KEY)
+            logger.info(f"Catalog served from DB snapshot ({len(snap)} properties); cache re-warmed")
+            return snap
+
     if cached_only:
-        # Main cache is cold: heal it in the background, serve the backup now.
+        # No cache AND no DB snapshot (first ever run): heal in the background,
+        # serve the backup now.
         refresh_catalog_async()
         return cache.get(CATALOG_BACKUP_KEY) or []
 
@@ -279,6 +289,7 @@ def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[
     if complete:
         cache.set(CATALOG_CACHE_KEY, catalog, CATALOG_TTL)
         cache.set(CATALOG_BACKUP_KEY, catalog, CATALOG_BACKUP_TTL)
+        _snapshot_set(SNAPSHOT_CATALOG_KEY, catalog)  # durable DB copy
         memo_clear(CATALOG_CACHE_KEY)
         logger.info(f"X-OPP catalog cached: {len(catalog)} properties")
         return catalog
@@ -298,6 +309,32 @@ def get_catalog(force_refresh: bool = False, cached_only: bool = False) -> List[
     if best:
         cache.set(CATALOG_CACHE_KEY, best, CATALOG_PARTIAL_TTL)
     return best
+
+
+# ── Durable DB snapshots ─────────────────────────────────────────────────────
+# The cache can expire or be lost (restart, cleared table); the ApiSnapshot
+# rows never expire. Read path: memo → cache → DB snapshot. Every successful
+# refresh writes both, so after the first sync the site can ALWAYS serve data.
+SNAPSHOT_CATALOG_KEY = 'xopp_catalog'
+SNAPSHOT_DEVELOPERS_KEY = 'xopp_developers'
+
+
+def _snapshot_get(key: str):
+    try:
+        from .models import ApiSnapshot
+        row = ApiSnapshot.objects.filter(key=key).first()
+        return row.data if row else None
+    except Exception as e:
+        logger.warning(f"Snapshot read failed for {key}: {e}")
+        return None
+
+
+def _snapshot_set(key: str, data):
+    try:
+        from .models import ApiSnapshot
+        ApiSnapshot.objects.update_or_create(key=key, defaults={'data': data})
+    except Exception as e:
+        logger.error(f"Snapshot write failed for {key}: {e}")
 
 
 # ── Background refresh (safety net when the Celery refresh isn't running) ────
@@ -348,6 +385,13 @@ def get_developers(force_refresh: bool = False, cached_only: bool = False) -> Li
         if cached is not None:
             return cached
 
+        # Cache cold — serve the durable DB snapshot and re-warm the cache
+        snap = _snapshot_get(SNAPSHOT_DEVELOPERS_KEY)
+        if snap:
+            cache.set(DEVELOPERS_CACHE_KEY, snap, CATALOG_TTL)
+            memo_clear(DEVELOPERS_CACHE_KEY)
+            return snap
+
     if cached_only:
         return []
 
@@ -364,6 +408,7 @@ def get_developers(force_refresh: bool = False, cached_only: bool = False) -> Li
         page += 1
 
     cache.set(DEVELOPERS_CACHE_KEY, devs, CATALOG_TTL)
+    _snapshot_set(SNAPSHOT_DEVELOPERS_KEY, devs)  # durable DB copy
     memo_clear(DEVELOPERS_CACHE_KEY)
     logger.info(f"X-OPP developers cached: {len(devs)}")
     return devs
