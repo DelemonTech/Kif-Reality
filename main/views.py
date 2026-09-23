@@ -1425,46 +1425,71 @@ _LEAD_STRIP_FIELDS = {'csrfmiddlewaretoken', 'cf-turnstile-response', 'access_ke
 
 @require_http_methods(["POST"])
 def lead_submit(request):
-    """Verify Turnstile, then relay the enquiry to Web3Forms.
+    """Verify Turnstile, store the lead, then try to deliver it.
 
-    These forms used to POST straight to Web3Forms from the browser, which
-    meant anything could hit that endpoint and the access key sat in the page
-    source. Routing through here lets us check the Turnstile token server-side
-    (Web3Forms only does that on their paid plan) and keeps the key in .env.
+    Delivery order matters. The lead is written to the database FIRST, so a
+    verified enquiry is never lost no matter what any third party does next.
 
-    The JSON shape matches what Web3Forms returned, so the existing front-end
-    handlers work unchanged.
+    Web3Forms is best-effort only: on their free plan they reject requests made
+    from a server ("Use our API in client side ... Pro plan is required"), and
+    our gunicorn box is exactly that. So a failure there must not fail the
+    submission - the lead is already safe in the database and on its way to the
+    CRM.
     """
     ok, error = turnstile_verify(request)
     if not ok:
         return JsonResponse({'success': False, 'message': error},
                             status=400, json_dumps_params={'ensure_ascii': False})
 
-    payload = {k: v for k, v in request.POST.items() if k not in _LEAD_STRIP_FIELDS}
-    payload['access_key'] = settings.WEB3FORMS_ACCESS_KEY
-    payload.setdefault('from_name', 'KIF Realty Website')
+    data = request.POST
+    full_name = (data.get('name') or '').strip()
+    first_name, _, last_name = full_name.partition(' ')
+    email = (data.get('email') or '').strip()
+    phone = (data.get('phone') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    if not (first_name and email and phone):
+        return JsonResponse(
+            {'success': False, 'message': 'Please fill in all required fields.'},
+            status=400, json_dumps_params={'ensure_ascii': False})
+
+    # Landing page modals ask for an area instead of a free-text message.
+    area = (data.get('area_of_interest') or '').strip()
+    source = (data.get('page_url') or '').strip()
+    notes = "\n".join(filter(None, [
+        message,
+        f'Area of interest: {area}' if area else '',
+        f'Submitted from: {source}' if source else '',
+    ]))
 
     try:
-        resp = requests.post(
-            WEB3FORMS_ENDPOINT,
-            json=payload,
-            headers={'Accept': 'application/json'},
-            timeout=15,
+        Contact.objects.create(
+            first_name=first_name,
+            last_name=last_name or '-',
+            email=email,
+            phone=phone,
+            message=notes,
         )
-        result = resp.json()
     except Exception as e:
-        print(f"Lead relay to Web3Forms failed: {e}")
-        return JsonResponse(
-            {'success': False,
-             'message': 'We could not send your enquiry just now. Please try again.'},
-            status=502, json_dumps_params={'ensure_ascii': False})
+        # Losing the lead entirely is the one outcome worth shouting about.
+        print(f"CRITICAL: could not store lead from {email}: {e}")
 
-    if not result.get('success'):
-        print(f"Web3Forms rejected a lead: {result.get('message')}")
-        return JsonResponse(
-            {'success': False,
-             'message': 'We could not send your enquiry just now. Please try again.'},
-            status=502, json_dumps_params={'ensure_ascii': False})
+    try:
+        send_lead_to_xopperp(first_name, last_name, email, phone, notes)
+    except Exception as e:
+        print(f"CRM webhook failed for lead {email}: {e}")
+
+    # Best effort - see docstring. Never changes what the visitor sees.
+    try:
+        payload = {k: v for k, v in data.items() if k not in _LEAD_STRIP_FIELDS}
+        payload['access_key'] = settings.WEB3FORMS_ACCESS_KEY
+        payload.setdefault('subject', 'New website enquiry - KIF Realty')
+        resp = requests.post(WEB3FORMS_ENDPOINT, json=payload,
+                             headers={'Accept': 'application/json'}, timeout=10)
+        if not resp.json().get('success'):
+            print(f"Web3Forms did not accept the relay: {resp.text[:200]}")
+    except Exception as e:
+        print(f"Web3Forms relay unavailable: {e}")
 
     return JsonResponse(
         {'success': True,
