@@ -2,9 +2,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{# Lead popup: 20s on an article, or 35% scroll - which usually fires first
+{# Lead popup: 12s on an article, or 20% scroll - which usually fires first
    and means they are actually reading. #}
-{% block popup_form %}{% include 'partials/popup_form.html' with popup_delay=20000 popup_scroll=35 %}{% endblock %}
+{% block popup_form %}{% include 'partials/popup_form.html' with popup_delay=12000 popup_scroll=20 %}{% endblock %}
 
 {% block title %}{{ post.title|truncatechars:52 }}|KIF Realty{% endblock %}
 

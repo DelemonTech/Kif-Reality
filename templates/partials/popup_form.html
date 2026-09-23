@@ -250,8 +250,12 @@
 (function () {
     var DELAY_MS = {{ popup_delay|default:8000 }};
     var SCROLL_PCT = {{ popup_scroll|default:35 }};
-    var MAX_PER_VISIT = 3;           // appearances per browser session
-    var MIN_GAP_MS = 30 * 1000;      // breathing room between appearances
+    var MAX_PER_VISIT = 4;           // appearances per browser session
+    var MIN_GAP_MS = 10 * 1000;      // breathing room between appearances
+    // Hard ceiling on how long we wait for window.load before arming anyway.
+    // window.load waits on fonts, tag manager and every above-fold image, and
+    // on a slow phone that can be 10s+ - or never, if one request hangs.
+    var READY_CAP_MS = 4000;
     var SUBMITTED_KEY = 'kif_lead_submitted';
     var LAST_SHOWN_KEY = 'kif_lead_last_shown';
     var COUNT_KEY = 'kif_lead_shown_count';
@@ -289,10 +293,16 @@
     }
 
     var shown = false;
+    var ready = false;     // page usable, clock started
+    var pending = false;   // a trigger fired before we were ready
     var lastFocused = null;
 
     function showPopup() {
-        if (shown || isDone() || gapRemaining() > 0) return;
+        if (shown || isDone()) return;
+        // Triggered while the page was still loading - remember it and show as
+        // soon as we are ready, instead of dropping it on the floor.
+        if (!ready) { pending = true; return; }
+        if (gapRemaining() > 0) return;
         shown = true;
         store('sessionStorage', COUNT_KEY, String(shownCount() + 1));
         store('localStorage', LAST_SHOWN_KEY, String(Date.now()));
@@ -336,13 +346,11 @@
         document.removeEventListener('mouseout', onExitIntent);
     }
 
-    function armTriggers() {
+    // Listen from the moment the DOM exists, so a visitor who scrolls straight
+    // away still trips the scroll trigger. Previously the listeners were only
+    // attached at window.load, so fast scrollers were missed entirely.
+    function listen() {
         if (isDone()) return;
-
-        // If they saw it moments ago, push the timer out rather than skipping
-        // this page view entirely - that is what made a reload show nothing.
-        timer = setTimeout(showPopup, Math.max(DELAY_MS, gapRemaining()));
-
         if (SCROLL_PCT > 0) {
             window.addEventListener('scroll', onScroll, { passive: true });
         }
@@ -352,11 +360,29 @@
         }
     }
 
-    // Wait until the page has fully loaded before the clock starts.
+    // Start the clock once the page is usable. That is window.load, but capped:
+    // if load has not fired by READY_CAP_MS we go anyway, so one slow or hung
+    // request can no longer stop the popup appearing at all.
+    function startClock() {
+        if (ready || isDone()) return;
+        ready = true;
+
+        // If they saw it moments ago, push the timer out rather than skipping
+        // this page view entirely - that is what made a reload show nothing.
+        timer = setTimeout(showPopup, Math.max(DELAY_MS, gapRemaining()));
+
+        // A trigger may already have fired while we were still loading.
+        if (pending) showPopup();
+        else onScroll();   // or they may already be scrolled past the mark
+    }
+
+    listen();
+
     if (document.readyState === 'complete') {
-        armTriggers();
+        startClock();
     } else {
-        window.addEventListener('load', armTriggers);
+        window.addEventListener('load', startClock);
+        setTimeout(startClock, READY_CAP_MS);
     }
 
     // --- closing ---------------------------------------------------------

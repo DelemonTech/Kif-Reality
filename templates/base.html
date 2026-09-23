@@ -2237,17 +2237,27 @@ Explore luxury Dubai properties with KIF Realty. Buy, sell, or invest in prime l
             createParticles();
         });
 
-        // Enhanced loading animation
-        window.addEventListener('load', function () {
-            const loader = document.getElementById('pageLoader');
+        // Page loader. It is an opaque full-screen overlay, so however long it
+        // stays up is dead time for the visitor. Hide it on load, but also on a
+        // hard 3s ceiling: window.load waits for fonts, tag manager and every
+        // above-fold image, and a single slow request used to leave a black
+        // screen sitting there for ten seconds or more.
+        (function () {
+            var loader = document.getElementById('pageLoader');
+            var hidden = false;
 
-            setTimeout(() => {
+            function hideLoader() {
+                if (hidden || !loader) return;
+                hidden = true;
                 loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500);
-            }, 1000);
+                setTimeout(function () { loader.style.display = 'none'; }, 400);
+            }
 
+            window.addEventListener('load', function () { setTimeout(hideLoader, 250); });
+            setTimeout(hideLoader, 3000);
+        })();
+
+        window.addEventListener('load', function () {
             // Staggered animation for hero stats
             const statItems = document.querySelectorAll('.stat-item');
             statItems.forEach((item, index) => {
