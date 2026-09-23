@@ -30,8 +30,13 @@
     <button type="button" class="popup-close" aria-label="Close">&times;</button>
     <h2 id="sitePopupTitle">Find the Right Property &ndash; Contact Us Today!</h2>
     <p>Fill in your details and we&rsquo;ll contact you shortly.</p>
-    {# Posts to our own endpoint, which verifies Turnstile and then relays to
-       Web3Forms. The access key lives in .env now, not in the page source. #}
+    {% comment %}
+      Posts to our own endpoint, which verifies Turnstile and then relays to
+      Web3Forms. The access key lives in .env now, not in the page source.
+
+      Note: {# #} comments cannot span lines - a multi-line one renders as
+      visible text. Use {% comment %} whenever it does not fit on one line.
+    {% endcomment %}
     <form id="web3Form" method="POST" action="{% url 'lead_submit' %}">
       {% csrf_token %}
       <input type="hidden" name="page_url" id="page_url">
