@@ -1,0 +1,400 @@
+{% comment %}
+  Lead-capture popup. Opt-in: include it only from the pages that should show
+  it (currently the home page and the blog pages):
+
+      {% block popup_form %}
+        {% include 'partials/popup_form.html' with popup_delay=8000 popup_scroll=50 %}
+      {% endblock %}
+
+  Parameters (both optional):
+    popup_delay   ms to wait after the page has finished loading. Default 8000.
+    popup_scroll  scroll depth % that also triggers it. Default 35. 0 disables.
+
+  Behaviour, following common practice for lead popups:
+    * The countdown starts on window.load, so the page is fully loaded first.
+    * Shows on whichever comes first: the delay, the scroll depth, or exit
+      intent (desktop only).
+    * Someone who submits the form never sees it again, on any page, ever.
+    * Otherwise it is capped, not locked out: up to 3 times per visit, with a
+      30s minimum gap. So closing it and reloading shows it again, but it
+      cannot follow someone around the whole site.
+
+  The delay also keeps us clear of Google's "intrusive interstitial" ranking
+  demotion, which targets popups covering content immediately on arrival from
+  search on mobile.
+{% endcomment %}
+
+<div id="sitePopupForm" class="popup-form-overlay" role="dialog" aria-modal="true"
+     aria-labelledby="sitePopupTitle" hidden>
+  <div class="popup-form">
+    <button type="button" class="popup-close" aria-label="Close">&times;</button>
+    <h2 id="sitePopupTitle">Find the Right Property &ndash; Contact Us Today!</h2>
+    <p>Fill in your details and we&rsquo;ll contact you shortly.</p>
+    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+      <input type="hidden" name="page_url" id="page_url">
+
+      <div class="form-group">
+        <input type="text" name="name" placeholder="Name" required>
+      </div>
+      <div class="form-group">
+        <input type="email" name="email" placeholder="Email" required>
+      </div>
+      <div class="form-group">
+        <input type="tel" name="phone" placeholder="Phone" required>
+      </div>
+      <div class="form-group">
+        <textarea name="message" placeholder="Message" required></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Send</button>
+    </form>
+    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+</div>
+
+<style>
+.popup-form-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    /* Above .page-loader (9999), which is opaque until window.load + 1.5s. */
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    animation: popupFadeIn 0.3s ease both;
+}
+
+.popup-form-overlay.is-visible {
+    display: flex;
+}
+
+/* Exit animation - mirrors the entrance, runs for 220ms before the
+   element is hidden again. */
+.popup-form-overlay.is-closing {
+    animation: popupFadeOut 0.22s ease both;
+}
+
+.popup-form-overlay.is-closing .popup-form {
+    animation: popupZoomOut 0.22s ease both;
+}
+
+.popup-form {
+    background: #1c1c1c;
+    padding: 1.5rem 1.8rem;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    /* Slight overshoot at the end of the curve gives it a soft "pop" without
+       a physics library. Only transform/opacity animate, so this is composited
+       on the GPU - no reflow, no layout shift, nothing for CLS to measure. */
+    animation: popupZoomIn 0.4s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+    will-change: transform, opacity;
+}
+
+@keyframes popupZoomIn {
+    from { transform: translateY(24px) scale(0.94); opacity: 0; }
+    to   { transform: translateY(0) scale(1);       opacity: 1; }
+}
+
+@keyframes popupZoomOut {
+    from { transform: translateY(0) scale(1);        opacity: 1; }
+    to   { transform: translateY(12px) scale(0.97);  opacity: 0; }
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes popupFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+/* A single slow sweep across the heading once the popup lands - draws the eye
+   to the offer, then stops. No looping: looping animation on a modal reads as
+   an ad and keeps the compositor busy. */
+.popup-form h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+    /* Keeps the text clear of the close button. */
+    padding: 0 1.5rem;
+    color: #e8b4a0;
+    background: linear-gradient(90deg, #e8b4a0 0%, #f4d03f 50%, #e8b4a0 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: popupSheen 1.4s ease-out 0.3s both;
+}
+
+@keyframes popupSheen {
+    from { background-position: 150% 0; }
+    to   { background-position: 50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .popup-form-overlay,
+    .popup-form-overlay.is-closing,
+    .popup-form-overlay.is-closing .popup-form,
+    .popup-form,
+    .popup-form h2 { animation: none; }
+}
+
+.popup-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    /* Big enough to tap comfortably - Google expects an obvious way out. */
+    width: 40px;
+    height: 40px;
+    font-size: 1.8rem;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #e8b4a0;
+}
+
+.popup-close:hover { color: #f4d03f; }
+
+.popup-form p {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.popup-form .form-group {
+    margin-bottom: 0.8rem;
+}
+
+.popup-form .form-group input,
+.popup-form .form-group textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: #2a2a2a;
+    color: #fff;
+    /* 16px keeps iOS Safari from zooming in when a field is focused. */
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.popup-form .form-group textarea {
+    min-height: 70px;
+}
+
+.popup-form .form-group input, .popup-form .form-group textarea {
+    background-color: #2a2a2a!important;
+}
+
+/* Remove Chrome Autofill White/Yellow Background */
+.popup-form .form-group input:-webkit-autofill,
+.popup-form .form-group textarea:-webkit-autofill
+{
+    -webkit-box-shadow: 0 0 0 1000px #2a2a2a inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Normal focus style */
+.popup-form .form-group input:focus,
+.popup-form .form-group textarea:focus {
+    border-color: #ccc !important;
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+}
+
+.popup-form .submit-btn {
+    background: var(--accent-gradient, linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32));
+    color: var(--obsidian-black, #0a0a0a);
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.popup-form .submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(232, 180, 160, 0.4);
+}
+
+.popup-form .submit-btn[disabled] {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+}
+</style>
+
+<script>
+(function () {
+    var DELAY_MS = {{ popup_delay|default:8000 }};
+    var SCROLL_PCT = {{ popup_scroll|default:35 }};
+    var MAX_PER_VISIT = 3;           // appearances per browser session
+    var MIN_GAP_MS = 30 * 1000;      // breathing room between appearances
+    var SUBMITTED_KEY = 'kif_lead_submitted';
+    var LAST_SHOWN_KEY = 'kif_lead_last_shown';
+    var COUNT_KEY = 'kif_lead_shown_count';
+
+    var popup = document.getElementById('sitePopupForm');
+    var closeBtn = popup.querySelector('.popup-close');
+    var form = document.getElementById('web3Form');
+    var submitBtn = form.querySelector('.submit-btn');
+    var formMessage = document.getElementById('formMessage');
+
+    document.getElementById('page_url').value = window.location.href;
+
+    // Storage throws in some privacy modes - never let that break the page.
+    function store(area, key, value) {
+        try { window[area].setItem(key, value); } catch (e) {}
+    }
+    function read(area, key) {
+        try { return window[area].getItem(key); } catch (e) { return null; }
+    }
+
+    // Hard stop: they are already a lead, or they have seen it enough today.
+    function isDone() {
+        if (read('localStorage', SUBMITTED_KEY)) return true;
+        return shownCount() >= MAX_PER_VISIT;
+    }
+
+    function shownCount() {
+        return parseInt(read('sessionStorage', COUNT_KEY) || '0', 10) || 0;
+    }
+
+    // ms still to wait before another appearance is allowed (0 = ready now).
+    function gapRemaining() {
+        var last = parseInt(read('localStorage', LAST_SHOWN_KEY) || '0', 10) || 0;
+        return Math.max(0, last + MIN_GAP_MS - Date.now());
+    }
+
+    var shown = false;
+    var lastFocused = null;
+
+    function showPopup() {
+        if (shown || isDone() || gapRemaining() > 0) return;
+        shown = true;
+        store('sessionStorage', COUNT_KEY, String(shownCount() + 1));
+        store('localStorage', LAST_SHOWN_KEY, String(Date.now()));
+        teardownTriggers();
+
+        lastFocused = document.activeElement;
+        popup.hidden = false;
+        popup.classList.add('is-visible');
+        document.body.style.overflow = 'hidden';
+        closeBtn.focus();
+    }
+
+    function hidePopup() {
+        popup.classList.add('is-closing');
+        // Let the exit animation finish before pulling it out of the layout.
+        setTimeout(function () {
+            popup.classList.remove('is-visible', 'is-closing');
+            popup.hidden = true;
+            document.body.style.overflow = '';
+        }, 220);
+        if (lastFocused && lastFocused.focus) lastFocused.focus();
+    }
+
+    // --- triggers: whichever fires first ---------------------------------
+    var timer = null;
+
+    function onScroll() {
+        var doc = document.documentElement;
+        var scrollable = doc.scrollHeight - window.innerHeight;
+        if (scrollable <= 0) return;
+        if ((window.scrollY / scrollable) * 100 >= SCROLL_PCT) showPopup();
+    }
+
+    function onExitIntent(e) {
+        if (!e.relatedTarget && e.clientY <= 0) showPopup();
+    }
+
+    function teardownTriggers() {
+        if (timer) clearTimeout(timer);
+        window.removeEventListener('scroll', onScroll);
+        document.removeEventListener('mouseout', onExitIntent);
+    }
+
+    function armTriggers() {
+        if (isDone()) return;
+
+        // If they saw it moments ago, push the timer out rather than skipping
+        // this page view entirely - that is what made a reload show nothing.
+        timer = setTimeout(showPopup, Math.max(DELAY_MS, gapRemaining()));
+
+        if (SCROLL_PCT > 0) {
+            window.addEventListener('scroll', onScroll, { passive: true });
+        }
+        // Exit intent only makes sense with a mouse.
+        if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+            document.addEventListener('mouseout', onExitIntent);
+        }
+    }
+
+    // Wait until the page has fully loaded before the clock starts.
+    if (document.readyState === 'complete') {
+        armTriggers();
+    } else {
+        window.addEventListener('load', armTriggers);
+    }
+
+    // --- closing ---------------------------------------------------------
+    closeBtn.addEventListener('click', hidePopup);
+    popup.addEventListener('click', function (e) {
+        if (e.target === popup) hidePopup();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && popup.classList.contains('is-visible')) hidePopup();
+    });
+
+    // --- submit ----------------------------------------------------------
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
+
+        try {
+            var res = await fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            });
+            var data = await res.json();
+
+            if (data.success) {
+                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
+                form.reset();
+                // They are a lead now - don't ask again on any page, ever.
+                store('localStorage', SUBMITTED_KEY, '1');
+                setTimeout(hidePopup, 2000);
+            } else {
+                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
+            submitBtn.disabled = false;
+        }
+    });
+})();
+</script>

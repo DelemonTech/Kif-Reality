@@ -2,6 +2,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{# Lead popup: 20s on an article, or 35% scroll - which usually fires first
+   and means they are actually reading. #}
+{% block popup_form %}{% include 'partials/popup_form.html' with popup_delay=20000 popup_scroll=35 %}{% endblock %}
+
 {% block title %}{{ post.title|truncatechars:52 }}|KIF Realty{% endblock %}
 
 {% block description %}{{ post.meta_description|default:post.excerpt }}{% endblock %}
@@ -1969,223 +1973,12 @@
 
 
 
-<!-- ------------------------------------------------------auto popup form------------------------------------------------------ -->
+{# Lead popup now comes from base.html -> partials/popup_form.html #}
 
 
-<!-- Popup Form -->
-<div id="blogPopupForm" class="popup-form-overlay">
-  <div class="popup-form">
-    <span class="popup-close">&times;</span>
-    <h2>Find the Right Property – Contact Us Today!</h2>
-    <p>Fill in your details and we’ll contact you shortly.</p>
-    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
-      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
-      <input type="hidden" name="page_url" id="page_url">
 
-      <div class="form-group">
-        <input type="text" name="name" placeholder="Name" required>
-      </div>
-      <div class="form-group">
-        <input type="email" name="email" placeholder="Email" required>
-      </div>
-      <div class="form-group">
-        <input type="text" name="phone" placeholder="Phone" required>
-      </div>
-      <div class="form-group">
-        <textarea name="message" placeholder="Message" required></textarea>
-      </div>
-      <button type="submit" class="submit-btn">Send</button>
-    </form>
-    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
-  </div>
-</div>
 
-<!-- Styles -->
-<style>
-:root {
-    --accent-gradient: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
-    --obsidian-black: #0a0a0a;
-}
 
-.popup-form-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom:0;
-    background: rgba(0,0,0,0.7);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.4s ease;
-}
-
-.popup-form {
-    background: #1c1c1c;
-    padding: 1.5rem 1.8rem;
-    border-radius: 20px;
-    max-width: 400px;
-    width: 90%;
-    position: relative;
-    color: #fff;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    animation: slideUp 0.4s ease;
-}
-
-@keyframes slideUp {
-    from {transform: translateY(50px); opacity:0;}
-    to {transform: translateY(0); opacity:1;}
-}
-
-@keyframes fadeIn {
-    from {opacity:0;}
-    to {opacity:1;}
-}
-
-.popup-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: #e8b4a0;
-}
-
-.popup-form h2 {
-    font-size: 1.4rem;
-    margin-bottom: 0.3rem;
-    color: #e8b4a0;
-}
-
-.popup-form p {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: #ccc;
-}
-
-.popup-form .form-group {
-    margin-bottom: 0.8rem;
-}
-
-.popup-form .form-group input,
-.popup-form .form-group textarea {
-    width: 100%;
-    padding: 0.7rem 0.9rem;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    background: #2a2a2a;
-    color: #fff;
-    font-size: 0.9rem;
-}
-
-.popup-form .form-group textarea {
-    min-height: 70px;
-}
-
-.popup-form .form-group input, .popup-form .form-group textarea {
-    background-color: #2a2a2a!important;
-}
-/* Remove Chrome Autofill White/Yellow Background */
-.popup-form .form-group input:-webkit-autofill,
-.popup-form .form-group textarea:-webkit-autofill
-{
-    -webkit-box-shadow: 0 0 0 1000px #2a2a2a inset !important;
-    -webkit-text-fill-color: #fff !important;
-    transition: background-color 9999s ease-in-out 0s;
-}
-/* Normal focus style */
-.popup-form .form-group input:focus,
-.popup-form .form-group textarea:focus {
-    border-color: #ccc !important;
-    background-color: #2a2a2a !important;
-    color: #fff !important;
-}
-
-/* Updated submit button */
-.popup-form .submit-btn {
-    background: var(--accent-gradient);
-    color: var(--obsidian-black);
-    padding: 1.2rem 3rem;
-    border-radius: 50px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.4s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.popup-form .submit-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px rgba(232, 180, 160, 0.4);
-}
-
-@media (max-height: 600px) {
-    .popup-form { max-height: 90%; overflow-y: auto; }
-}
-</style>
-
-<!-- JS -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const popup = document.getElementById('blogPopupForm');
-    const closeBtn = document.querySelector('.popup-close');
-    const form = document.getElementById('web3Form');
-    const formMessage = document.getElementById('formMessage');
-
-    document.getElementById('page_url').value = window.location.href;
-
-    function showPopup() { 
-        // Reset form fields
-        form.reset();
-        // Clear previous messages
-        formMessage.innerHTML = '';
-        // Show popup
-        popup.style.display = 'flex'; 
-    }
-
-    function hidePopup() { 
-        popup.style.display = 'none'; 
-        setTimeout(showPopup, 40000); // optional reappear after 40 sec
-    }
-
-    // First popup after 15 seconds
-    setTimeout(showPopup, 15000);
-
-    // Close events
-    closeBtn.addEventListener('click', hidePopup);
-    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
-    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
-
-    // Form submission
-    form.addEventListener('submit', async function(e){
-        e.preventDefault();
-        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
-
-        const formData = new FormData(form);
-        try {
-            const res = await fetch(form.action, {
-                method: form.method,
-                body: formData
-            });
-            const data = await res.json();
-
-            if(data.success){
-                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
-                form.reset();
-                setTimeout(hidePopup, 2000); // close after success
-            } else {
-                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
-            }
-        } catch (err) {
-            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
-        }
-    });
-});
-</script>
 
 
 {% endblock %}

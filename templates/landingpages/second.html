@@ -1817,28 +1817,8 @@ Explore Secondary Residential Properties in Dubai | Affordable Homes & Investmen
 
 
 
-<!-- ----------------------------------------------------------auto popup form ------------------------------------------------------>
+{# Lead popup now comes from base.html -> partials/popup_form.html #}
 
-<!-- Modal Popup Form -->
-<div id="blogPopupForm" class="modal-overlay">
-  <div class="modal-content">
-    <span class="close-btn2">&times;</span>
-    <h2>Find the Right Property – Contact Us Today!</h2>
-    <p>Fill in your details and we’ll contact you shortly.</p>
-    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
-      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
-      <input type="hidden" name="page_url" id="page_url">
-
-      <input type="text" name="name" placeholder="Name" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="text" name="phone" placeholder="Phone" required>
-      <textarea name="message" placeholder="Message" required></textarea>
-
-      <button type="submit">Send</button>
-    </form>
-    <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
-  </div>
-</div>
 
 <!-- Styles -->
 <style>
@@ -1962,52 +1942,7 @@ Explore Secondary Residential Properties in Dubai | Affordable Homes & Investmen
 }
 </style>
 
-<!-- JS -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const popup = document.getElementById('blogPopupForm');
-    const closeBtn = document.querySelector('.close-btn2');
-    const form = document.getElementById('web3Form');
-    const formMessage = document.getElementById('formMessage');
 
-    function showPopup() { popup.style.display = 'flex'; }
-    function hidePopup() { 
-        popup.style.display = 'none';
-        //setTimeout(showPopup, 30000); // reappear after 30s
-    }
-
-    document.getElementById('page_url').value = window.location.href;
-
-
-    // Auto show popup after 12s
-    setTimeout(showPopup, 20000);
-
-    closeBtn.addEventListener('click', hidePopup);
-    popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
-    document.addEventListener('keydown', e => { if(e.key === "Escape") hidePopup(); });
-
-    form.addEventListener('submit', async function(e){
-        e.preventDefault();
-        formMessage.innerHTML = '<span style="color:orange">Sending...</span>';
-
-        const formData = new FormData(form);
-        try {
-            const res = await fetch(form.action, { method: form.method, body: formData });
-            const data = await res.json();
-
-            if(data.success){
-                formMessage.innerHTML = '<span style="color:green">Thank you! We will contact you soon.</span>';
-                form.reset();
-                setTimeout(hidePopup, 2000);
-            } else {
-                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
-            }
-        } catch (err) {
-            formMessage.innerHTML = '<span style="color:red">Submission failed. Try later.</span>';
-        }
-    });
-});
-</script>
 
 
 
