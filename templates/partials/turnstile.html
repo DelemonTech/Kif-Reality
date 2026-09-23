@@ -1,0 +1,122 @@
+{% comment %}
+  Cloudflare Turnstile, wired up once for the whole site.
+
+  To protect a form, drop this inside it:
+
+      <div class="kif-turnstile"></div>
+
+  and nothing else. This helper takes care of the rest:
+
+    * Renders the widget lazily, the first time someone focuses a field in that
+      form. Lazy matters because most of our forms live inside modals that are
+      display:none on page load, and a widget rendered into a hidden container
+      does not reliably solve.
+    * Blocks submission until a token exists, using a capture-phase listener so
+      it runs BEFORE the page's own submit handler. That means the existing
+      handlers did not have to change - Turnstile adds its own hidden
+      cf-turnstile-response input, which their FormData(form) already picks up.
+    * Resets the widget after each submit, because a token is single use.
+{% endcomment %}
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+<style>
+.kif-turnstile {
+    display: flex;
+    justify-content: center;
+    margin: 0.75rem 0;
+    min-height: 65px;
+}
+.kif-turnstile:empty { min-height: 0; margin: 0; }
+
+.kif-turnstile-error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin: 0.4rem 0;
+    text-align: center;
+}
+</style>
+
+<script>
+(function () {
+    var SITE_KEY = '{{ TURNSTILE_SITE_KEY }}';
+    var widgets = new WeakMap();   // form -> turnstile widget id
+
+    function holderFor(form) {
+        return form.querySelector('.kif-turnstile');
+    }
+
+    function tokenFor(form) {
+        var field = form.querySelector('[name="cf-turnstile-response"]');
+        return field && field.value ? field.value : '';
+    }
+
+    function render(form) {
+        var holder = holderFor(form);
+        if (!holder || widgets.has(form)) return;
+        if (!window.turnstile) return;   // script still loading; retried later
+
+        widgets.set(form, window.turnstile.render(holder, {
+            sitekey: SITE_KEY,
+            theme: 'dark',
+            'error-callback': function () { message(form, 'Security check failed to load. Please refresh.'); },
+            'expired-callback': function () { reset(form); }
+        }));
+    }
+
+    function reset(form) {
+        var id = widgets.get(form);
+        if (id !== undefined && window.turnstile) {
+            try { window.turnstile.reset(id); } catch (e) {}
+        }
+    }
+
+    function message(form, text) {
+        var holder = holderFor(form);
+        if (!holder) return;
+        var box = holder.parentNode.querySelector('.kif-turnstile-error');
+        if (!box) {
+            box = document.createElement('div');
+            box.className = 'kif-turnstile-error';
+            holder.parentNode.insertBefore(box, holder.nextSibling);
+        }
+        box.textContent = text || '';
+    }
+
+    function protect(form) {
+        // Render as soon as they start filling it in, so the check is almost
+        // always already done by the time they hit submit.
+        form.addEventListener('focusin', function () { render(form); }, { once: true });
+
+        // Capture phase: runs before the page's own submit handler, so we can
+        // stop the submission entirely if there is no token yet.
+        form.addEventListener('submit', function (e) {
+            if (tokenFor(form)) { message(form, ''); return; }
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            render(form);
+            message(form, 'Please wait a moment for the security check, then try again.');
+        }, true);
+
+        // A token is single use - clear it once the form has been sent.
+        form.addEventListener('submit', function () {
+            setTimeout(function () { reset(form); }, 1000);
+        }, false);
+    }
+
+    function init() {
+        var holders = document.querySelectorAll('.kif-turnstile');
+        for (var i = 0; i < holders.length; i++) {
+            var form = holders[i].closest('form');
+            if (form) protect(form);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

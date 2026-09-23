@@ -1692,9 +1692,9 @@ Explore Off-Plan Residential Properties in Dubai | Investment Opportunities in N
         <p>Fill in your details and our team will contact you within 24 hours.</p>
 
 
-        <form id="propertyForm" action="https://api.web3forms.com/submit" method="POST">
+        <form id="propertyForm" action="{% url 'lead_submit' %}" method="POST">
+            {% csrf_token %}
             <!-- Web3Forms Access Key -->
-            <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
             <input type="hidden" name="subject" value="New Contact Form Submission">
             <input type="hidden" name="replyto" value="{{ email }}" />
             <input type="hidden" name="page_url" id="modal_page_url">
@@ -1713,6 +1713,8 @@ Explore Off-Plan Residential Properties in Dubai | Investment Opportunities in N
                 <option value="Dubailand">Dubailand</option>
             </select>
 
+
+            <div class="kif-turnstile"></div>
             <button type="submit">Submit Inquiry</button>
         </form>
     </div>

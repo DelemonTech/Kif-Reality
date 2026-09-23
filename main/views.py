@@ -17,6 +17,7 @@ from django.utils.text import slugify
 from django.utils.html import strip_tags
 from urllib.parse import urlparse, parse_qs
 
+from .turnstile import verify as turnstile_verify
 from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment, JobVacancy, JobApplication
 from .forms import NewsletterForm, CommentForm, JobApplicationForm
 from .services import PropertyService
@@ -953,6 +954,11 @@ def contact_view(request):
 def contact_submit(request):
     """Handle contact form submission"""
     try:
+        ok, error = turnstile_verify(request)
+        if not ok:
+            messages.error(request, error)
+            return redirect('contact')
+
         first_name = request.POST.get('firstName', '').strip()
         last_name = request.POST.get('lastName', '').strip()
         email = request.POST.get('email', '').strip()
@@ -1011,6 +1017,13 @@ def contact_submit_ajax(request):
             data = json.loads(request.body)
         else:
             data = request.POST
+
+        ok, error = turnstile_verify(request, data.get('cf-turnstile-response', ''))
+        if not ok:
+            return JsonResponse({
+                'success': False,
+                'message': error
+            }, status=400, json_dumps_params={'ensure_ascii': False})
 
         first_name = data.get('firstName', '').strip()
         last_name = data.get('lastName', '').strip()
@@ -1399,3 +1412,61 @@ def developers_from_properties(request):
         {'name': 'Object 1'},
     ]
     return JsonResponse({'status': True, 'data': fallback}, json_dumps_params={'ensure_ascii': False})
+
+# ---------------------------------------------------------------------------
+# Public lead forms (popup + landing page enquiry modals)
+# ---------------------------------------------------------------------------
+
+WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
+
+# Never relay these to Web3Forms: internal plumbing, not lead data.
+_LEAD_STRIP_FIELDS = {'csrfmiddlewaretoken', 'cf-turnstile-response', 'access_key'}
+
+
+@require_http_methods(["POST"])
+def lead_submit(request):
+    """Verify Turnstile, then relay the enquiry to Web3Forms.
+
+    These forms used to POST straight to Web3Forms from the browser, which
+    meant anything could hit that endpoint and the access key sat in the page
+    source. Routing through here lets us check the Turnstile token server-side
+    (Web3Forms only does that on their paid plan) and keeps the key in .env.
+
+    The JSON shape matches what Web3Forms returned, so the existing front-end
+    handlers work unchanged.
+    """
+    ok, error = turnstile_verify(request)
+    if not ok:
+        return JsonResponse({'success': False, 'message': error},
+                            status=400, json_dumps_params={'ensure_ascii': False})
+
+    payload = {k: v for k, v in request.POST.items() if k not in _LEAD_STRIP_FIELDS}
+    payload['access_key'] = settings.WEB3FORMS_ACCESS_KEY
+    payload.setdefault('from_name', 'KIF Realty Website')
+
+    try:
+        resp = requests.post(
+            WEB3FORMS_ENDPOINT,
+            json=payload,
+            headers={'Accept': 'application/json'},
+            timeout=15,
+        )
+        result = resp.json()
+    except Exception as e:
+        print(f"Lead relay to Web3Forms failed: {e}")
+        return JsonResponse(
+            {'success': False,
+             'message': 'We could not send your enquiry just now. Please try again.'},
+            status=502, json_dumps_params={'ensure_ascii': False})
+
+    if not result.get('success'):
+        print(f"Web3Forms rejected a lead: {result.get('message')}")
+        return JsonResponse(
+            {'success': False,
+             'message': 'We could not send your enquiry just now. Please try again.'},
+            status=502, json_dumps_params={'ensure_ascii': False})
+
+    return JsonResponse(
+        {'success': True,
+         'message': 'Thank you! Our team will contact you shortly.'},
+        json_dumps_params={'ensure_ascii': False})

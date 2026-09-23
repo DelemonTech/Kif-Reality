@@ -30,8 +30,10 @@
     <button type="button" class="popup-close" aria-label="Close">&times;</button>
     <h2 id="sitePopupTitle">Find the Right Property &ndash; Contact Us Today!</h2>
     <p>Fill in your details and we&rsquo;ll contact you shortly.</p>
-    <form id="web3Form" method="POST" action="https://api.web3forms.com/submit">
-      <input type="hidden" name="access_key" value="a2fcfc35-c47d-4e6b-8710-e0fa4bad892d">
+    {# Posts to our own endpoint, which verifies Turnstile and then relays to
+       Web3Forms. The access key lives in .env now, not in the page source. #}
+    <form id="web3Form" method="POST" action="{% url 'lead_submit' %}">
+      {% csrf_token %}
       <input type="hidden" name="page_url" id="page_url">
 
       <div class="form-group">
@@ -46,6 +48,7 @@
       <div class="form-group">
         <textarea name="message" placeholder="Message" required></textarea>
       </div>
+      <div class="kif-turnstile"></div>
       <button type="submit" class="submit-btn">Send</button>
     </form>
     <div id="formMessage" style="margin-top:10px; font-size:14px;"></div>
@@ -414,7 +417,10 @@
                 store('localStorage', SUBMITTED_KEY, '1');
                 setTimeout(hidePopup, 2000);
             } else {
-                formMessage.innerHTML = '<span style="color:red">Something went wrong. Try again.</span>';
+                // Server explains why (failed security check, relay down, ...).
+                var why = data.message || 'Something went wrong. Try again.';
+                formMessage.innerHTML = '<span style="color:red"></span>';
+                formMessage.firstChild.textContent = why;
                 submitBtn.disabled = false;
             }
         } catch (err) {

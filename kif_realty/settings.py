@@ -87,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'main.context_processors.turnstile',
             ],
         },
     },
@@ -152,6 +153,20 @@ CACHES = {
         'LOCATION': 'sitemap_cache_table',
     }
 }
+
+# --- Spam protection -------------------------------------------------------
+# Cloudflare Turnstile. The site key is public (rendered into every form); the
+# secret key must only ever live in .env on the server.
+# Defaults are Cloudflare's documented TEST keys, which always pass - so the
+# forms keep working before the real keys are in place. Replace both in .env.
+TURNSTILE_SITE_KEY = config('TURNSTILE_SITE_KEY', default='1x00000000000000000000AA')
+TURNSTILE_SECRET_KEY = config('TURNSTILE_SECRET_KEY',
+                              default='1x0000000000000000000000000000000AA')
+
+# Web3Forms access key. Previously hardcoded into every public page; it is now
+# attached server-side so it is no longer exposed in the HTML.
+WEB3FORMS_ACCESS_KEY = config('WEB3FORMS_ACCESS_KEY',
+                              default='a2fcfc35-c47d-4e6b-8710-e0fa4bad892d')
 
 # DATABASES = {
 #      'default': {
