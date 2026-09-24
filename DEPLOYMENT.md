@@ -1,33 +1,192 @@
-# KIF Realty — Linux Production Server Setup
+# KIF Realty — Production Server Guide
 
-Stack: **Ubuntu 22.04+ · Nginx · Gunicorn · Redis · Celery (worker + beat) · Django 4.2**
+Stack: **Ubuntu · Nginx · Gunicorn · PostgreSQL · Redis · Celery (worker + beat) · Django 4.2**
 
-> ⚠️ Before anything: give the X-OPP administrator your **server's public IP** so it is
-> whitelisted for the partner API key — otherwise every catalog request returns 401.
+This describes the live server **as it actually runs** (checked Sep 2026). Sections 1–5
+are day-to-day operations; section 7 is for building a new server from scratch.
+
+> ⚠️ The X-OPP partner API only accepts whitelisted IPs. On a new server, give the X-OPP
+> administrator its **public IP** first — otherwise every catalog request returns 401.
 
 ---
 
-## 1. System packages
+## 1. Server layout
+
+| What | Where / name |
+|---|---|
+| App (git checkout) | `/home/ubuntu/Kif-Reality` — owned by `ubuntu` |
+| Virtualenv | `/home/ubuntu/Kif-Reality/venv` |
+| Secrets & settings | `/home/ubuntu/Kif-Reality/.env` (never committed) |
+| Collected static files | `/home/ubuntu/Kif-Reality/staticfiles/` |
+| Database | PostgreSQL, database `kif_db` |
+| Django cache | `DatabaseCache`, table `sitemap_cache_table` (holds the X-OPP catalog) |
+| Web app service | `gunicorn.service` |
+| Background jobs service | `celery.service` — one worker **plus** the beat scheduler (`-B`) |
+| Beat schedule file | `/home/ubuntu/celerybeat-schedule` (outside the repo) |
+| Nginx gzip settings | `/etc/nginx/nginx.conf` (`http` block) |
+| Backups | `/home/ubuntu/backups/` |
+
+**Run every git and `manage.py` command as `ubuntu` — never with `sudo -u www-data`.**
+The folder belongs to `ubuntu`, so git refuses other users ("detected dubious ownership").
+Do not add a `safe.directory` exception; just drop the `sudo`.
+
+`kifrealty-celery.service` also exists but is **disabled on purpose** — it was a duplicate
+scheduler that made the nightly refresh run more than once. Leave it disabled, and don't
+start Celery by hand in a terminal either: exactly one beat scheduler must run.
+
+## 2. Deploying an update
+
+Changes go to GitHub `main` first (work happens on a branch, e.g. `sinan`, then merged).
+Then, on the server:
+
+```bash
+cd ~/Kif-Reality
+git status                                   # must show no modified code files (see §6)
+git pull --no-rebase --no-edit origin main   # the server has its own commits, so this merges
+venv/bin/pip install -r requirements.txt     # only if requirements.txt changed
+venv/bin/python manage.py migrate --no-input # only if models changed
+venv/bin/python manage.py collectstatic --no-input
+venv/bin/python manage.py check              # must end with no ERRORS (the ckeditor W001 warning is known)
+sudo systemctl restart gunicorn.service celery.service
+```
+
+- **`collectstatic` is required on every deploy that touches CSS/JS or templates.** Static
+  files are minified and given content-hashed names (`blogs.30523ede038e.js`, see
+  `kif_realty/storage.py`); pages link to the hashed names, which exist only after
+  `collectstatic`. If the site suddenly looks unstyled, this step was skipped.
+- A template-only change needs just the pull and `sudo systemctl restart gunicorn.service`.
+- Restart `celery.service` whenever Python code changes, so the worker runs the new code.
+
+### Before a risky deploy — make a restore point
+
+```bash
+cd ~/Kif-Reality
+git branch -f backup-before-deploy        # code restore point
+```
+
+Rollback:
+
+```bash
+git reset --hard backup-before-deploy
+venv/bin/python manage.py collectstatic --no-input
+sudo systemctl restart gunicorn.service celery.service
+```
+
+### Before editing data in bulk (e.g. a content-fixing management command)
+
+```bash
+venv/bin/python manage.py dumpdata main.BlogPost --indent 1 -o ~/backups/blogposts_$(date +%F).json
+# restore:  venv/bin/python manage.py loaddata ~/backups/blogposts_<date>.json
+```
+
+## 3. Health checks
+
+```bash
+systemctl status gunicorn.service celery.service --no-pager      # both "active (running)"
+systemctl is-enabled kifrealty-celery.service                    # must say "disabled"
+ps aux | grep "[c]elery" | grep -o "celery .*" | sort | uniq -c  # only "worker -B ... -s /home/ubuntu/celerybeat-schedule" lines
+journalctl -u celery.service --since yesterday | grep -i refresh # nightly refresh ran once
+
+# X-OPP catalog loaded (≈4,000 properties). 0 = cold cache, see §5.
+venv/bin/python manage.py shell -c "from main.xopp_service import get_catalog; print(len(get_catalog(cached_only=True)))" 2>/dev/null
+```
+
+From anywhere:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://kifrealty.com/                  # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://kifrealty.com/properties/all/   # 200 (503 = catalog cache cold)
+curl -sI -H "Accept-Encoding: gzip" \
+  "https://kifrealty.com$(curl -s https://kifrealty.com/ | grep -oE '/static/css/index-styles\.[0-9a-f]+\.css' | head -1)" \
+  | grep -i content-encoding                                                     # gzip
+```
+
+## 4. Nginx
+
+Gzip for CSS/JS/JSON is switched on in the `http` block of `/etc/nginx/nginx.conf`
+(Nginx's default compresses HTML only):
+
+```nginx
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 6;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+```
+
+The site's `server {}` block lives in `/etc/nginx/sites-enabled/` — check the exact file with
+`ls /etc/nginx/sites-enabled/`. `/static/` is served straight from
+`/home/ubuntu/Kif-Reality/staticfiles/` with a one-year `immutable` cache, which is safe
+only because static file names are content-hashed.
+
+After any Nginx edit, always test before reloading:
+
+```bash
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak   # restore point
+sudo nginx -t && sudo systemctl reload nginx              # reload only if the test passes
+```
+
+Restore the `.bak` only if `nginx -t` **fails**.
+
+## 5. X-OPP catalog, sitemap and SEO pages
+
+- `celery.service` runs `main.tasks.refresh_xopp_cache` every night at midnight
+  (`CELERY_BEAT_SCHEDULE` in `settings.py`). It retries 3× at 10-minute intervals if the
+  X-OPP API is down; a 7-day catalog backup keeps listings online meanwhile.
+- A cron job running `manage.py refresh_xopp` (log: `~/refresh_xopp.log`) was the original
+  refresh mechanism. Check with `crontab -l | grep -i refresh` — if both it and Celery are
+  active, the catalog is refreshed twice a night; keep one.
+- Web requests never call X-OPP for the catalog — they read the cache. If the cache is cold
+  (new server, cache table cleared), load it once by hand:
+  ```bash
+  venv/bin/python manage.py refresh_xopp_cache
+  ```
+- The property sitemap (`/sitemap-properties.xml?p=N`) and the A–Z index
+  (`/properties/all/`) are both built from that cached catalog, with the same URL
+  scheme as the property pages (`main.xopp_service.property_path`).
+- `/property/<slug>-<id>/`: a wrong slug 301-redirects to the right one; a property
+  X-OPP reports as gone returns **404**; an X-OPP outage returns **503**.
+- After changes to URLs or the sitemap, resubmit `https://kifrealty.com/sitemap.xml` in
+  Google Search Console.
+
+## 6. Troubleshooting
+
+| Message | Cause and fix |
+|---|---|
+| `fatal: detected dubious ownership` | A git command was run with `sudo`/as another user. Run it as `ubuntu`, without `sudo`. |
+| `Need to specify how to reconcile divergent branches` | Use `git pull --no-rebase --no-edit origin main` (the server has local commits). |
+| `CONFLICT (content)` during pull | `git merge --abort` puts everything back. Check `git diff <file>`, resolve, then `git add <file>` and `git commit --no-edit`. |
+| `Already up to date` but the new code isn't there | The branch wasn't merged into `main` on GitHub yet. |
+| Site unstyled after deploy | `collectstatic` wasn't run — run it and restart gunicorn. |
+| `Unknown command` for a new `manage.py` command | The pull didn't bring the new code (see the line above), or gunicorn/celery weren't restarted. |
+| `/properties/all/` returns 503 | Catalog cache is cold — `venv/bin/python manage.py refresh_xopp_cache`. |
+
+### Known quirks of this server's checkout
+
+The server's `main` carries its own commits (production edits to `kif_realty/settings.py`,
+plus `db.sqlite3.bak`, `settings.py.save`, `staticfiles/` and `celerybeat-schedule`). That is
+why pulls create merge commits. So:
+
+- **Never `git push` from the server** — it would publish the database copy and settings.
+- Never `git reset --hard origin/main` on the server — it would wipe the production settings.
+- Planned cleanup: move the production settings into `.env`, untrack `staticfiles/`,
+  `celerybeat-schedule` and the backup files, so deploys become a plain fast-forward pull.
+
+## 7. Building a new server (reference)
 
 ```bash
 sudo apt update
-sudo apt install -y python3-venv python3-dev build-essential nginx redis-server git
-sudo systemctl enable --now redis-server
-```
+sudo apt install -y python3-venv python3-dev build-essential nginx redis-server postgresql git
+sudo systemctl enable --now redis-server postgresql
 
-## 2. Application setup
-
-```bash
-sudo mkdir -p /srv/kifrealty && sudo chown $USER /srv/kifrealty
-cd /srv/kifrealty
-git clone https://github.com/DelemonTech/Kif-Reality.git app
-cd app
-
+cd ~
+git clone https://github.com/DelemonTech/Kif-Reality.git
+cd Kif-Reality
 python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 ```
 
-Create `/srv/kifrealty/app/.env` (never commit this file):
+Create the PostgreSQL database and user, then `~/Kif-Reality/.env` (never commit it):
 
 ```env
 SECRET_KEY=<generate: venv/bin/python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())">
@@ -42,161 +201,51 @@ XOPP_API_KEY=<your xopp_ key>
 CELERY_BROKER_URL=redis://localhost:6379/0
 ```
 
-Initialize the database, cache table, and static files:
+Point the `DATABASES` setting at the new PostgreSQL database, then:
 
 ```bash
+venv/bin/python manage.py makemigrations main exclusive_properties   # migrations are not committed
 venv/bin/python manage.py migrate --no-input
 venv/bin/python manage.py createcachetable
 venv/bin/python manage.py collectstatic --no-input
-venv/bin/python manage.py refresh_xopp_cache   # warm the X-OPP caches once
+venv/bin/python manage.py refresh_xopp_cache
 ```
 
-## 3. Gunicorn (systemd)
-
-`/etc/systemd/system/kifrealty.service`:
-
-```ini
-[Unit]
-Description=KIF Realty Django (gunicorn)
-After=network.target
-
-[Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/srv/kifrealty/app
-ExecStart=/srv/kifrealty/app/venv/bin/gunicorn kif_realty.wsgi:application \
-    --bind 127.0.0.1:8001 --workers 3 --timeout 60
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-## 4. Celery worker + beat (systemd)
-
-`/etc/systemd/system/kifrealty-celery.service`:
+Create the two systemd services. Copy the live server's Gunicorn unit
+(`systemctl cat gunicorn.service` there) so the bind address matches the Nginx
+`proxy_pass`. The Celery unit, as it runs today:
 
 ```ini
+# /etc/systemd/system/celery.service
 [Unit]
-Description=KIF Realty Celery worker
+Description=Celery worker + beat for Kif Realty (X-OPP catalog refresh)
 After=network.target redis-server.service
 
 [Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/srv/kifrealty/app
-ExecStart=/srv/kifrealty/app/venv/bin/celery -A kif_realty worker --loglevel=info --concurrency=2
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/Kif-Reality
+ExecStart=/home/ubuntu/Kif-Reality/venv/bin/celery -A kif_realty worker -B \
+  --loglevel=info --concurrency=2 \
+  -s /home/ubuntu/celerybeat-schedule
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
 ```
-
-`/etc/systemd/system/kifrealty-beat.service` (schedules the **midnight X-OPP refresh**, Asia/Dubai time):
-
-```ini
-[Unit]
-Description=KIF Realty Celery beat scheduler
-After=network.target redis-server.service
-
-[Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/srv/kifrealty/app
-ExecStart=/srv/kifrealty/app/venv/bin/celery -A kif_realty beat --loglevel=info \
-    --schedule /srv/kifrealty/celerybeat-schedule
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable everything:
 
 ```bash
-sudo chown -R www-data:www-data /srv/kifrealty
 sudo systemctl daemon-reload
-sudo systemctl enable --now kifrealty kifrealty-celery kifrealty-beat
+sudo systemctl enable --now gunicorn.service celery.service
 ```
 
-## 5. Nginx
-
-`/etc/nginx/sites-available/kifrealty`:
-
-```nginx
-server {
-    listen 80;
-    server_name kifrealty.com www.kifrealty.com;
-
-    client_max_body_size 20M;
-
-    # Compress text assets. Nginx's default gzip_types is text/html only,
-    # so CSS/JS under /static/ were being sent uncompressed.
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_min_length 1024;
-    gzip_types text/css application/javascript text/javascript application/json
-               image/svg+xml application/xml text/xml text/plain;
-
-    location /static/ {
-        alias /srv/kifrealty/app/staticfiles/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-
-    location /media/ {
-        alias /srv/kifrealty/app/media/;
-        expires 30d;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-```bash
-sudo ln -s /etc/nginx/sites-available/kifrealty /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-## 6. HTTPS (Let's Encrypt)
+Nginx: add the gzip lines from §4, and a site `server {}` block that proxies to Gunicorn and
+serves `/static/` from `~/Kif-Reality/staticfiles/` and `/media/` from `~/Kif-Reality/media/`.
+Then HTTPS:
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d kifrealty.com -d www.kifrealty.com
 ```
-
-## 7. Deploying updates
-
-```bash
-cd /srv/kifrealty/app
-sudo -u www-data git pull
-sudo -u www-data venv/bin/pip install -r requirements.txt
-sudo -u www-data venv/bin/python manage.py migrate --no-input
-sudo -u www-data venv/bin/python manage.py collectstatic --no-input
-sudo systemctl restart kifrealty kifrealty-celery kifrealty-beat
-```
-
-## 8. Health checks
-
-```bash
-systemctl status kifrealty kifrealty-celery kifrealty-beat   # all three green
-journalctl -u kifrealty-beat -n 20                            # beat scheduling the nightly task
-venv/bin/python manage.py refresh_xopp_cache                  # manual cache refresh any time
-curl -s localhost:8001/api/developers/ | head -c 200          # API responding
-```
-
-Notes:
-- The database is SQLite (`db.sqlite3`) — fine to start; switch to the commented
-  PostgreSQL block in `settings.py` (psycopg2 is already installed) when traffic grows.
-- The nightly job (`main.tasks.refresh_xopp_cache`) retries 3× at 10-minute intervals
-  if the X-OPP API is briefly down; the 7-day catalog backup protects listings meanwhile.
-- Migrations are gitignored in this repo, so run `makemigrations` on the server once
-  before `migrate` if the `main`/`exclusive_properties` tables don't exist yet.
