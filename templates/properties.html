@@ -277,6 +277,11 @@
 
     <!-- Dynamic Pagination (will be populated by JavaScript) -->
     <div class="pagination-section" id="dynamicPagination" style="display: none;"></div>
+
+    <!-- Plain link so crawlers reach every property (the cards above are JS-rendered) -->
+    <p style="text-align: center; margin: 2rem 0 0;">
+        <a href="{% url 'property_directory' %}" style="color: var(--rose-gold, #e8b4a0);">Browse all properties A–Z</a>
+    </p>
 </section>
 
 {% endblock %}

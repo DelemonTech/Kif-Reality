@@ -15,6 +15,7 @@ urlpatterns = [
 
     # Properties
     path('properties/', views.properties, name='properties'),
+    path('properties/all/', views.property_directory, name='property_directory'),
     
     # ✅ ADD THIS - Old property URL redirect (MUST come BEFORE the new format)
     path('property/<int:property_id>/', views.property_redirect, name='property_old'),

@@ -491,6 +491,12 @@ def warm_available_counts(catalog: List[Dict], limit: int = 120):
     return get_available_counts(res + com, block=True)
 
 
+def property_path(p: Dict) -> str:
+    """Canonical detail URL for a catalog item — the exact slug property_detail
+    expects, so links and sitemap entries never hit its slug-fix redirect."""
+    return f"/property/{slugify(p['title'] or 'Property') or 'property'}-{p['id']}/"
+
+
 def to_card(p: Dict) -> Dict:
     """Map a catalog item to the legacy shape the frontend JS renders."""
     title = p['title'] or 'Property'
@@ -516,7 +522,7 @@ def to_card(p: Dict) -> Dict:
         'property_status': p['property_status_name'],
         'sales_status': p['sales_status_name'],
         'delivery_date': p['delivery_date'],
-        'detail_url': f"/property/{slugify(title) or 'property'}-{p['id']}/",
+        'detail_url': property_path(p),
     }
 
 

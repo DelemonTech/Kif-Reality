@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}All Properties in Dubai &amp; UAE{% if page_obj and page_obj.number > 1 %} – Page {{ page_obj.number }}{% endif %} | KIF Realty{% endblock %}
+
+{% block description %}Browse every property listed by KIF Realty — off-plan and ready apartments, villas and townhouses across Dubai and the UAE, A to Z.{% endblock %}
+
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com{% url 'property_directory' %}{% if page_obj and page_obj.number > 1 %}?page={{ page_obj.number }}{% endif %}">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.prop-dir {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8rem 1.5rem 4rem;
+    color: var(--text-light);
+}
+.prop-dir h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    margin-bottom: 0.5rem;
+    color: var(--rose-gold);
+}
+.prop-dir__intro {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+.prop-dir__intro a { color: var(--rose-gold); }
+.prop-dir__list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.25rem 2rem;
+}
+.prop-dir__list li {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--medium-gray);
+}
+.prop-dir__list a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+}
+.prop-dir__list a:hover { color: var(--rose-gold); }
+.prop-dir__meta {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.prop-dir__pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+}
+.prop-dir__pager a,
+.prop-dir__pager span {
+    min-width: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    border: 1px solid var(--soft-gray);
+    border-radius: 6px;
+    color: var(--text-light);
+    text-decoration: none;
+}
+.prop-dir__pager a:hover { border-color: var(--rose-gold); color: var(--rose-gold); }
+.prop-dir__pager [aria-current="page"] {
+    background: var(--rose-gold);
+    border-color: var(--rose-gold);
+    color: var(--obsidian-black);
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="prop-dir">
+    <h1>All Properties</h1>
+
+    {% if page_obj %}
+    <p class="prop-dir__intro">
+        {{ total }} properties across Dubai and the UAE, A to Z{% if page_obj.paginator.num_pages > 1 %} — page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}{% endif %}.
+        Want to filter by area, price or bedrooms? <a href="{% url 'properties' %}">Search properties</a>.
+    </p>
+
+    <ul class="prop-dir__list">
+        {% for p in page_obj %}
+        <li>
+            <a href="{{ p.url }}">{{ p.title }}</a>
+            {% if p.location or p.developer %}<span class="prop-dir__meta">{{ p.location }}{% if p.location and p.developer %} · {% endif %}{{ p.developer }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="prop-dir__pager" aria-label="Property index pages">
+        {% for n in page_obj.paginator.page_range %}
+            {% if n == page_obj.number %}
+            <span aria-current="page">{{ n }}</span>
+            {% elif n == 1 %}
+            <a href="{% url 'property_directory' %}">1</a>
+            {% else %}
+            <a href="{% url 'property_directory' %}?page={{ n }}">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <p class="prop-dir__intro">
+        The property index is being refreshed. Please try again shortly, or
+        <a href="{% url 'properties' %}">search properties</a>.
+    </p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -24,7 +24,7 @@ from .services import PropertyService
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
     get_available_counts, get_developers as xopp_get_developers, memo_get,
-    refresh_catalog_async,
+    refresh_catalog_async, property_path,
 )
 
 import json
@@ -440,6 +440,48 @@ def properties(request):
     })
 
 
+PROPERTY_DIRECTORY_PER_PAGE = 150
+
+
+def property_directory(request):
+    """/properties/all/ — plain, server-rendered links to every property.
+
+    The main listing draws its cards with JavaScript, so crawlers could only
+    reach property pages through the sitemap ("orphaned pages"). This A–Z
+    index gives each one a normal internal link.
+    """
+    catalog = get_catalog(cached_only=True)
+    if not catalog:
+        # Cold cache: tell crawlers to come back rather than index an empty page.
+        response = render(request, 'property_directory.html', {'page_obj': None})
+        response.status_code = 503
+        response['Retry-After'] = '3600'
+        return response
+
+    entries = sorted(
+        (
+            {
+                'title': p['title'] or 'Property',
+                'url': property_path(p),
+                'location': ', '.join(x for x in (p['district'], p['city']) if x),
+                'developer': p['developer_name'],
+            }
+            for p in catalog if p.get('id')
+        ),
+        key=lambda e: e['title'].lower(),
+    )
+    paginator = Paginator(entries, PROPERTY_DIRECTORY_PER_PAGE)
+    try:
+        page_obj = paginator.page(request.GET.get('page') or 1)
+    except (EmptyPage, PageNotAnInteger):
+        raise Http404("No such page")
+
+    return render(request, 'property_directory.html', {
+        'page_obj': page_obj,
+        'total': paginator.count,
+    })
+
+
 def property_redirect(request, property_id):
     """
     Redirect old /property/ID/ URLs to new /property/slug-ID/ format
@@ -645,7 +687,7 @@ def property_detail(request, slug, pk):
     # Only redirect if slugs are different
     if correct_slug != slug:
         print(f"   ⚠️ Slug mismatch - redirecting to correct URL")
-        return redirect('property_detail', slug=correct_slug, pk=pk)
+        return redirect('property_detail', slug=correct_slug, pk=pk, permanent=True)
 
     # Get district name
     district_name = prop.get('district', {}).get('name', {}).get('en', '')
