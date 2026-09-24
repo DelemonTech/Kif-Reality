@@ -21,7 +21,8 @@ are day-to-day operations; section 7 is for building a new server from scratch.
 | Database | PostgreSQL, database `kif_db` |
 | Django cache | `DatabaseCache`, table `sitemap_cache_table` (holds the X-OPP catalog) |
 | Web app service | `gunicorn.service` |
-| Background jobs service | `celery.service` — one worker **plus** the beat scheduler (`-B`) |
+| Catalog refresh | cron, every 30 min: `manage.py refresh_xopp` → `~/refresh_xopp.log` |
+| Background jobs service | `celery.service` — worker (inquiry emails) + beat (`-B`, currently no scheduled tasks) |
 | Beat schedule file | `/home/ubuntu/celerybeat-schedule` (outside the repo) |
 | Nginx gzip settings | `/etc/nginx/nginx.conf` (`http` block) |
 | Backups | `/home/ubuntu/backups/` |
@@ -31,8 +32,8 @@ The folder belongs to `ubuntu`, so git refuses other users ("detected dubious ow
 Do not add a `safe.directory` exception; just drop the `sudo`.
 
 `kifrealty-celery.service` also exists but is **disabled on purpose** — it was a duplicate
-scheduler that made the nightly refresh run more than once. Leave it disabled, and don't
-start Celery by hand in a terminal either: exactly one beat scheduler must run.
+Celery service. Leave it disabled, and don't start Celery by hand in a terminal either:
+exactly one Celery service must run.
 
 ## 2. Deploying an update
 
@@ -85,7 +86,9 @@ venv/bin/python manage.py dumpdata main.BlogPost --indent 1 -o ~/backups/blogpos
 systemctl status gunicorn.service celery.service --no-pager      # both "active (running)"
 systemctl is-enabled kifrealty-celery.service                    # must say "disabled"
 ps aux | grep "[c]elery" | grep -o "celery .*" | sort | uniq -c  # only "worker -B ... -s /home/ubuntu/celerybeat-schedule" lines
-journalctl -u celery.service --since yesterday | grep -i refresh # nightly refresh ran once
+tail -5 ~/refresh_xopp.log                                       # latest run ends "X-OPP caches warm"
+grep -c FAILED ~/refresh_xopp.log                                # should stay 0
+crontab -l | grep -c refresh_xopp                                # exactly 1 line
 
 # X-OPP catalog loaded (≈4,000 properties). 0 = cold cache, see §5.
 venv/bin/python manage.py shell -c "from main.xopp_service import get_catalog; print(len(get_catalog(cached_only=True)))" 2>/dev/null
@@ -130,12 +133,14 @@ Restore the `.bak` only if `nginx -t` **fails**.
 
 ## 5. X-OPP catalog, sitemap and SEO pages
 
-- `celery.service` runs `main.tasks.refresh_xopp_cache` every night at midnight
-  (`CELERY_BEAT_SCHEDULE` in `settings.py`). It retries 3× at 10-minute intervals if the
-  X-OPP API is down; a 7-day catalog backup keeps listings online meanwhile.
-- A cron job running `manage.py refresh_xopp` (log: `~/refresh_xopp.log`) was the original
-  refresh mechanism. Check with `crontab -l | grep -i refresh` — if both it and Celery are
-  active, the catalog is refreshed twice a night; keep one.
+- The catalog is refreshed **every 30 minutes by one cron job** (the only refresh source):
+  ```
+  */30 * * * * cd $HOME/Kif-Reality && venv/bin/python manage.py refresh_xopp >> $HOME/refresh_xopp.log 2>&1
+  ```
+  A failed run keeps serving the previous catalog, and a 7-day backup copy protects listings
+  during longer X-OPP outages.
+- `CELERY_BEAT_SCHEDULE` in `settings.py` is intentionally empty. Never schedule the refresh
+  in both cron and Celery — simultaneous runs hit the partner API's rate limit (429).
 - Web requests never call X-OPP for the catalog — they read the cache. If the cache is cold
   (new server, cache table cleared), load it once by hand:
   ```bash
@@ -239,6 +244,12 @@ WantedBy=multi-user.target
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now gunicorn.service celery.service
+```
+
+Schedule the catalog refresh (`crontab -e` as `ubuntu`) — the only refresh source:
+
+```
+*/30 * * * * cd $HOME/Kif-Reality && venv/bin/python manage.py refresh_xopp >> $HOME/refresh_xopp.log 2>&1
 ```
 
 Nginx: add the gzip lines from §4, and a site `server {}` block that proxies to Gunicorn and

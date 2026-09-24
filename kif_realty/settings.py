@@ -134,17 +134,15 @@ CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default=CELERY_BROKER_URL)
 CELERY_TIMEZONE = 'Asia/Dubai'
 
-CELERY_BEAT_SCHEDULE = {
-    # Refresh the X-OPP property catalog + developers list every midnight.
-    # Data is stored durably in the DB (ApiSnapshot), so the site always has
-    # listings to serve — visitors never wait on an API rebuild.
-    # (Primary refresh mechanism is the `refresh_xopp` cron job; this Celery
-    # schedule only applies if a Celery worker+beat is running.)
-    'refresh-xopp-cache': {
-        'task': 'main.tasks.refresh_xopp_cache',
-        'schedule': crontab(hour=0, minute=0),
-    },
-}
+# Empty on purpose: the X-OPP catalog is refreshed every 30 minutes by the
+# `refresh_xopp` cron job (see DEPLOYMENT.md §5). A beat entry here made the
+# refresh run twice at midnight against the rate-limited partner API.
+# The Celery worker still runs for exclusive_properties tasks (inquiry emails).
+# To move the refresh back into Celery, add:
+#   'refresh-xopp-cache': {'task': 'main.tasks.refresh_xopp_cache',
+#                          'schedule': crontab(minute='*/30')}
+# and remove the cron line — never run both.
+CELERY_BEAT_SCHEDULE = {}
 
 
 CACHES = {
