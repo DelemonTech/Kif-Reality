@@ -130,6 +130,16 @@ server {
 
     client_max_body_size 20M;
 
+    # Compress text assets. Nginx's default gzip_types is text/html only,
+    # so CSS/JS under /static/ were being sent uncompressed.
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types text/css application/javascript text/javascript application/json
+               image/svg+xml application/xml text/xml text/plain;
+
     location /static/ {
         alias /srv/kifrealty/app/staticfiles/;
         expires 30d;

@@ -211,6 +211,13 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Minified + content-hashed static files (see kif_realty/storage.py).
+# Requires `collectstatic` on every deploy; with DEBUG=True, unhashed files are served.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'kif_realty.storage.MinifiedManifestStaticFilesStorage'},
+}
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
