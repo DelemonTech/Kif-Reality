@@ -670,9 +670,11 @@ def property_detail(request, slug, pk):
     """
     result = XOPPService.get_property(pk)
     if not result['success']:
+        # 404 only when X-OPP says the property is gone (Google drops it);
+        # outages and rate limits are 503 so a live listing is never de-indexed.
         return render(request, "property_detail.html", {
             "property_error": result['error'] or "Property not found or API error."
-        })
+        }, status=404 if result.get('not_found') else 503)
 
     raw = result['data']
     units = XOPPService.get_all_units(pk) if raw.get('units_count') else []

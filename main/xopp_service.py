@@ -39,6 +39,7 @@ class XOPPService:
     """Client for the X-OPP Partner Property API (read-only, X-API-Key auth).
 
     All methods return {'success': bool, 'data': dict|None, 'error': str|None}.
+    A failure caused by the API answering 404 also carries 'not_found': True.
     Must be called from a whitelisted server IP; non-whitelisted IPs get 401.
     """
 
@@ -62,7 +63,7 @@ class XOPPService:
                 logger.error(f"X-OPP auth failed: {detail}")
                 return {'success': False, 'data': None, 'error': 'Property service authentication failed.'}
             if response.status_code == 404:
-                return {'success': False, 'data': None, 'error': 'Property not found.'}
+                return {'success': False, 'data': None, 'error': 'Property not found.', 'not_found': True}
             if response.status_code == 429:
                 logger.warning("X-OPP rate limit exceeded")
                 return {'success': False, 'data': None, 'error': 'Too many requests. Please try again shortly.'}
