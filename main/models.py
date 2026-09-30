@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.templatetags.static import static
 from PIL import Image
 import os
 
@@ -45,6 +46,11 @@ class Tag(models.Model):
         super().save(*args, **kwargs)
 
 
+# Default byline for blog posts; both are editable per post in the admin
+DEFAULT_BLOG_BYLINE = 'Fahadh Ismail'
+DEFAULT_BLOG_BYLINE_PHOTO = 'images/fahad-ismail.jpg'
+
+
 class BlogPost(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -62,8 +68,15 @@ class BlogPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     is_featured = models.BooleanField(default=False, help_text="Show as featured post on blog page")
+    seo_title = models.CharField(max_length=70, blank=True, help_text="SEO title for the browser tab / Google. Leave blank to use the post title")
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
     meta_keywords = models.CharField(max_length=200, blank=True, help_text="SEO keywords (comma separated)")
+    written_by = models.CharField(max_length=100, default=DEFAULT_BLOG_BYLINE, help_text="Name shown as 'Written By'")
+    written_by_photo = models.ImageField(upload_to='blog_authors/', blank=True, help_text="Leave blank to use the default photo")
+    reviewed_by = models.CharField(max_length=100, blank=True, default=DEFAULT_BLOG_BYLINE, help_text="Name shown as 'Reviewed By'. Leave blank to hide the section")
+    reviewed_by_photo = models.ImageField(upload_to='blog_authors/', blank=True, help_text="Leave blank to use the default photo")
+    cta_heading = models.CharField(max_length=200, blank=True, help_text="Heading of the call-to-action block under the post. Leave blank to hide the block")
+    cta_subheading = models.TextField(blank=True, help_text="Text shown under the CTA heading")
     views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -116,6 +129,18 @@ class BlogPost(models.Model):
     @property
     def comment_count(self):
         return self.comments.filter(is_approved=True).count()
+
+    @property
+    def written_by_photo_url(self):
+        if self.written_by_photo:
+            return self.written_by_photo.url
+        return static(DEFAULT_BLOG_BYLINE_PHOTO)
+
+    @property
+    def reviewed_by_photo_url(self):
+        if self.reviewed_by_photo:
+            return self.reviewed_by_photo.url
+        return static(DEFAULT_BLOG_BYLINE_PHOTO)
 
 
 class Comment(models.Model):

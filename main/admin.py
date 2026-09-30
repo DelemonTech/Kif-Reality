@@ -59,16 +59,19 @@ class CommentAdminForm(forms.ModelForm):
 class BlogPostAdmin(admin.ModelAdmin):
     form = BlogPostAdminForm
     list_display = [
-        'title', 'category', 'author', 'status', 'is_featured', 
+        'title', 'category', 'written_by', 'status', 'is_featured', 
         'views', 'comments_count', 'published_at', 'thumbnail_preview'
     ]
     list_filter = [
         'status', 'category', 'is_featured', 'created_at', 
         'published_at', 'tags'
     ]
-    search_fields = ['title', 'excerpt', 'content', 'meta_keywords']
+    search_fields = ['title', 'excerpt', 'content', 'meta_keywords', 'written_by', 'reviewed_by']
     prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ['views', 'created_at', 'updated_at', 'thumbnail_preview']
+    readonly_fields = [
+        'views', 'created_at', 'updated_at', 'thumbnail_preview',
+        'written_by_photo_preview', 'reviewed_by_photo_preview'
+    ]
     filter_horizontal = ['tags']
     date_hierarchy = 'published_at'
     
@@ -79,8 +82,19 @@ class BlogPostAdmin(admin.ModelAdmin):
         ('Classification', {
             'fields': ['category', 'tags', 'author', 'status', 'is_featured']
         }),
+        ('Written / Reviewed By', {
+            'fields': [
+                'written_by', 'written_by_photo', 'written_by_photo_preview',
+                'reviewed_by', 'reviewed_by_photo', 'reviewed_by_photo_preview',
+            ],
+            'description': 'Defaults to Fahadh Ismail and his photo. Change the name or upload a photo to override for this post.'
+        }),
+        ('Call To Action', {
+            'fields': ['cta_heading', 'cta_subheading'],
+            'description': 'Shown under the post. Leave the heading blank to hide it.'
+        }),
         ('SEO', {
-            'fields': ['meta_description', 'meta_keywords'],
+            'fields': ['seo_title', 'meta_description', 'meta_keywords'],
             'classes': ['collapse']
         }),
         ('Statistics', {
@@ -88,8 +102,22 @@ class BlogPostAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
     ]
-    
+
     inlines = [CommentInline]
+
+    def _byline_photo_preview(self, url):
+        return format_html(
+            '<img src="{}" width="70" height="70" style="object-fit: cover; border-radius: 50%;" />',
+            url
+        )
+
+    def written_by_photo_preview(self, obj):
+        return self._byline_photo_preview(obj.written_by_photo_url)
+    written_by_photo_preview.short_description = 'Current photo'
+
+    def reviewed_by_photo_preview(self, obj):
+        return self._byline_photo_preview(obj.reviewed_by_photo_url)
+    reviewed_by_photo_preview.short_description = 'Current photo'
     
     actions = ['mark_published', 'mark_draft', 'mark_featured', 'unmark_featured']
     

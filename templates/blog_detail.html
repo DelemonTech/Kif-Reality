@@ -5,7 +5,7 @@
 {# Lead popup: 12s on an article, or 20% scroll, whichever comes first. #}
 {% block popup_form %}{% include 'partials/popup_form.html' with popup_delay=12000 popup_scroll=20 %}{% endblock %}
 
-{% block title %}{{ post.title|truncatechars:52 }}|KIF Realty{% endblock %}
+{% block title %}{% if post.seo_title %}{{ post.seo_title }}{% else %}{{ post.title|truncatechars:52 }}|KIF Realty{% endif %}{% endblock %}
 
 {% block description %}{{ post.meta_description|default:post.excerpt }}{% endblock %}
 
@@ -385,12 +385,70 @@
         color: var(--rose-gold);
     }
 
+    .author-avatar img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--rose-gold);
+        display: block;
+    }
+
+    .author-info small {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.4rem;
+    }
+
     .author-info h4 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.6rem;
         font-weight: 600;
         color: var(--rose-gold);
+        margin-bottom: 0;
+    }
+
+    .meta-author-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--rose-gold);
+    }
+
+    .meta-item strong {
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Call To Action */
+    .post-cta {
+        background: var(--accent-gradient);
+        border-radius: 20px;
+        padding: 3rem 2.5rem;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .post-cta .cta-heading {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: var(--obsidian-black);
+        line-height: 1.25;
         margin-bottom: 1rem;
+    }
+
+    .post-cta .cta-subheading {
+        color: var(--obsidian-black);
+        opacity: 0.9;
+        line-height: 1.7;
+        font-weight: 300;
+        max-width: 720px;
+        margin: 0 auto 2rem;
     }
 
     .author-info p {
@@ -1340,9 +1398,29 @@
             font-size: 3rem;
         }
 
+        .author-avatar img {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto;
+        }
+
         .author-info h4 {
             font-size: 1.3rem;
-            margin-bottom: 0.8rem;
+        }
+
+        .post-cta {
+            padding: 2rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 15px;
+        }
+
+        .post-cta .cta-heading {
+            font-size: 1.6rem;
+        }
+
+        .post-cta .cta-subheading {
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
         }
 
         .author-info p {
@@ -1643,6 +1721,7 @@
         .social-share,
         .newsletter-widget,
         .contact-widget,
+        .post-cta,
         .comment-form-section {
             display: none;
         }
@@ -1679,8 +1758,8 @@
                 <h1 class="blog-title">{{ post.title }}</h1>
                 <div class="blog-meta">
                     <div class="meta-item">
-                        <i class="fas fa-user"></i>
-                        <span>{{ post.author.get_full_name|default:post.author.username }}</span>
+                        <img src="{{ post.written_by_photo_url }}" alt="{{ post.written_by }}" class="meta-author-img">
+                        <span>Written By <strong>{{ post.written_by }}</strong></span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-calendar"></i>
@@ -1758,16 +1837,29 @@
                         </div>
                     </div>
 
-                    <!-- Author Bio -->
+                    <!-- Reviewed By -->
+                    {% if post.reviewed_by %}
                     <div class="author-bio">
                         <div class="author-avatar">
-                            <i class="fas fa-user-circle"></i>
+                            <img src="{{ post.reviewed_by_photo_url }}" alt="{{ post.reviewed_by }}">
                         </div>
                         <div class="author-info">
-                            <h4>{{ post.author.get_full_name|default:post.author.username }}</h4>
-                            <p>Real estate expert at KIF Realty with extensive knowledge of Dubai's property market.</p>
+                            <small>Reviewed By</small>
+                            <h4>{{ post.reviewed_by }}</h4>
                         </div>
                     </div>
+                    {% endif %}
+
+                    <!-- Call To Action -->
+                    {% if post.cta_heading %}
+                    <div class="post-cta">
+                        <h2 class="cta-heading">{{ post.cta_heading }}</h2>
+                        {% if post.cta_subheading %}
+                        <p class="cta-subheading">{{ post.cta_subheading|linebreaksbr }}</p>
+                        {% endif %}
+                        <a href="{% url 'contact' %}" class="contact-btn">Talk to an Expert</a>
+                    </div>
+                    {% endif %}
 
                     <!-- Comments Section -->
                     <div class="comments-section">
