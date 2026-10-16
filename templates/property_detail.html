@@ -26,35 +26,34 @@ property.district.name.en }}, Dubai. Prices from {{ property.low_price|add_comma
 <link rel="canonical" href="https://kifrealty.com{{ request.path }}">{% endblock %}
 
 
-{% block extra_head %}
-
-<!-- Resource hints for performance -->
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+{% comment %}
+base.html defines extra_css (just before </head>), not extra_head: anything in
+an undefined block is silently discarded, so this page's resource hints never
+reached the browser at all. Renamed so they actually render.
+The fonts/Font Awesome preloads that used to live here are gone on purpose -
+base.html already loads Cormorant Garamond and Font Awesome 6.4.0, and
+re-declaring them here (at 6.0.0) would be a second copy of both.
+{% endcomment %}
+{% block extra_css %}
 <link rel="dns-prefetch" href="https://maps.google.com">
 
-<!-- Preload hero image -->
-<link rel="preload" href="{{ property.cover }}" as="image" fetchpriority="high">
+{% comment %}
+Hero preload must match the <img> in the hero section exactly, or it downloads
+a file the page never shows: cover and property_images.0.image are different
+files. firstof mirrors that <img>'s own fallback order.
+{% endcomment %}
+{% firstof property.property_images.0.image property.cover as hero_src %}
+{% if hero_src %}<link rel="preload" href="{{ hero_src }}" as="image" fetchpriority="high">{% endif %}
 
-<!-- Async font loading -->
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap"
-    as="style" onload="this.onload=null;this.rel='stylesheet'">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style"
-    onload="this.onload=null;this.rel='stylesheet'">
-
-<noscript>
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</noscript>
-
+{% comment %}
+Moved out of the content block: in the body this was a render-blocking
+stylesheet discovered ~250 lines into the document. Cascade order is unchanged
+- extra_css sits directly after base.html's inline <style>.
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/property_detail_styles.css' %}">
 {% endblock %}
 
 {% block content %}
-<!-- <style> -->
-
-<link rel="stylesheet" href="{% static 'css/property_detail_styles.css' %}">
-<!-- </style> -->
 
 <!-- Main Layout -->
 <div class="property-layout" id="propertyLayout">

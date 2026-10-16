@@ -3,7 +3,15 @@
 {% load static %}
 {% load custom_filters %}
 
-{% block title %}Exclusive Properties - KIF Realty{% endblock %}
+{% block title %}Exclusive Properties - KIF Realty{% if properties and properties.number > 1 %} – Page {{ properties.number }}{% endif %}{% endblock %}
+
+{% comment %}
+base.html's default canonical uses request.path, which drops the query string
+- so every ?page=N and every filter combination declared itself a copy of
+/exclusive/. Self-referencing on the page number instead.
+{% endcomment %}
+{% block canonical %}
+<link rel="canonical" href="https://kifrealty.com{{ request.path }}{% if properties and properties.number > 1 %}?page={{ properties.number }}{% endif %}">{% endblock %}
 
 <meta name="description" content="{% block description %}Discover exclusive properties with KIF Realty. Explore premium real estate options in Dubai for investment or personal living. Unlock unique opportunities now
 

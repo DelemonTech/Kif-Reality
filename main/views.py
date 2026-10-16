@@ -412,6 +412,18 @@ def properties(request):
     """Properties page. The first page of results is embedded in the HTML so a
     new visitor sees listings without waiting for an extra API round-trip;
     JavaScript takes over for filtering and pagination."""
+    # ?page= is never read here - the first page is always what gets rendered,
+    # so /properties/?page=2, ?page=5 and ?page=99 all served byte-identical
+    # listings under distinct URLs. Collapse them onto the canonical URL
+    # rather than leaving an unbounded set of duplicates crawlable. Other
+    # query params (?city=, ?district=) are preserved.
+    if 'page' in request.GET:
+        params = request.GET.copy()
+        params.pop('page')
+        query = params.urlencode()
+        return redirect(f'{request.path}?{query}' if query else request.path,
+                        permanent=True)
+
     initial_json = None
     # Only pre-render the default view; URL-filtered views (?city=…) are fetched by JS.
     if not (request.GET.get('city') or request.GET.get('district')):
@@ -653,7 +665,9 @@ def _map_property_for_template(prop, units=None):
             {'name': {'en': pl.get('name') or 'Payment Plan'}, **pl}
             for pl in (prop.get('payment_plans') or [])
         ],
-        'grouped_apartments': [_map_unit_for_template(u) for u in (units or [])],
+        # 'grouped_apartments' used to map every unit a second time here; no
+        # template reads it (unit_groups below is what renders), and
+        # property_detail still setdefault()s it to [] for safety.
         'unit_groups': _group_units(
             units or [],
             main_type=(prop.get('property_type') or 'Apartment').split(',')[0].strip() or 'Apartment',

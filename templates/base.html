@@ -29,6 +29,14 @@ Explore luxury Dubai properties with KIF Realty. Buy, sell, or invest in prime l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+{% comment %}
+Property/listing images are served from the partner origin. Without this the
+browser only starts its DNS+TCP+TLS handshake after it finds the <img> tag,
+which measured ~0.68s of dead time before the LCP image could download.
+No crossorigin: plain <img> requests are not CORS, and a CORS preconnect
+would open a connection the image request cannot reuse.
+{% endcomment %}
+<link rel="preconnect" href="https://microservice.x-opp.com">
 
     <!-- Font Awesome -->
     <!-- Defer Font Awesome -->
