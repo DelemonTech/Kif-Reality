@@ -282,6 +282,9 @@
 
 
 <link rel="stylesheet" href="{% static 'css/index-styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/index-animations.css' %}">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 
 <!-- <style> -->
 
@@ -289,6 +292,14 @@
 {% endblock %}
 
 {% load custom_filters %}
+
+{% block topbar %}
+<div class="social-rail" aria-label="KIF Realty on social media">
+    <a href="https://www.instagram.com/kifrealty/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.facebook.com/people/Kifrealty/61559082934240/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+    <a href="https://www.linkedin.com/company/kif-realty" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+</div>
+{% endblock %}
 
 {% block content %}
 
@@ -303,8 +314,8 @@
         Your browser does not support the video tag.
     </video>
 
-    <!-- Optional particle overlay -->
-    <div class="hero-particles"></div>
+    <!-- Animated gold glow overlay -->
+    <div class="hero-glow" aria-hidden="true"></div>
 
     <!-- Hero Content -->
     <div class="hero-content-container">
@@ -313,20 +324,22 @@
                 <i class="fas fa-star" aria-hidden="true"></i>
                 Dubai's Premier Real Estate Partner
             </div>
-            <h1>Property expert in Dubai, UAE</h1>
+            <h1><span class="h1-gold">Property expert</span> <span class="h1-white">in Dubai, UAE</span></h1>
             <p class="hero-subtitle">
-                Offplan | Ready to move project | Land broker | Property investment consultant |
-                Super Agent for new Developers
+                Offplan <span class="sep">|</span> Ready to move project <span class="sep">|</span> Land broker <span class="sep">|</span>
+                Property investment consultant <span class="sep">|</span> Super Agent for new Developers
             </p>
             <div class="cta-buttons">
-                <a href="/properties" class="btn-1 btn-primary">Explore Properties</a>
-                <a href="/contact" class="btn-2 btn-secondary">Our Services</a>
+                <a href="/properties" class="btn-1 btn-primary">Explore Properties <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                <a href="/contact" class="btn-2 btn-secondary">Our Services <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     </div>
+
+    <a href="#latest-properties" class="scroll-cue" aria-label="Scroll to latest properties"><i class="fas fa-chevron-down" aria-hidden="true"></i></a>
 </section>
 
-<section class="featured-properties">
+<section class="featured-properties" id="latest-properties">
     <div class="heading">
         <div class="heading-left">
             <img src="static/images/logo-kif.png" alt="KIF Realty - Dubai Real Estate Logo" class="logo" loading="lazy">
@@ -362,7 +375,11 @@
 
     function loadFeaturedProperties() {
         const grid = document.querySelector('.properties-grid');
-        grid.innerHTML = `<p>Loading Featured Properties...</p>`;
+        grid.innerHTML = Array(4).fill(`
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="sk-img"></div>
+            <div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w40"></div><div class="sk-line w55"></div></div>
+          </div>`).join('');
 
         const API_URL = `${MICROSERVICE_API}/properties/filter/`;
         console.log(API_URL);
@@ -1458,28 +1475,6 @@
 </script>
 
 
-<script>
-    // Counter Animation (slower and smoother)
-    document.addEventListener("DOMContentLoaded", () => {
-        const counters = document.querySelectorAll(".kif-count");
-
-        counters.forEach((counter) => {
-            const updateCount = () => {
-                const target = +counter.getAttribute("data-target");
-                let count = +counter.innerText;
-
-                const speed = 300;
-                const increment = Math.max(1, Math.ceil(target / speed));
-
-                if (count < target) {
-                    counter.innerText = count + increment;
-                    setTimeout(updateCount, 50);
-                } else {
-                    counter.innerText = target;
-                }
-            };
-            updateCount();
-        });
-    });
-</script>
+<!-- Scroll reveal, counters, card effects -->
+<script src="{% static 'js/index-animations.js' %}"></script>
 {% endblock %}

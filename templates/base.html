@@ -1447,6 +1447,7 @@ would open a connection the image request cannot reuse.
             display: none;
         }
     </style>   
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -1476,6 +1477,8 @@ would open a connection the image request cannot reuse.
     <!-- Mobile Menu Backdrop -->
     <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
 
+    {% block topbar %}{% endblock %}
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <a href="{% url 'index' %}" class="navbar-brand">
@@ -1492,21 +1495,21 @@ would open a connection the image request cannot reuse.
             <li>
                 <a href="{% url 'index' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                    Home
+                    <i class="fas fa-house nl-ic" aria-hidden="true"></i>Home
                 </a>
             </li>
 
             <li>
                 <a href="{% url 'developers' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'developers' %}active{% endif %}">
-                    Developers
+                    <i class="fas fa-city nl-ic" aria-hidden="true"></i>Developers
                 </a>
             </li>
 
             <li>
                 <a href="{% url 'properties' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'properties' %}active{% endif %}">
-                    Properties
+                    <i class="fas fa-building nl-ic" aria-hidden="true"></i>Properties
                 </a>
             </li>
             <!-- <li>
@@ -1520,7 +1523,7 @@ would open a connection the image request cannot reuse.
 
             <li class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle">
-                    Explore
+                    <i class="far fa-map nl-ic" aria-hidden="true"></i>Explore<i class="fas fa-chevron-down nl-chev" aria-hidden="true"></i>
                 </a>
                 <div class="dropdown-menu">
                     <ul class="dropdown-menu-grid">
@@ -1549,29 +1552,29 @@ would open a connection the image request cannot reuse.
             <li>
                 <a href="{% url 'about' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-                    About
+                    <i class="fas fa-users nl-ic" aria-hidden="true"></i>About
                 </a>
             </li>
             <li>
                 <a href="{% url 'blogs' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'blogs' %}active{% endif %}">
-                    Blogs
+                    <i class="far fa-file-lines nl-ic" aria-hidden="true"></i>Blogs
                 </a>
             </li>
             <li>
                 <a href="{% url 'careers' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'careers' or request.resolver_match.url_name == 'career_detail' %}active{% endif %}">
-                    Careers
+                    <i class="fas fa-briefcase nl-ic" aria-hidden="true"></i>Careers
                 </a>
             </li>
             <li>
                 <a href="{% url 'contact' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
-                    Contact
+                    <i class="far fa-envelope nl-ic" aria-hidden="true"></i>Contact
                 </a>
             </li>
-            <li class="nav-item dropdown" style="width: 145px;white-space: nowrap;overflow: visible;">
-                <a role="button" class="nav-link dropdown-toggle" id="calculatorDropdown">
+            <li class="nav-item dropdown nav-calc">
+                <a role="button" class="nav-link dropdown-toggle" id="calculatorDropdown" aria-label="Property calculators" title="Calculators">
                     <i class="bi bi-calculator" id="calculatorIcon"></i>
                 </a>
                 <ul class="dropdown-menu">
