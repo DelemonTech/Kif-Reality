@@ -26,6 +26,7 @@ class StaticViewSitemap(Sitemap):
             'privacy-policy',
             'terms-and-conditions',
             'property_directory',
+            'developers',
             'rera-compliance',
             # Landing pages
             'retail-spaces',

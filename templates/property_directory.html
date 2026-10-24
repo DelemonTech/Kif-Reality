@@ -2,7 +2,7 @@
 
 {% block title %}All Properties in Dubai &amp; UAE{% if page_obj and page_obj.number > 1 %} – Page {{ page_obj.number }}{% endif %} | KIF Realty{% endblock %}
 
-{% block description %}Browse every property listed by KIF Realty — off-plan and ready apartments, villas and townhouses across Dubai and the UAE, A to Z.{% endblock %}
+{% block description %}Browse every property listed by KIF Realty — off-plan and ready apartments, villas and townhouses across Dubai and the UAE, A to Z.{% if page_obj and page_obj.number > 1 %} Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.{% endif %}{% endblock %}
 
 {% block canonical %}
 <link rel="canonical" href="https://kifrealty.com{% url 'property_directory' %}{% if page_obj and page_obj.number > 1 %}?page={{ page_obj.number }}{% endif %}">

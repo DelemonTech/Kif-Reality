@@ -1422,6 +1422,9 @@ def developers(request):
     if request.GET.get('name'):
         return render(request, 'developer_detail.html', {
             'MICROSERVICE_API': '/api',
+            # developer_detail.html uses this in its title, description
+            # and canonical; without it all three rendered blank.
+            'developer_name': request.GET['name'],
         })
     return render(request, 'developers.html', {
         'MICROSERVICE_API': '/api',
