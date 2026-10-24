@@ -1192,7 +1192,7 @@ def send_notification_email(contact):
 
     📞 +971 567655599
     📧 info@kifrealty.com
-    💬 WhatsApp: https://wa.me/971567655599
+    💬 WhatsApp: https://wa.me/+971569599966
 
     Best regards,
     KIF Realty Team
