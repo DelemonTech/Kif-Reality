@@ -149,6 +149,18 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'sitemap_cache_table',
+        # Without OPTIONS, Django caps this table at 300 entries and, once
+        # full, culls a third of it on every write - ordered by cache key, not
+        # by least-recently-used. The catalog holds ~3,900 properties and each
+        # one needs at least two entries (detail + units), so the cache could
+        # hold about 4% of the working set. A crawler walking the property
+        # index therefore missed the cache on nearly every page, made a live
+        # partner-API call each time, hit the rate limit, and got 503s back -
+        # which link checkers report as broken links.
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000,
+            'CULL_FREQUENCY': 10,   # when full, drop 10% rather than 33%
+        },
     }
 }
 
