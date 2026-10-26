@@ -513,7 +513,7 @@
         <p>KIF Realty partners with the UAE's most distinguished property developers — delivering exceptional residential and commercial projects across Dubai and Sharjah.</p>
         <div class="dev-stats-row">
             <div class="dev-stat">
-                <div class="dev-stat-num" id="statDevCount">—</div>
+                <div class="dev-stat-num" id="statDevCount">{% if developers %}{{ developers|length }}{% else %}—{% endif %}</div>
                 <div class="dev-stat-label">Developers</div>
             </div>
             <div class="dev-stat">
@@ -539,13 +539,32 @@
             <option value="az">A → Z</option>
             <option value="za">Z → A</option>
         </select>
-        <p class="dev-count-badge">Showing <span id="devShownCount">—</span> developers</p>
+        <p class="dev-count-badge">Showing <span id="devShownCount">{% if developers %}{{ developers|length }}{% else %}—{% endif %}</span> developers</p>
     </div>
 </div>
 
 <!-- Grid -->
 <section class="dev-section">
-    <div class="dev-grid" id="devGrid">
+    <div class="dev-grid" id="devGrid"{% if developers %} data-server-rendered="1"{% endif %}>
+        {% if developers %}
+        {# Rendered here so crawlers see the names; JS still powers search/sort. #}
+        {# No dev-card-appear class: it starts at opacity 0, and running that #}
+        {# animation on ~1200 cards at once would stall the page. #}
+        {% for d in developers %}
+        <a class="dev-card" href="{% url 'developers' %}?name={{ d.name|urlencode }}"
+           aria-label="View properties by {{ d.name }}">
+            <div class="dev-card-logo">
+                {% if d.logo %}<img src="{{ d.logo }}" alt="{{ d.name }} logo" loading="lazy" decoding="async">{% else %}<div class="dev-logo-placeholder">{{ d.name|first|upper }}</div>{% endif %}
+            </div>
+            <div class="dev-card-body">
+                <div class="dev-card-name">{{ d.name }}</div>
+                <div class="dev-card-location"><i class="bi bi-geo-alt-fill"></i>{{ d.location|default:"Dubai, UAE" }}</div>
+                {% if d.projects_count %}<div class="dev-card-meta"><div class="dev-card-meta-item"><div class="num">{{ d.projects_count }}</div><div class="lbl">Projects</div></div></div>{% endif %}
+                <div class="dev-card-cta">View Properties <i class="bi bi-arrow-right"></i></div>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
         <!-- Skeletons shown while loading -->
         {% for i in "12345678"|make_list %}
         <div class="dev-skeleton dev-skeleton-item">
@@ -560,6 +579,7 @@
             </div>
         </div>
         {% endfor %}
+        {% endif %}
     </div>
 </section>
 
@@ -588,6 +608,7 @@
         : '/developers/';  /* fallback to local proxy */
 
     const grid = document.getElementById('devGrid');
+    const serverRendered = grid.dataset.serverRendered === '1';
     const searchInput = document.getElementById('devSearch');
     const sortSelect = document.getElementById('devSort');
     const shownCount = document.getElementById('devShownCount');
@@ -611,11 +632,25 @@
         } catch (e) {
             allDevelopers = [];
         }
+        /* The server already painted the grid, so don't repaint it - and never
+           wipe it when the fetch failed. Just sync the counters; search and
+           sort call render() themselves once the data has arrived. */
+        if (serverRendered) {
+            if (allDevelopers.length) {
+                statDevCount.textContent = allDevelopers.length;
+                shownCount.textContent = allDevelopers.length;
+            }
+            return;
+        }
         render();
     }
 
     /* ── Render ── */
     function render() {
+        /* Nothing fetched yet (or the fetch failed) while the server already
+           rendered the list: leave it on screen instead of emptying it. */
+        if (!allDevelopers.length && serverRendered) return;
+
         const query = searchInput.value.trim().toLowerCase();
         const sort  = sortSelect.value;
 

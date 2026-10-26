@@ -1426,8 +1426,13 @@ def developers(request):
             # and canonical; without it all three rendered blank.
             'developer_name': request.GET['name'],
         })
+    # Server-render the list so crawlers can read the developer names. The
+    # page used to ship an empty grid that JavaScript filled in afterwards, so
+    # Google indexed none of them. cached_only: never walk the partner API
+    # inline - an empty list falls back to the old skeleton + JS behaviour.
     return render(request, 'developers.html', {
         'MICROSERVICE_API': '/api',
+        'developers': xopp_get_developers(cached_only=True),
     })
 
 
