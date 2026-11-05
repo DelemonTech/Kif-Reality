@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from pathlib import Path
 from decouple import config
@@ -5,6 +6,12 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
+
+# Windows can map .css/.js to non-standard types in the registry (e.g.
+# application/x-css); browsers then refuse the stylesheet and pages render
+# unstyled under runserver. No effect on the Linux server.
+mimetypes.add_type('text/css', '.css', True)
+mimetypes.add_type('text/javascript', '.js', True)
 
 MICROSERVICE_API = os.getenv("MICROSERVICE_API", "http://54.237.196.120/api")
 
