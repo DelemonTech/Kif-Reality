@@ -21,6 +21,7 @@ from .turnstile import verify as turnstile_verify
 from .models import Contact, ContactMessage, BlogPost, Category, Tag, Newsletter, Comment, JobVacancy, JobApplication
 from .forms import NewsletterForm, CommentForm, JobApplicationForm
 from .services import PropertyService
+from .developer_content import get_developer_content, faq_schema_json
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
     get_available_counts, get_developers as xopp_get_developers, memo_get,
@@ -950,7 +951,7 @@ def filter_properties_api(request):
 
         filters = {}
         string_fields = ['property_type', 'city', 'district', 'unit_type', 'rooms',
-                         'sales_status', 'title', 'developer', 'property_status']
+                         'sales_status', 'title', 'developer', 'developer_exact', 'property_status']
         for field in string_fields:
             value = data.get(field)
             if value and str(value).strip():
@@ -1309,9 +1310,12 @@ def _xopp_developers_response():
         refresh_catalog_async()
         return None
 
+    # Case-insensitive, like the developer page's filter: the catalog spells
+    # some names inconsistently ("Azizi" / "azizi"), and an exact match made
+    # the card count lower than the listings the developer page shows.
     from collections import Counter
     counts = Counter(
-        p['developer_name'].strip() for p in get_catalog(cached_only=True) if p['developer_name'].strip()
+        p['developer_name'].strip().lower() for p in get_catalog(cached_only=True) if p['developer_name'].strip()
     )
 
     data = [{
@@ -1324,7 +1328,7 @@ def _xopp_developers_response():
         'phone': d.get('phone') or '',
         'location': d.get('address') or 'Dubai, UAE',
         'overview': d.get('overview') or '',
-        'projects_count': counts.get((d.get('name') or '').strip(), 0),
+        'projects_count': counts.get((d.get('name') or '').strip().lower(), 0),
     } for d in devs if d.get('name')]
 
     return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
@@ -1420,11 +1424,15 @@ def preview_404(request):
 def developers(request):
     # Templates build '<MICROSERVICE_API>/developers/' — point them at our own API
     if request.GET.get('name'):
+        dev_content = get_developer_content(request.GET['name'])
         return render(request, 'developer_detail.html', {
             'MICROSERVICE_API': '/api',
             # developer_detail.html uses this in its title, description
             # and canonical; without it all three rendered blank.
             'developer_name': request.GET['name'],
+            # Hand-written landing sections (main/developer_content.py), if any
+            'dev': dev_content,
+            'faq_schema': faq_schema_json(dev_content) if dev_content else '',
         })
     # Server-render the list so crawlers can read the developer names. The
     # page used to ship an empty grid that JavaScript filled in afterwards, so

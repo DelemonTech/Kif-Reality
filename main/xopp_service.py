@@ -602,6 +602,12 @@ def filter_catalog(catalog: List[Dict], filters: Dict) -> List[Dict]:
     if developer:
         out = [p for p in out if developer in p['developer_name'].lower()]
 
+    # Whole-name match for a developer's own page: the substring match above
+    # pulls "Emaar South" into Emaar and "Capital ..." into "API".
+    developer_exact = (filters.get('developer_exact') or '').strip().lower()
+    if developer_exact:
+        out = [p for p in out if p['developer_name'].strip().lower() == developer_exact]
+
     status = (filters.get('property_status') or '').strip().lower()
     if status:
         out = [p for p in out if p['property_status_name'].lower() == status]

@@ -1,0 +1,9 @@
+[33mcommit c824757b00e55f0fadb02d58a5fe91d370f13b32[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtheertha[m[33m)[m
+Author: Theertha A <theerthaa2208@gmail.com>
+Date:   Thu Nov 5 10:45:54 2026 +0530
+
+    first commit
+
+ .gitignore             | 1 [32m+[m
+ kif_realty/settings.py | 7 [32m+++++++[m
+ 2 files changed, 8 insertions(+)
