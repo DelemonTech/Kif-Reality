@@ -135,9 +135,9 @@
 
     .property-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 3.5rem;
+        font-size: clamp(2rem, 3.2vw, 2.9rem);
         font-weight: 300;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
         background: linear-gradient(135deg, var(--text-light), var(--rose-gold));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -147,12 +147,12 @@
     }
 
     .property-location {
-        font-size: 1.2rem;
+        font-size: 0.95rem;
         opacity: 0.9;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.6rem;
         color: var(--text-muted);
         font-weight: 300;
     }
@@ -161,14 +161,14 @@
         display: inline-block;
         background: var(--accent-gradient);
         color: var(--obsidian-black);
-        padding: 1rem 1rem;
+        padding: 0.7rem 1.5rem;
         border-radius: 50px;
-        font-size: 1.4rem;
+        font-size: 0.85rem;
         font-weight: 700;
-        box-shadow: 0 15px 35px rgba(232, 180, 160, 0.4);
+        box-shadow: 0 10px 25px rgba(232, 180, 160, 0.3);
         align-self: flex-start;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
     }
 
     /* Content Container */
@@ -208,15 +208,15 @@
 
     .section-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 2.2rem;
+        font-size: 1.75rem;
         font-weight: 400;
         color: var(--rose-gold);
-        margin-bottom: 2.5rem;
-        padding-bottom: 1rem;
+        margin-bottom: 1.8rem;
+        padding-bottom: 0.9rem;
         position: relative;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.8rem;
         letter-spacing: -0.01em;
     }
 
@@ -225,28 +225,28 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        width: 80px;
-        height: 3px;
+        width: 60px;
+        height: 2px;
         background: var(--accent-gradient);
         border-radius: 2px;
     }
 
     .section-title i {
         color: var(--rose-gold);
-        font-size: 1.5rem;
-    }
-    
-    .property-description {
         font-size: 1.1rem;
+    }
+
+    .property-description {
+        font-size: 0.95rem;
         line-height: 1.8;
         color: var(--text-muted);
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
         font-weight: 300;
         
     }
 
     .property-description p {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.1rem;
         
     }
 
@@ -257,15 +257,15 @@
     /* Property Stats */
     .property-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1rem;
         margin-bottom: 2rem;
     }
 
     .stat-item {
         background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
-        padding: 1rem 1rem;
-        border-radius: 20px;
+        padding: 1.3rem 1rem;
+        border-radius: 16px;
         text-align: center;
         border: 1px solid rgba(232, 180, 160, 0.1);
         transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -296,9 +296,9 @@
     }
 
     .stat-icon {
-        font-size: 2.5rem;
+        font-size: 1.6rem;
         color: var(--rose-gold);
-        margin-bottom: 0.9rem;
+        margin-bottom: 0.7rem;
         display: block;
         position: relative;
         z-index: 1;
@@ -306,10 +306,10 @@
 
     .stat-value {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
+        font-size: 1.7rem;
         font-weight: 600;
         color: var(--text-light);
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.4rem;
         display: block;
         position: relative;
         z-index: 1;
@@ -317,10 +317,10 @@
 
     .stat-label {
         color: var(--text-muted);
-        font-size: 1rem;
-        font-weight: 300;
+        font-size: 0.7rem;
+        font-weight: 400;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.16em;
         position: relative;
         z-index: 1;
     }
@@ -328,20 +328,20 @@
     /* Facilities Grid */
     .facilities-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.9rem;
         margin-bottom: 2rem;
     }
 
     .facility-item {
         background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
-        padding: 1.2rem 1.2rem;
-        border-radius: 15px;
+        padding: 1rem 1.1rem;
+        border-radius: 14px;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.9rem;
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 1rem;
+        font-size: 0.88rem;
         border: 1px solid rgba(232, 180, 160, 0.1);
         cursor: pointer;
         position: relative;
@@ -373,7 +373,7 @@
     }
 
     .facility-icon {
-        font-size: 1.5rem;
+        font-size: 1.15rem;
         color: var(--rose-gold);
         transition: all 0.4s ease;
         width: 24px;
@@ -440,7 +440,7 @@
 
     .unit-type {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 600;
         color: var(--text-light);
         letter-spacing: -0.01em;
@@ -449,10 +449,10 @@
     .unit-price {
         background: var(--accent-gradient);
         color: var(--obsidian-black);
-        padding: 1rem 2rem;
+        padding: 0.6rem 1.3rem;
         border-radius: 25px;
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -482,16 +482,16 @@
 
     .unit-detail-value {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.8rem;
+        font-size: 1.4rem;
         font-weight: 700;
         color: var(--rose-gold);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
         display: block;
     }
 
     .unit-detail-label {
         color: var(--text-muted);
-        font-size: 0.9rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
         font-weight: 300;
@@ -501,7 +501,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
+        font-size: 1.3rem;
         color: var(--rose-gold);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -915,7 +915,7 @@
     }
 
     .sidebar-card {
-        padding: 2.5rem 2rem;
+        padding: 2rem 1.8rem;
         border-bottom: 1px solid rgba(232, 180, 160, 0.1);
         transition: all 0.3s ease;
         position: relative;
@@ -951,15 +951,15 @@
     }
 
     .agent-avatar {
-        width: 90px;
-        height: 90px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
-        margin: 0 auto 2rem;
+        margin: 0 auto 1.4rem;
         background: var(--accent-gradient);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
+        font-size: 1.8rem;
         color: var(--obsidian-black);
         box-shadow: 0 15px 35px rgba(232, 180, 160, 0.3);
         position: relative;
@@ -968,9 +968,9 @@
 
     .agent-name {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
+        font-size: 1.35rem;
         font-weight: 600;
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.4rem;
         color: var(--text-light);
         position: relative;
         z-index: 1;
@@ -978,8 +978,8 @@
 
     .agent-title {
         color: var(--text-muted);
-        margin-bottom: 2rem;
-        font-size: 1rem;
+        margin-bottom: 1.6rem;
+        font-size: 0.88rem;
         font-weight: 300;
         position: relative;
         z-index: 1;
@@ -988,25 +988,25 @@
     .contact-btn {
         background: var(--accent-gradient);
         color: var(--obsidian-black);
-        padding: 1.2rem 2.5rem;
+        padding: 0.85rem 1.8rem;
         border: none;
         border-radius: 50px;
         font-weight: 700;
         cursor: pointer;
         width: 100%;
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.9rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: 0.7rem;
         text-decoration: none;
-        font-size: 1rem;
+        font-size: 0.8rem;
         position: relative;
         overflow: hidden;
         z-index: 1;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.12em;
     }
 
     .contact-btn::before {
@@ -1036,7 +1036,7 @@
     .contact-btn.outline {
         background: transparent;
         color: var(--rose-gold);
-        border: 2px solid var(--rose-gold);
+        border: 1px solid var(--rose-gold);
     }
 
     .contact-btn.outline:hover {
@@ -1047,9 +1047,9 @@
     /* Info Cards */
     .info-card-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 600;
-        margin-bottom: 2rem;
+        margin-bottom: 1.3rem;
         color: var(--text-light);
         display: flex;
         align-items: center;
@@ -1074,9 +1074,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 0;
+        padding: 0.75rem 0;
         border-bottom: 1px solid rgba(232, 180, 160, 0.1);
-        font-size: 1rem;
+        font-size: 0.88rem;
         transition: all 0.3s ease;
         font-weight: 300;
     }
@@ -1117,12 +1117,12 @@
 
     .plan-name {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
         color: var(--obsidian-black);
         text-align: center;
-        padding: 1rem;
+        padding: 0.7rem;
         background: var(--accent-gradient);
         border-radius: 10px;
         text-transform: uppercase;
@@ -1141,16 +1141,16 @@
     }
 
     .location-icon {
-        font-size: 3.5rem;
+        font-size: 2.4rem;
         color: var(--rose-gold);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.1rem;
     }
 
     .location-title {
         font-family: 'Cormorant Garamond', serif;
         color: var(--text-light);
-        margin-bottom: 1.5rem;
-        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
         font-weight: 600;
         letter-spacing: -0.01em;
     }
@@ -1158,21 +1158,23 @@
     .location-description {
         color: var(--text-muted);
         line-height: 1.7;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         font-weight: 300;
+        font-size: 0.9rem;
     }
 
     .location-btn {
         background: var(--accent-gradient);
         color: var(--obsidian-black);
         border: none;
-        padding: 1rem 2.5rem;
+        padding: 0.8rem 2rem;
         border-radius: 50px;
         cursor: pointer;
         font-weight: 600;
+        font-size: 0.8rem;
         transition: all 0.4s ease;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.12em;
     }
 
     .location-btn:hover {
@@ -1265,12 +1267,12 @@
         }
 
         .property-title {
-            font-size: 2.8rem;
+            font-size: 2.1rem;
         }
 
         .price-badge {
-            font-size: 1.2rem;
-            padding: 1rem 1rem;
+            font-size: 0.78rem;
+            padding: 0.6rem 1.2rem;
         }
 
         .content-container {
@@ -1282,7 +1284,7 @@
         }
 
         .section-title {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
         }
 
         .property-stats {
@@ -1327,7 +1329,7 @@
         }
 
         .property-title {
-            font-size: 2.2rem;
+            font-size: 1.75rem;
         }
 
         .content-container {
@@ -1339,11 +1341,11 @@
         }
 
         .stat-icon {
-            font-size: 2rem;
+            font-size: 1.4rem;
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.5rem;
         }
 
         .unit-card {
@@ -1351,9 +1353,9 @@
         }
 
         .agent-avatar {
-            width: 70px;
-            height: 70px;
-            font-size: 2rem;
+            width: 64px;
+            height: 64px;
+            font-size: 1.6rem;
         }
     }
 

@@ -101,7 +101,7 @@ stylesheet discovered ~250 lines into the document. Cascade order is unchanged
             <span>{{ property.district.name.en }}, {{ property.city.name.en }}</span>
         </div>
         <div class="price-badge">
-            From {{ property.low_price|floatformat:0|add_commas }} AED
+            {% if property.low_price %}From {{ property.low_price|floatformat:0|add_commas }} AED{% else %}Price on Request{% endif %}
         </div>
     </div>
 </section>

@@ -35,8 +35,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ── x-opperp CRM webhook ──────────────────────────────────────────────────────
-XOPPERP_WEBHOOK_URL = "https://x-opperp.com/api/v1/integrations/webhooks/website-lead/"
-XOPPERP_API_TOKEN   = "47399e08-7406-4426-836f-bfc81bc09ae8"
+XOPPERP_WEBHOOK_URL = "https://one.kif-x.com/api/v1/integrations/webhooks/website-lead/"
+XOPPERP_API_TOKEN   = "347f1b49-738f-416e-8a4f-a8fd63b27d7a"
 
 def send_lead_to_xopperp(first_name, last_name, email, phone, message=""):
     """Send lead to x-opperp CRM. Never raises — won't break form flow."""
