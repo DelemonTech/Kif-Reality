@@ -25,7 +25,8 @@ from .developer_content import get_developer_content, faq_schema_json
 from .xopp_service import (
     XOPPService, get_catalog, filter_catalog, to_card, classify_property_type,
     get_available_counts, get_developers as xopp_get_developers, memo_get,
-    refresh_catalog_async, property_path,
+    refresh_catalog_async, property_path, get_property_page,
+    developer_index, developer_path, seo_slug,
 )
 
 import json
@@ -515,7 +516,7 @@ def property_redirect(request, property_id):
     """
     result = XOPPService.get_property(property_id)
     if result['success']:
-        slug = slugify(result['data'].get('title') or 'property') or 'property'
+        slug = seo_slug(result['data'].get('title'))
         return redirect('property_detail', slug=slug, pk=property_id, permanent=True)
 
     return redirect('property_detail', slug='property', pk=property_id, permanent=True)
@@ -657,7 +658,7 @@ def _map_property_for_template(prop, units=None):
     title = prop.get('title') or 'Property'
     return {
         'id': prop.get('id'),
-        'slug': slugify(title) or 'property',
+        'slug': seo_slug(title),
         'title': {'en': title},
         'description': {'en': _clean_description_html(prop.get('description'))},
         'cover': prop.get('cover') or '',
@@ -697,7 +698,9 @@ def property_detail(request, slug, pk):
     Display property details using slug in URL but pk (ID) for the X-OPP API call.
     URL format: /property/luxury-villa-palm-jumeirah-2376/
     """
-    result = XOPPService.get_property(pk)
+    # Detail + units together, served from a week-long cache that refreshes in
+    # the background (see get_property_page) - a cold page used to take 3-6 s.
+    result = get_property_page(pk)
     if not result['success']:
         # 404 only when X-OPP says the property is gone (Google drops it);
         # outages and rate limits are 503 so a live listing is never de-indexed.
@@ -705,19 +708,15 @@ def property_detail(request, slug, pk):
             "property_error": result['error'] or "Property not found or API error."
         }, status=404 if result.get('not_found') else 503)
 
-    raw = result['data']
-    units = XOPPService.get_all_units(pk) if raw.get('units_count') else []
+    raw = result['data']['property']
+    units = result['data']['units'] if raw.get('units_count') else []
     prop = _map_property_for_template(raw, units)
 
     title = prop['title']['en']
     correct_slug = prop['slug']
 
-    print(f"   URL slug: {slug}")
-    print(f"   Correct slug: {correct_slug}")
-
     # Only redirect if slugs are different
     if correct_slug != slug:
-        print(f"   ⚠️ Slug mismatch - redirecting to correct URL")
         return redirect('property_detail', slug=correct_slug, pk=pk, permanent=True)
 
     # Get district name
@@ -752,10 +751,6 @@ def property_detail(request, slug, pk):
     # Ensure slug is in property object for the template
     prop['slug'] = correct_slug
 
-    print(f"   ✅ Rendering template with property data")
-    print(f"   Property data keys: {prop.keys()}")
-    print(f"   Property slug: {prop.get('slug')}")
-
     return render(request, "property_detail.html", {
         "property": prop,
         "meta_title": meta_title
@@ -768,7 +763,8 @@ def unit_detail(request, property_slug, property_id, unit_id):
     URL format: /property/luxury-villa-2376/unit/123/
     """
 
-    units = XOPPService.get_all_units(property_id)
+    page = get_property_page(property_id)  # same cached detail + units as the property page
+    units = page['data']['units'] if page['success'] else []
     unit = next((u for u in units if str(u.get('id')) == str(unit_id)), None)
 
     if not unit:
@@ -776,11 +772,10 @@ def unit_detail(request, property_slug, property_id, unit_id):
             "unit_error": f"Unit #{unit_id} not found. Please contact us for availability."
         })
 
-    result = XOPPService.get_property(property_id)
-    if result['success']:
-        property_obj = _map_property_for_template(result['data'])
+    if page['success']:
+        property_obj = _map_property_for_template(page['data']['property'])
     else:
-        fallback_slug = property_slug if (property_slug and property_slug != 'property') else slugify(f"property-{property_id}")
+        fallback_slug = property_slug if (property_slug and property_slug != 'property') else f"property-{property_id}"
         property_obj = {
             "id": property_id,
             "slug": fallback_slug,
@@ -1351,6 +1346,7 @@ def _developers_with_counts():
         'location': d.get('address') or 'Dubai, UAE',
         'overview': d.get('overview') or '',
         'projects_count': counts.get((d.get('name') or '').strip().lower(), 0),
+        'url': developer_path(d.get('name') or ''),  # clean /developers/<slug>/
     } for d in devs if d.get('name')]
 
     return data
@@ -1446,19 +1442,122 @@ def preview_404(request):
 DEVELOPERS_PER_PAGE = 24
 
 
+TITLE_MAX = 60  # Google cuts titles off at roughly 60 characters
+
+
+def _developer_title(name):
+    """Page title for a developer, never longer than TITLE_MAX.
+
+    The old "{name} | KIF Realty – Dubai Developer Properties" added 46
+    characters, so most developer titles ran past 60 and an SEO crawl flagged
+    them. Use the most descriptive suffix that fits; shorten very long names.
+    """
+    name = ' '.join((name or '').split())
+    for suffix in (' Projects in Dubai | KIF Realty', ' | KIF Realty Dubai', ' | KIF Realty'):
+        if len(name) + len(suffix) <= TITLE_MAX:
+            return name + suffix
+    room = TITLE_MAX - len(' | KIF Realty') - 1
+    return name[:room].rstrip(' .,-(') + '… | KIF Realty'
+
+
+def _join_words(items, limit=None):
+    """'a', 'a and b', 'a, b and c' (first `limit` items)."""
+    items = [i for i in items if i][:limit] if limit else [i for i in items if i]
+    if len(items) <= 1:
+        return ''.join(items)
+    return ', '.join(items[:-1]) + ' and ' + items[-1]
+
+
+def _developer_summary(name):
+    """Server-rendered facts for a developer page, from the cached catalog.
+
+    Developer pages used to be filled in by JavaScript only, so crawlers saw
+    the same ~136 words of template text on all ~1,200 of them (thin,
+    duplicate content). This gives each page text of its own: the X-OPP
+    overview, a summary of its listings, stats and the first page of cards.
+    Cached data only - never calls the partner API inside the request.
+    """
+    from collections import Counter
+    matched = filter_catalog(get_catalog(cached_only=True), {'developer_exact': name})
+    record = next((d for d in xopp_get_developers(cached_only=True)
+                   if (d.get('name') or '').strip().lower() == name.strip().lower()), {}) or {}
+
+    districts = Counter(p['district'].strip() for p in matched if p['district'].strip())
+    types = Counter(t.strip() for p in matched for t in p['property_type'].split(',') if t.strip())
+    statuses = Counter(p['sales_status_name'].strip() for p in matched if p['sales_status_name'].strip())
+    prices = [p['price_from'] for p in matched if p.get('price_from')]
+
+    top_districts = [d for d, _ in districts.most_common(4)]
+    top_types = [t for t, _ in types.most_common(4)]
+    projects = [p['title'] for p in matched[:3] if p['title']]
+
+    sentences = []
+    if matched:
+        n = len(matched)
+        s = f"{name} currently has {n} project{'s' if n != 1 else ''} listed with KIF Realty"
+        if top_districts:
+            s += f" in {_join_words(top_districts)}" + (" and other Dubai communities" if len(districts) > 4 else "")
+        sentences.append(s + '.')
+        if projects:
+            sentences.append(f"Featured projects include {_join_words(projects)}.")
+        if top_types:
+            sentences.append(f"Available property types include {_join_words([t.lower() for t in top_types])}.")
+        if statuses:
+            sentences.append("Listings range across " + _join_words([s.lower() for s, _ in statuses.most_common(3)])
+                             + " stages, so ask an advisor which units are open right now.")
+        if prices:
+            sentences.append(f"Prices start from AED {min(prices):,.0f}, depending on the project and unit type.")
+    else:
+        sentences.append(f"{name} has no projects listed with KIF Realty at the moment. "
+                         "Speak to an advisor about upcoming launches and resale options.")
+
+    return {
+        'overview': ' '.join((record.get('overview') or '').split()),
+        'website': record.get('website') or '',
+        'summary': ' '.join(sentences),
+        'count': len(matched),
+        'communities': len(districts),
+        'types': len(types),
+        # same format the page script uses for the stats bar
+        'price_label': f"{min(prices) / 1e6:.1f}M" if prices else 'On Request',
+        'cards': [to_card(p) for p in matched[:12]],
+    }
+
+
+def _render_developer_page(request, name, canonical_path):
+    dev_content = get_developer_content(name)
+    return render(request, 'developer_detail.html', {
+        'facts': _developer_summary(name),
+        'page_title': _developer_title(name),
+        'MICROSERVICE_API': '/api',
+        # developer_detail.html uses this in its title, description, canonical
+        # and the script that loads the developer's listings.
+        'developer_name': name,
+        'canonical_path': canonical_path,
+        # Hand-written landing sections (main/developer_content.py), if any
+        'dev': dev_content,
+        'faq_schema': faq_schema_json(dev_content) if dev_content else '',
+    })
+
+
+def developer_detail(request, slug):
+    """One developer's page at its clean URL, /developers/<slug>/."""
+    name = developer_index()[0].get(slug)
+    if not name:
+        raise Http404("Developer not found")
+    return _render_developer_page(request, name, f'/developers/{slug}/')
+
+
 def developers(request):
-    # Templates build '<MICROSERVICE_API>/developers/' — point them at our own API
+    # Old developer URLs were /developers/?name=<Name>. Send them (and any
+    # bookmarks / indexed links) permanently to the clean /developers/<slug>/.
     if request.GET.get('name'):
-        dev_content = get_developer_content(request.GET['name'])
-        return render(request, 'developer_detail.html', {
-            'MICROSERVICE_API': '/api',
-            # developer_detail.html uses this in its title, description
-            # and canonical; without it all three rendered blank.
-            'developer_name': request.GET['name'],
-            # Hand-written landing sections (main/developer_content.py), if any
-            'dev': dev_content,
-            'faq_schema': faq_schema_json(dev_content) if dev_content else '',
-        })
+        name = request.GET['name']
+        path = developer_path(name)
+        if path:
+            return redirect(path, permanent=True)
+        # Unknown name or developer list not cached yet: still show the page.
+        return _render_developer_page(request, name, None)
     # Server-render the list so crawlers can read the developer names. The
     # page used to ship an empty grid that JavaScript filled in afterwards, so
     # Google indexed none of them. cached_only: never walk the partner API

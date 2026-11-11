@@ -21,7 +21,10 @@
 
 /* Page Header */
 .page-header {
-    padding: 8rem 3rem 4rem;
+    /* base.html gives page headers a fixed 70vh height; size to the content instead */
+    height: auto;
+    min-height: 0;
+    padding: 7.5rem 2rem 2.5rem;
     background: radial-gradient(ellipse at center, rgba(42, 42, 42, 0.3) 0%, var(--obsidian-black) 70%);
     text-align: center;
     position: relative;
@@ -47,8 +50,8 @@
 
 .header-content h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    margin-bottom: 0.6rem;
     font-weight: 400;
     background: var(--accent-gradient);
     -webkit-background-clip: text;
@@ -58,7 +61,7 @@
 }
 
 .header-content p {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     color: var(--text-muted);
     font-weight: 300;
     line-height: 1.7;
@@ -156,12 +159,129 @@
 }
 
 .story-image img {
+    display: block;  /* no baseline gap under the image */
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: all 0.4s ease;
 }
 
+/* Brand mark over the "Our Journey" photo: logo + name + "Dubai Real Estate",
+   straight on the dark top-left spotlight (no background), gold shimmer on the
+   name. It sits on a dark photo, so it keeps the bright gold in both themes
+   (light override in theme.css). */
+.story-brand {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.6rem;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: filter 0.4s ease;
+}
+.story-image:hover .story-brand { filter: drop-shadow(0 0 14px rgba(244, 208, 63, 0.3)); }
+.story-image .story-brand .story-brand-mark {
+    width: auto;
+    height: 46px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(244, 208, 63, 0.35)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+.story-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.story-brand-sub {
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(245, 241, 235, 0.82);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+.story-brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    white-space: nowrap;
+    background: linear-gradient(110deg, #e8b4a0 0%, #f4d03f 25%, #cd7f32 50%, #f4d03f 75%, #e8b4a0 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: storyBrandShimmer 6s linear infinite;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));  /* readable without a background */
+}
+@keyframes storyBrandShimmer {
+    to { background-position: -200% center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .story-brand-name { animation: none; }
+}
+@media (max-width: 480px) {
+    .story-brand { top: 0.9rem; left: 1rem; gap: 0.55rem; }
+    .story-image .story-brand .story-brand-mark { height: 32px; }
+    .story-brand-name { font-size: 1.15rem; }
+    .story-brand-sub { font-size: 0.55rem; letter-spacing: 0.24em; }
+}
+
+/* Brand lockup card: logo mark + "KIF Realty" as live text, styled like the
+   navbar brand. Theme tokens, so it follows the light/dark switch. */
+.story-image.brand-card {
+    aspect-ratio: 16 / 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    padding: 2rem;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(244, 208, 63, 0.12) 0%, transparent 60%),
+        var(--surface);
+    border: 1px solid var(--border);
+}
+.story-image.brand-card::before { opacity: 0.04; }
+.brand-lockup {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+}
+.story-image.brand-card .brand-mark {
+    width: auto;
+    height: clamp(64px, 7vw, 104px);
+    object-fit: contain;
+}
+.brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.6rem, 4.6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    white-space: nowrap;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.brand-tagline {
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-2);
+}
+@media (max-width: 480px) {
+    .brand-tagline { font-size: 0.66rem; letter-spacing: 0.2em; }
+}
 /* Vision & Mission Section */
 .vision-mission-section {
     padding: 1.2rem 1.2rem;
@@ -315,123 +435,193 @@
 }
 
 .timeline {
+    /* Milestones: card | year | card, alternating. The spine fills with gold as
+       you scroll (JS sets --tl-progress); years light up when it reaches them. */
     position: relative;
+    counter-reset: milestone;
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+    padding: 0.5rem 0;
+    --tl-progress: 0%;
 }
 
+/* Spine (faint) */
 .timeline::before {
     content: '';
     position: absolute;
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 3px;
-    background: var(--accent-gradient);
+    width: 2px;
     transform: translateX(-50%);
+    background: linear-gradient(to bottom, transparent, rgba(232, 180, 160, 0.28) 6%,
+                rgba(232, 180, 160, 0.28) 94%, transparent);
+}
+/* Spine (gold progress) */
+.timeline::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: var(--tl-progress);
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, transparent, var(--accent) 8%, #f4d03f);
+    box-shadow: 0 0 12px rgba(244, 208, 63, 0.45);
     border-radius: 2px;
+    transition: height 0.15s linear;
 }
 
 .timeline-item {
-    display: flex;
-    justify-content: flex-end;
-    /* padding: 2rem 0; */
     position: relative;
-    width: 50%;
-    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    align-items: center;
+    counter-increment: milestone;
 }
 
-.timeline-item:nth-child(even) {
-    align-self: flex-end;
-    justify-content: flex-start;
-    left: 50%;
+/* Short connector from the card to the year */
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 1px;
+    background: rgba(232, 180, 160, 0.45);
 }
-
-.timeline-item:nth-child(even) .timeline-content-item {
-    text-align: left;
-}
+.timeline-item:nth-child(odd)::before { left: calc(50% - 60px); }
+.timeline-item:nth-child(even)::before { left: calc(50% + 42px); }
 
 .timeline-year {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
-    background: var(--accent-gradient);
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    position: relative;
+    z-index: 3;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--obsidian-black);
-    z-index: 3;
-    box-shadow: 0 10px 25px rgba(232, 180, 160, 0.4);
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: var(--surface);
+    border: 2px solid rgba(232, 180, 160, 0.55);
+    box-shadow: 0 0 0 7px rgba(232, 180, 160, 0.07), var(--card-shadow);
+    transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
-
-.timeline-item:nth-child(even) .timeline-year {
-    left: 0px;
-}
-
-.timeline-item:nth-child(odd) .timeline-year {
-    right: -78px;
-    left: auto;
+/* Lit once the gold spine reaches it */
+.timeline-item.is-reached .timeline-year {
+    background: var(--accent-gradient);
+    color: var(--on-accent);
+    border-color: transparent;
+    box-shadow: 0 0 0 7px rgba(244, 208, 63, 0.12), 0 0 30px rgba(244, 208, 63, 0.35);
 }
 
 .timeline-content-item {
-    background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
-    border: 1px solid rgba(232, 180, 160, 0.1);
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin-right: 3rem;
-    text-align: right;
+    grid-row: 1;
     position: relative;
-    transition: all 0.4s ease;
-    backdrop-filter: blur(10px);
+    overflow: hidden;
+    padding: 2rem 2.2rem;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
+.timeline-item:nth-child(odd) .timeline-content-item { grid-column: 1; text-align: right; }
+.timeline-item:nth-child(even) .timeline-content-item { grid-column: 3; text-align: left; }
 
-.timeline-item:nth-child(even) .timeline-content-item {
-    margin-left: 3rem;
-    margin-right: 0;
-}
-
+/* Gold accent bar along the top, growing from the spine side on hover */
 .timeline-content-item::before {
     content: '';
     position: absolute;
-    top: 50%;
-    right: -10px;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border: 10px solid transparent;
-    border-left-color: var(--charcoal-gray);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-gradient);
+    transform: scaleX(0.3);
+    transition: transform 0.5s ease;
 }
+.timeline-item:nth-child(odd) .timeline-content-item::before { transform-origin: right; }
+.timeline-item:nth-child(even) .timeline-content-item::before { transform-origin: left; }
+.timeline-content-item:hover::before { transform: scaleX(1); }
 
-.timeline-item:nth-child(even) .timeline-content-item::before {
-    left: -10px;
-    right: auto;
-    border-left-color: transparent;
-    border-right-color: var(--charcoal-gray);
+/* Large faint step number (01-05) as a watermark */
+.timeline-content-item::after {
+    content: counter(milestone, decimal-leading-zero);
+    position: absolute;
+    bottom: -1.1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.07;
+    pointer-events: none;
 }
+.timeline-item:nth-child(odd) .timeline-content-item::after { left: 1.2rem; }
+.timeline-item:nth-child(even) .timeline-content-item::after { right: 1.2rem; }
 
 .timeline-content-item:hover {
-    transform: scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-    border-color: rgba(232, 180, 160, 0.3);
+    transform: translateY(-4px);
+    border-color: rgba(232, 180, 160, 0.35);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
 }
 
 .timeline-content-item h3 {
+    position: relative;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.6rem;
     font-weight: 600;
-    color: var(--text-light);
-    margin-bottom: 1rem;
+    color: var(--text);
+    margin-bottom: 0.7rem;
 }
 
 .timeline-content-item p {
-    color: var(--text-muted);
+    position: relative;
+    color: var(--text-2);
     font-weight: 300;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* Scroll reveal (only once the script has run, so no-JS still shows everything) */
+.timeline.js-reveal .timeline-item {
+    opacity: 0;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.timeline.js-reveal .timeline-item:nth-child(odd) { transform: translateX(-30px); }
+.timeline.js-reveal .timeline-item:nth-child(even) { transform: translateX(30px); }
+.timeline.js-reveal .timeline-item.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    .timeline.js-reveal .timeline-item { opacity: 1; transform: none; transition: none; }
+    .timeline::after, .timeline-year { transition: none; }
+}
+
+/* One column on tablets and phones: spine on the left */
+@media (max-width: 860px) {
+    .timeline::before,
+    .timeline::after { left: 30px; transform: none; }
+    .timeline-item { grid-template-columns: 60px 1fr; column-gap: 1rem; }
+    .timeline-item::before { display: none; }
+    .timeline-year { grid-column: 1; width: 60px; height: 60px; font-size: 1rem;
+                     box-shadow: 0 0 0 5px rgba(232, 180, 160, 0.07), var(--card-shadow); }
+    .timeline-item:nth-child(odd) .timeline-content-item,
+    .timeline-item:nth-child(even) .timeline-content-item { grid-column: 2; text-align: left; padding: 1.6rem 1.5rem; }
+    .timeline-item:nth-child(odd) .timeline-content-item::before { transform-origin: left; }
+    .timeline-item:nth-child(odd) .timeline-content-item::after,
+    .timeline-item:nth-child(even) .timeline-content-item::after { left: auto; right: 1rem; font-size: 4.5rem; }
+    .timeline.js-reveal .timeline-item:nth-child(odd),
+    .timeline.js-reveal .timeline-item:nth-child(even) { transform: translateY(20px); }
+    .timeline.js-reveal .timeline-item.is-visible { transform: none; }
 }
 
 /* Expertise Section */
@@ -809,36 +999,6 @@
 .expertise-card:nth-child(5) { animation-delay: 0.5s; }
 .expertise-card:nth-child(6) { animation-delay: 0.6s; }
 
-.timeline-item {
-    opacity: 0;
-    transform: translateX(-30px);
-    animation: slideInRight 0.8s ease forwards;
-}
-
-.timeline-item:nth-child(even) {
-    transform: translateX(30px);
-    animation: slideInLeft 0.8s ease forwards;
-}
-
-.timeline-item:nth-child(1) { animation-delay: 0.1s; }
-.timeline-item:nth-child(2) { animation-delay: 0.2s; }
-.timeline-item:nth-child(3) { animation-delay: 0.3s; }
-.timeline-item:nth-child(4) { animation-delay: 0.4s; }
-.timeline-item:nth-child(5) { animation-delay: 0.5s; }
-
-@keyframes slideInRight {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInLeft {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
 
 /* Mobile Responsiveness */
 @media (max-width: 1024px) {
@@ -847,46 +1007,21 @@
         gap: 3rem;
     }
     
-    .timeline::before {
-        left: 20px;
-    }
-    
-    .timeline-item {
-        width: 100%;
-        padding-left: 60px;
-    }
-    
-    .timeline-item:nth-child(even) {
-        left: 0;
-    }
-    
-    .timeline-year {
-        left: 20px !important;
-        right: auto !important;
-    }
-    
-    .timeline-content-item {
-        text-align: left;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-    
-    .timeline-content-item::before {
-        left: -10px !important;
-        right: auto !important;
-        border-left-color: transparent !important;
-        border-right-color: var(--charcoal-gray) !important;
-    }
 }
 
 @media (max-width: 768px) {
     .page-header {
-        padding: 6rem 2rem 3rem;
-        margin-top: 80px;
+        /* On mobile the content already starts below the fixed nav */
+        padding: 2.25rem 1.25rem 2rem;
+        margin-top: 0;
     }
-    
+
     .header-content h1 {
-        font-size: 3rem;
+        font-size: 2.5rem;
+    }
+
+    .header-content p {
+        font-size: 1rem;
     }
     
     .story-section,
@@ -953,10 +1088,6 @@
         padding: 2rem;
     }
     
-    .timeline-content-item {
-        padding: 2rem;
-    }
-    
     .floating-contact {
         bottom: 20px;
         right: 20px;
@@ -981,7 +1112,7 @@
 <section class="page-header">
     <div class="header-content">
         <h1>About KIF Realty</h1>
-        <p>From Vision to Realty – Real Estate Leadership Since 2011</p>
+        <p>From Vision to Realty – Real Estate Leadership </p>
     </div>
 </section>
 
@@ -999,9 +1130,43 @@
             <p>Whether you're searching for a studio apartment for sale in JVC, a penthouse in Downtown Dubai, or
                 commercial property in Business Bay, our mission is to provide clarity, value, and success.</p>
         </div>
+        {% comment %}
+        "Our Journey" image. Earlier versions are kept below, hidden, to restore if needed.
+        To switch back to the logo + text lockup: change the div to
+        class="story-image brand-card", hide the growth image, and un-comment the lockup.
+        For a photo: keep class="story-image" and un-comment the photo you want.
+        {% endcomment %}
         <div class="story-image">
+            {% comment %}
+            Previous image (analytics dashboard stock photo):
             <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=800&q=80"
                 alt="Dubai Real Estate Market" loading="lazy">
+            {% endcomment %}
+            {% comment %}
+            Dubai skyline photo:
+            <img src="{% static 'images/kif_3_hero.jpg' %}"
+                alt="Dubai skyline with the Burj Khalifa reflected in the water" loading="lazy"
+                width="900" height="549">
+            {% endcomment %}
+            {% comment %}
+            Logo + "KIF Realty" text lockup (needs class="story-image brand-card" on the div):
+            <div class="brand-lockup">
+                <img src="{% static 'images/logo-kif.png' %}" alt="" class="brand-mark" width="236" height="265">
+                <span class="brand-name">KIF Realty</span>
+            </div>
+            <p class="brand-tagline">Dubai Real Estate &middot; Since 2011</p>
+            {% endcomment %}
+            <img src="{% static 'images/about-growth.webp' %}"
+                alt="Gold rising chart and arrow representing property investment growth" loading="lazy"
+                width="1199" height="685">
+            {# Brand mark over the photo: logo + live "KIF Realty" / "Dubai Real Estate" text #}
+            <div class="story-brand" aria-hidden="true">
+                <img src="{% static 'images/logo-kif.png' %}" alt="" class="story-brand-mark" width="236" height="265">
+                <span class="story-brand-text">
+                    <span class="story-brand-name">KIF Realty</span>
+                    <span class="story-brand-sub">Dubai Real Estate</span>
+                </span>
+            </div>
         </div>
     </div>
 </section>
@@ -1193,4 +1358,46 @@
     </a>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// "Our Journey Through the Years": reveal milestones as they scroll in, fill the
+// gold spine up to the middle of the screen, and light each year it passes.
+(function () {
+    const timeline = document.querySelector('.timeline');
+    if (!timeline) return;
+    const items = Array.from(timeline.querySelectorAll('.timeline-item'));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Reveal (the hidden state only applies once this class is set)
+    if ('IntersectionObserver' in window && !reduce) {
+        timeline.classList.add('js-reveal');
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+        items.forEach(it => io.observe(it));
+    }
+
+    // Spine progress + lit years
+    let ticking = false;
+    function update() {
+        ticking = false;
+        const r = timeline.getBoundingClientRect();
+        const mark = window.innerHeight * 0.6;              // the spine fills to 60% down the screen
+        const filled = Math.min(Math.max(mark - r.top, 0), r.height);
+        timeline.style.setProperty('--tl-progress', filled + 'px');
+        items.forEach(it => {
+            const year = it.querySelector('.timeline-year').getBoundingClientRect();
+            it.classList.toggle('is-reached', year.top + year.height / 2 <= mark);
+        });
+    }
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+})();
+</script>
 {% endblock %}

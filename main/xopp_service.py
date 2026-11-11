@@ -131,6 +131,94 @@ class XOPPService:
         return units
 
 
+# ── Property page data (detail + units), stale-while-revalidate ──────────────
+# Property pages used to call the partner API on every cache miss: the detail,
+# then each units page, one after another, cached only 30 min. Crawlers visit
+# each of ~3,800 pages once, so nearly every visit was a miss (3-6 s, per an
+# SEO crawl report). Now: one combined entry per property, kept for a week and
+# refreshed in the background once it's older than PAGE_FRESH; a miss fetches
+# detail and units in parallel; `manage.py warm_property_pages` pre-fills it.
+PAGE_FRESH = 30 * 60
+PAGE_TTL = 7 * 24 * 3600
+_page_refreshing = set()
+_page_lock = threading.Lock()
+
+
+def _page_key(property_id) -> str:
+    return f'xopp_page_{property_id}'
+
+
+def _walk_units(property_id) -> List[Dict]:
+    """All units, walking pagination without the per-page cache. Empty on failure."""
+    units, page = [], 1
+    while True:
+        result = XOPPService._get(f'/properties/{property_id}/units/', {'page': page, 'page_size': 100})
+        if not result['success']:
+            break
+        units.extend(result['data'].get('results', []))
+        if not result['data'].get('next'):
+            break
+        page += 1
+    return units
+
+
+def fetch_property_page(property_id) -> Dict:
+    """Fetch detail + units from the partner API in parallel and cache them.
+
+    Returns {'success', 'data': {'property', 'units', 'fetched_at'}, 'error', ['not_found']}.
+    A failed fetch never overwrites a cached copy.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        detail_f = ex.submit(XOPPService._get, f'/properties/{property_id}/')
+        units_f = ex.submit(_walk_units, property_id)
+        detail, units = detail_f.result(), units_f.result()
+    if not detail['success']:
+        if detail.get('not_found'):
+            cache.delete(_page_key(property_id))  # removed from X-OPP: stop serving it
+        return detail
+    entry = {'property': detail['data'], 'units': units, 'fetched_at': time.time()}
+    cache.set(_page_key(property_id), entry, PAGE_TTL)
+    return {'success': True, 'data': entry, 'error': None}
+
+
+def _refresh_page_async(property_id):
+    """Re-fetch one property page in a daemon thread (single-flight per property)."""
+    with _page_lock:
+        if property_id in _page_refreshing:
+            return
+        _page_refreshing.add(property_id)
+
+    def run():
+        try:
+            fetch_property_page(property_id)
+        except Exception as e:
+            logger.warning(f"Background page refresh failed for {property_id}: {e}")
+        finally:
+            with _page_lock:
+                _page_refreshing.discard(property_id)
+
+    threading.Thread(target=run, daemon=True).start()
+
+
+def get_property_page(property_id) -> Dict:
+    """Detail + units for a property page. Serves the cached copy immediately
+    (refreshing it in the background when stale); fetches inline only on a
+    true miss. Same return shape as fetch_property_page()."""
+    entry = cache.get(_page_key(property_id))
+    if entry:
+        if time.time() - entry.get('fetched_at', 0) > PAGE_FRESH:
+            _refresh_page_async(property_id)
+        return {'success': True, 'data': entry, 'error': None}
+    return fetch_property_page(property_id)
+
+
+def page_age(property_id) -> Optional[float]:
+    """Seconds since this property's page data was fetched, or None if not cached."""
+    entry = cache.get(_page_key(property_id))
+    return time.time() - entry.get('fetched_at', 0) if entry else None
+
+
 # ── Full-catalog cache ────────────────────────────────────────────────────────
 # The partner API only filters by city / property_type / price. The site's UI
 # also filters by district, bedrooms, developer, area, title, status and splits
@@ -492,10 +580,50 @@ def warm_available_counts(catalog: List[Dict], limit: int = 120):
     return get_available_counts(res + com, block=True)
 
 
+def seo_slug(text: str, fallback: str = 'property') -> str:
+    """URL slug with only a-z, 0-9 and single hyphens.
+
+    slugify() keeps underscores, so a title like "Mudon Phase 3 _ Arabella"
+    became "mudon-phase-3-_-arabella", which SEO audits flag as unfriendly.
+    """
+    s = re.sub(r'[-_]+', '-', slugify(text or '')).strip('-')
+    return s or fallback
+
+
+def _build_developer_index():
+    """(slug -> name, lower-cased name -> slug) for every X-OPP developer.
+
+    Uses X-OPP's own slug (it equals slugify(name)); the ~30 developers without
+    one get slugify(name). Collisions get '-<id>' so every slug stays unique.
+    """
+    by_slug, by_name = {}, {}
+    for d in get_developers(cached_only=True):
+        name = (d.get('name') or '').strip()
+        if not name:
+            continue
+        slug = seo_slug(d.get('slug') or name, f"developer-{d.get('id')}")
+        if slug in by_slug:
+            slug = f"{slug}-{d.get('id')}"
+        by_slug[slug] = name
+        by_name[name.lower()] = slug
+    return (by_slug, by_name) if by_slug else None
+
+
+def developer_index():
+    """Cached (slug -> name, lower-cased name -> slug); ({}, {}) when cold."""
+    return memo_get('developer_index', _build_developer_index, ttl=600) or ({}, {})
+
+
+def developer_path(name: str) -> Optional[str]:
+    """Clean URL for a developer page (/developers/<slug>/), or None if unknown."""
+    slug = developer_index()[1].get((name or '').strip().lower())
+    return f'/developers/{slug}/' if slug else None
+
+
 def property_path(p: Dict) -> str:
     """Canonical detail URL for a catalog item — the exact slug property_detail
     expects, so links and sitemap entries never hit its slug-fix redirect."""
-    return f"/property/{slugify(p['title'] or 'Property') or 'property'}-{p['id']}/"
+    return f"/property/{seo_slug(p['title'])}-{p['id']}/"
 
 
 def to_card(p: Dict) -> Dict:
@@ -503,7 +631,7 @@ def to_card(p: Dict) -> Dict:
     title = p['title'] or 'Property'
     return {
         'id': p['id'],
-        'slug': slugify(title) or 'property',
+        'slug': seo_slug(title),
         'title': {'en': title},
         'city': {'name': {'en': p['city']}},
         'district': {'name': {'en': p['district']}},

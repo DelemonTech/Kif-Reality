@@ -77,6 +77,7 @@ urlpatterns = [
     path('mansions-for-sale', views.mansions, name='mansions-for-sale'),
     path('office-space-in-dubai', views.office_space, name='office-space-in-dubai'),
     path('developers/', views.developers, name='developers'),
+    path('developers/<slug:slug>/', views.developer_detail, name='developer_detail'),
 
     # Turnstile-verified relay for the popup + landing page enquiry forms
     path('api/lead/submit/', views.lead_submit, name='lead_submit'),

@@ -595,7 +595,7 @@ button.dev-page-btn:hover:not(:disabled):not(.active) { border-color: var(--acce
         {# No dev-card-appear class: it starts at opacity 0, and running that #}
         {# animation on ~1200 cards at once would stall the page. #}
         {% for d in developers %}
-        <a class="dev-card" href="{% url 'developers' %}?name={{ d.name|urlencode }}"
+        <a class="dev-card" href="{% if d.url %}{{ d.url }}{% else %}{% url 'developers' %}?name={{ d.name|urlencode }}{% endif %}"
            aria-label="View properties by {{ d.name }}">
             <div class="dev-card-logo">
                 {% if d.logo %}<img src="{{ d.logo }}" alt="{{ d.name }} logo" loading="lazy" decoding="async">{% else %}<div class="dev-logo-placeholder">{{ d.name|first|upper }}</div>{% endif %}
@@ -810,7 +810,8 @@ button.dev-page-btn:hover:not(:disabled):not(.active) { border-color: var(--acce
 
         const link = document.createElement('a');
         link.className = 'dev-card dev-card-appear';
-        link.href = `/developers/?name=${encodeURIComponent(name)}`;
+        // Clean /developers/<slug>/ from the API; the old ?name= form redirects to it anyway
+        link.href = dev.url || `/developers/?name=${encodeURIComponent(name)}`;
         link.style.animationDelay = `${Math.min(idx * 0.05, 0.8)}s`;
         link.setAttribute('aria-label', `View properties by ${name}`);
 

@@ -1,7 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from main.models import BlogPost
-from main.xopp_service import get_catalog, property_path
+from main.xopp_service import get_catalog, property_path, developer_index
 import logging
 from dotenv import load_dotenv
 
@@ -54,6 +54,22 @@ class BlogPostSitemap(Sitemap):
 
     def lastmod(self, obj):
         return obj.updated_at
+
+
+class DeveloperSitemap(Sitemap):
+    """Every developer page at its clean URL (/developers/<slug>/). Before
+    these existed, developer pages (?name=...) were missing from the sitemap."""
+    changefreq = 'weekly'
+    priority = 0.7
+    protocol = 'https'
+    limit = 500
+
+    def items(self):
+        # cached_only via developer_index: never walks the partner API here
+        return sorted(developer_index()[0])
+
+    def location(self, slug):
+        return reverse('developer_detail', kwargs={'slug': slug})
 
 
 class PropertySitemap(Sitemap):

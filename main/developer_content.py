@@ -1,4 +1,4 @@
-"""Hand-written SEO landing content for developer pages (/developers/?name=...).
+"""Hand-written SEO landing content for developer pages (/developers/<slug>/).
 
 developer_detail.html renders a generic page for every developer. When a
 developer has an entry here, the template adds these sections around the

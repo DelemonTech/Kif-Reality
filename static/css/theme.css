@@ -399,9 +399,12 @@ html[data-theme="light"] .page-header {
 }
 
 /* ---------- About / Careers ---------- */
+/* Logo badge on the "Our Journey" photo sits on a dark image: keep the original bright logo */
+html[data-theme="light"] .story-image .story-brand .story-brand-mark {
+  filter: drop-shadow(0 0 6px rgba(244, 208, 63, 0.35));
+}
 html[data-theme="light"] .timeline-section .section-title p { color: var(--lt-muted) !important; } /* inline style */
 html[data-theme="light"] .no-openings h3 { color: var(--lt-text); }
-
 /* ---------- Landing pages (retail, offplan, plots, warehouses, office space...) ----------
    Each template inlines the same dark CSS, starting with body { background: #030303 }.
    Hero sections sit on photos and are left as they are. */

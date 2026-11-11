@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if dev %}{{ dev.meta_title }}{% else %}{{ developer_name }} | KIF Realty – Dubai Developer Properties{% endif %}{% endblock %}
+{% block title %}{% if dev %}{{ dev.meta_title }}{% else %}{{ page_title|default:developer_name }}{% endif %}{% endblock %}
 
 {% block description %}{% if dev %}{{ dev.meta_description }}{% else %}Browse all properties by {{ developer_name }} available through KIF Realty. Luxury apartments, villas and off-plan projects in Dubai.{% endif %}{% endblock %}
 
 {% block canonical %}
-<link rel="canonical" href="https://kifrealty.com/developers/?name={{ developer_name|urlencode }}">
+{% if canonical_path %}<link rel="canonical" href="https://kifrealty.com{{ canonical_path }}">{% else %}<link rel="canonical" href="https://kifrealty.com/developers/?name={{ developer_name|urlencode }}">{% endif %}
 {% endblock %}
 
 {% load static %}
@@ -785,29 +785,31 @@
                 <a href="{% url 'contact' %}" class="btn-go"><i class="bi bi-chat-dots"></i> Speak to an Advisor</a>
             </div>
             {% else %}
-            <h1 class="dd-hero-name" id="ddHeroName">Loading…</h1>
-            <p class="dd-hero-sub" id="ddHeroSub">Fetching properties from this developer…</p>
+            {# Server-rendered so crawlers see the name and text without running JS #}
+            <h1 class="dd-hero-name" id="ddHeroName">{{ developer_name }}</h1>
+            <p class="dd-hero-sub" id="ddHeroSub">Explore all available properties developed by {{ developer_name }} — available exclusively through KIF Realty's curated network.</p>
             {% endif %}
             <div class="dd-hero-tags" id="ddHeroTags"></div>
         </div>
     </div>
 
     <!-- Stats bar: values from developer_content.py are fixed; the rest come from the listings -->
-    <div class="dd-stats-bar" id="ddStatsBar" {% if not dev %}style="display:none;"{% endif %}>
+    {# Values are server-rendered from the cached catalog; the script refreshes the non-fixed ones #}
+    <div class="dd-stats-bar" id="ddStatsBar" {% if not dev and not facts.count %}style="display:none;"{% endif %}>
         <div class="dd-stat-item">
-            <span class="dd-stat-num" id="statProps">—</span>
+            <span class="dd-stat-num" id="statProps">{{ facts.count|default:"—" }}</span>
             <span class="dd-stat-lbl">Properties</span>
         </div>
         <div class="dd-stat-item">
-            <span class="dd-stat-num" id="statMinPrice" {% if dev.stats.price %}data-fixed{% endif %}>{{ dev.stats.price|default:"—" }}</span>
+            <span class="dd-stat-num" id="statMinPrice" {% if dev.stats.price %}data-fixed{% endif %}>{% if dev.stats.price %}{{ dev.stats.price }}{% else %}{{ facts.price_label|default:"—" }}{% endif %}</span>
             <span class="dd-stat-lbl">Starting Price (AED)</span>
         </div>
         <div class="dd-stat-item">
-            <span class="dd-stat-num" id="statCities" {% if dev.stats.communities %}data-fixed{% endif %}>{{ dev.stats.communities|default:"—" }}</span>
+            <span class="dd-stat-num" id="statCities" {% if dev.stats.communities %}data-fixed{% endif %}>{% if dev.stats.communities %}{{ dev.stats.communities }}{% else %}{{ facts.communities|default:"—" }}{% endif %}</span>
             <span class="dd-stat-lbl">Communities</span>
         </div>
         <div class="dd-stat-item">
-            <span class="dd-stat-num" id="statTypes" {% if dev.stats.types %}data-fixed{% endif %}>{{ dev.stats.types|default:"—" }}</span>
+            <span class="dd-stat-num" id="statTypes" {% if dev.stats.types %}data-fixed{% endif %}>{% if dev.stats.types %}{{ dev.stats.types }}{% else %}{{ facts.types|default:"—" }}{% endif %}</span>
             <span class="dd-stat-lbl">Property Types</span>
         </div>
     </div>
@@ -850,6 +852,20 @@
         <p>{{ dev.listings_intro }}</p>
     </div>
 </section>
+{% else %}
+<!-- About (every other developer): X-OPP overview + a summary of its listings,
+     server-rendered so each page has text of its own -->
+<section class="dd-block" id="dd-listings">
+    <div class="dd-block-head dd-about flush">
+        <span class="dd-eyebrow">About the Developer</span>
+        <h2>About {{ developer_name }}</h2>
+        {% if facts.overview %}<p>{{ facts.overview }}</p>{% endif %}
+        <p>{{ facts.summary }}</p>
+        <p>KIF Realty is a licensed, RERA-certified Dubai brokerage. Our advisors can share the latest
+            price lists, payment plans and availability for {{ developer_name }} projects, and help you compare
+            them with similar developments across Dubai.</p>
+    </div>
+</section>
 {% endif %}
 
 <!-- Toolbar -->
@@ -875,6 +891,30 @@
 <!-- Grid -->
 <div class="dd-section{% if dev %} tight{% endif %}">
     <div class="dd-grid" id="propGrid">
+        {% if facts.cards %}
+        {# First page of listings, server-rendered (same markup as buildCard in the script, which takes over) #}
+        {% for p in facts.cards %}
+        <a class="dd-prop-card" href="{{ p.detail_url }}">
+            <div class="dd-prop-img">
+                {% if p.cover %}<img src="{{ p.cover }}" alt="{{ p.title.en }} by {{ developer_name }}, {{ p.location }}" loading="lazy">{% else %}<div class="dd-prop-img-placeholder"><i class="bi bi-building"></i></div>{% endif %}
+                {% if p.sales_status %}<span class="dd-prop-badge">{{ p.sales_status }}</span>{% endif %}
+            </div>
+            <div class="dd-prop-body">
+                {% if p.property_type %}<div class="dd-prop-type">{{ p.property_type }}</div>{% endif %}
+                <div class="dd-prop-title">{{ p.title.en }}</div>
+                <div class="dd-prop-location"><i class="bi bi-geo-alt-fill"></i>{{ p.location }}</div>
+                <div class="dd-prop-divider"></div>
+                <div class="dd-prop-meta">
+                    <div>
+                        <div class="dd-prop-price">{% if p.low_price %}AED {{ p.low_price|floatformat:"0g" }}{% else %}Price on Request{% endif %}</div>
+                        <div class="dd-prop-price-lbl">Starting From</div>
+                    </div>
+                    <div class="dd-prop-arrow"><i class="bi bi-arrow-right"></i></div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
         {% for i in "123456"|make_list %}
         <div class="dd-skeleton">
             <div class="skeleton-block sk-img"></div>
@@ -885,6 +925,7 @@
             </div>
         </div>
         {% endfor %}
+        {% endif %}
     </div>
     <nav class="dd-pagination" id="propPager" aria-label="Property pages" hidden></nav>
 </div>
@@ -975,9 +1016,8 @@
 {% block extra_js %}
 <script>
 (function () {
-    /* ── Read developer name from URL ── */
-    const params     = new URLSearchParams(window.location.search);
-    const devName    = params.get('name') || '';
+    /* ── Developer name (from the server: the URL is /developers/<slug>/) ── */
+    const devName    = "{{ developer_name|escapejs }}";
     const devNameEnc = encodeURIComponent(devName);
 
     if (!devName) {
@@ -1012,7 +1052,7 @@
     ddBreadName.textContent = devName;
     ddLogoInit.textContent  = devName[0] || '?';
     if (!hasContent) {
-        document.title = `${devName} | KIF Realty – Dubai Developer Properties`;
+        /* <title> comes from the server (kept under 60 chars) - don't overwrite it */
         ddHeroName.textContent  = devName;
         ddCtaTitle.textContent  = `Interested in ${devName}?`;
         ddHeroSub.textContent   = `Explore all available properties developed by ${devName} — available exclusively through KIF Realty's curated network.`;
@@ -1220,10 +1260,10 @@
         const type     = prop.property_type || '';
         const status   = prop.sales_status?.en || prop.sales_status || '';
 
-        /* Build detail URL */
+        /* Detail URL: the API's canonical one (same slug rule as the server), so no redirect hop */
         const propId   = prop.id;
         const slug     = (title || 'property').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-        const href     = propId ? `/property/${slug}-${propId}/` : `/properties/?developer=${devNameEnc}`;
+        const href     = prop.detail_url || (propId ? `/property/${slug}-${propId}/` : `/properties/?developer=${devNameEnc}`);
 
         const a = document.createElement('a');
         a.className = 'dd-prop-card';

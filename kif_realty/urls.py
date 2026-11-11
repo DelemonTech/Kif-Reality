@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap, index as sitemap_index
 
-from .sitemaps import StaticViewSitemap, BlogPostSitemap,  PropertySitemap
+from .sitemaps import StaticViewSitemap, BlogPostSitemap,  PropertySitemap, DeveloperSitemap
 # from .sitemaps import BlogSitemap, StaticViewSitemap, PropertySitemap
 # from .sitemaps import (
 #     BlogSitemap, 
@@ -17,7 +17,8 @@ from main import views as main_views  # import your app's views
 sitemaps_dict = {
     'blogs': BlogPostSitemap,
     'static': StaticViewSitemap,
-    'properties': PropertySitemap,   
+    'properties': PropertySitemap,
+    'developers': DeveloperSitemap,
 }
 
 

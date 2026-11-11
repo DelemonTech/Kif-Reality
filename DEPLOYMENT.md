@@ -146,6 +146,19 @@ Restore the `.bak` only if `nginx -t` **fails**.
   ```bash
   venv/bin/python manage.py refresh_xopp_cache
   ```
+- **Property pages** (`/property/<slug>-<id>/`) keep each property's detail + units in the
+  cache for 7 days and refresh them in the background once older than 30 minutes, so
+  visitors are served instantly. Only a page that was never loaded calls X-OPP inline
+  (1–3 s). To keep even first visits (crawlers) fast, pre-load every page nightly, at a
+  quiet hour:
+  ```
+  15 3 * * * cd $HOME/Kif-Reality && venv/bin/python manage.py warm_property_pages >> $HOME/warm_pages.log 2>&1
+  ```
+  A full run takes about 80 minutes (2 properties at a time) and skips pages fetched in the
+  last 20 hours. It overlaps a few `refresh_xopp` runs; it backs off and retries when the
+  partner API rate-limits (429), and anything it misses still loads live on first visit.
+  If `~/warm_pages.log` shows many failures, lower the load with `--workers 1`.
+  Run it once by hand after deploying this change.
 - The property sitemap (`/sitemap-properties.xml?p=N`) and the A–Z index
   (`/properties/all/`) are both built from that cached catalog, with the same URL
   scheme as the property pages (`main.xopp_service.property_path`).
@@ -250,6 +263,7 @@ Schedule the catalog refresh (`crontab -e` as `ubuntu`) — the only refresh sou
 
 ```
 */30 * * * * cd $HOME/Kif-Reality && venv/bin/python manage.py refresh_xopp >> $HOME/refresh_xopp.log 2>&1
+15 3 * * * cd $HOME/Kif-Reality && venv/bin/python manage.py warm_property_pages >> $HOME/warm_pages.log 2>&1
 ```
 
 Nginx: add the gzip lines from §4, and a site `server {}` block that proxies to Gunicorn and
