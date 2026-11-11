@@ -99,14 +99,17 @@ def _sidebar_categories(top_n=8):
     return categories, top
 
 
+BLOG_POSTS_PER_PAGE = 12  # shown two per row
+
+
 def blog_list(request):
     """Display blog list page with pagination and filtering"""
+    # Featured posts first (they lead page 1 with a "Featured" badge), then
+    # newest. The featured post used to sit in its own full-width block above
+    # the list - and was left out of the list, so searches never found it.
     posts = BlogPost.objects.filter(status='published').select_related(
         'category', 'author'
-    ).prefetch_related('tags').order_by('-published_at')
-
-    # Get featured post
-    featured_post = posts.filter(is_featured=True).first()
+    ).prefetch_related('tags').order_by('-is_featured', '-published_at')
 
     # Filter by category if specified
     category_slug = request.GET.get('category')
@@ -128,12 +131,8 @@ def blog_list(request):
             Q(tags__name__icontains=search_query)
         ).distinct()
 
-    # Exclude featured post from the paginated list
-    if featured_post:
-        posts = posts.exclude(id=featured_post.id)
-
     # Pagination
-    paginator = Paginator(posts, 6)  # 6 posts per page
+    paginator = Paginator(posts, BLOG_POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -146,7 +145,6 @@ def blog_list(request):
     ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
 
     context = {
-        'featured_post': featured_post,
         'page_obj': page_obj,
         'categories': categories,
         'top_categories': top_categories,
@@ -244,9 +242,9 @@ def blog_category(request, slug):
     posts = BlogPost.objects.filter(
         category=category,
         status='published'
-    ).select_related('author').prefetch_related('tags')
+    ).select_related('author').prefetch_related('tags').order_by('-is_featured', '-published_at')
 
-    paginator = Paginator(posts, 6)
+    paginator = Paginator(posts, BLOG_POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -267,9 +265,9 @@ def blog_tag(request, slug):
     posts = BlogPost.objects.filter(
         tags=tag,
         status='published'
-    ).select_related('category', 'author').prefetch_related('tags')
+    ).select_related('category', 'author').prefetch_related('tags').order_by('-is_featured', '-published_at')
 
-    paginator = Paginator(posts, 6)
+    paginator = Paginator(posts, BLOG_POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -344,7 +342,7 @@ def blog_search(request):
             status='published'
         ).distinct().select_related('category', 'author').prefetch_related('tags')
 
-    paginator = Paginator(posts, 6)
+    paginator = Paginator(posts, BLOG_POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
