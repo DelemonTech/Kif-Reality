@@ -189,3 +189,16 @@
   .navbar-brand { font-size: 1.35rem; }
   .nav-links a { padding: 0.5rem 0.55rem; font-size: 0.86rem; }
 }
+/* Room for the theme toggle (static/css/theme.css) after the calculator.
+   The toggle takes ~66px (button + margin + navbar gap); the 8 top-level
+   links each give up ~4px per side so they stay exactly where they were
+   before the toggle existed. Dropdown items are not affected. */
+@media (min-width: 993px) {
+  .nav-links > li > a.nav-link { padding-left: calc(1rem - 4.2px); padding-right: calc(1rem - 4.2px); }
+}
+@media (min-width: 993px) and (max-width: 1500px) {
+  .nav-links > li > a.nav-link { padding-left: calc(0.7rem - 4.2px); padding-right: calc(0.7rem - 4.2px); }
+}
+@media (min-width: 993px) and (max-width: 1280px) {
+  .nav-links > li > a.nav-link { padding-left: calc(0.55rem - 4.2px); padding-right: calc(0.55rem - 4.2px); }
+}

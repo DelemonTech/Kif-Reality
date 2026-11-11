@@ -9,7 +9,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}KIF Realty - Premium Dubai Real Estate{% endblock %}</title>    
+    {# Apply a saved light theme before first paint (no dark flash) #}
+    <script>try{if(localStorage.getItem('kif-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+    <title>{% block title %}KIF Realty - Premium Dubai Real Estate{% endblock %}</title>
     <meta name="description"
         content="{% block description %}
  	
@@ -83,6 +85,19 @@ would open a connection the image request cannot reuse.
             --dark: #0a0a0a;
             --shadow: rgba(0, 0, 0, 0.3);
             --gradient-primary: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+
+            /* Theme tokens: use these for any new page or section. They switch
+               automatically with the light/dark toggle (light values live in
+               static/css/theme.css). Never hard-code #000/#111/#fff etc. */
+            --bg: #0a0a0a;                          /* page background */
+            --surface: #1a1a1a;                     /* cards, panels, modals */
+            --surface-2: #2a2a2a;                   /* inputs, nested boxes */
+            --text: #ffffff;                        /* headings, body text */
+            --text-2: #b0b0b0;                      /* secondary text */
+            --border: rgba(232, 180, 160, 0.15);
+            --accent: #e8b4a0;                      /* gold text, icons, links */
+            --on-accent: #0a0a0a;                   /* text on gold buttons */
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
 
         * {
@@ -1449,6 +1464,8 @@ would open a connection the image request cannot reuse.
     </style>   
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     {% block extra_css %}{% endblock %}
+    {# After the page's own CSS so the light overrides win #}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 </head>
 
 <body>
@@ -1485,6 +1502,13 @@ would open a connection the image request cannot reuse.
             <img src="{% static 'images/logo-kif.png' %}?v=2" class="modal-logo" alt="KIF Realty - Dubai Real Estate Logo" width="236" height="265"  loading="lazy">
             <span>KIF Realty</span>
         </a>
+
+        {# Light/dark switch: moon in dark mode, sun in light mode (static/css/theme.css) #}
+        <button type="button" class="theme-toggle" id="themeToggle"
+            aria-label="Switch to light theme" title="Switch to light theme">
+            <i class="fas fa-moon" aria-hidden="true"></i>
+            <i class="fas fa-sun" aria-hidden="true"></i>
+        </button>
 
         <button class="mobile-toggle" aria-label="Toggle menu" id="mobileToggle">
             <i class="fas fa-bars"></i>
@@ -2382,6 +2406,51 @@ would open a connection the image request cannot reuse.
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K9RR26QK" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+
+    <script>
+    // Light/dark theme switch (styles in static/css/theme.css)
+    (function () {
+        const root = document.documentElement;
+        const btn = document.getElementById('themeToggle');
+        if (!btn) return;
+
+        function label() {
+            const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            btn.setAttribute('aria-label', `Switch to ${next} theme`);
+            btn.title = `Switch to ${next} theme`;
+        }
+        label();
+
+        // Chart.js charts (landing pages) set white text in JS; recolour them per theme
+        function themeCharts() {
+            if (!window.Chart || !Chart.instances) return;
+            const light = root.getAttribute('data-theme') === 'light';
+            const text = light ? '#5c544a' : '#fff';
+            const grid = light ? 'rgba(160, 120, 40, 0.15)' : '#2a2a2a';
+            Object.values(Chart.instances).forEach(function (chart) {
+                const o = chart.options || {};
+                if (o.plugins && o.plugins.legend && o.plugins.legend.labels) o.plugins.legend.labels.color = text;
+                Object.values(o.scales || {}).forEach(function (s) {
+                    if (s.ticks) s.ticks.color = text;
+                    if (s.grid) s.grid.color = grid;
+                });
+                chart.update('none');
+            });
+        }
+        window.addEventListener('load', themeCharts);
+
+        btn.addEventListener('click', function () {
+            const light = root.getAttribute('data-theme') !== 'light';
+            root.classList.add('theme-switching');  // brief colour transition
+            if (light) root.setAttribute('data-theme', 'light');
+            else root.removeAttribute('data-theme');
+            try { localStorage.setItem('kif-theme', light ? 'light' : 'dark'); } catch (e) {}
+            label();
+            themeCharts();
+            setTimeout(function () { root.classList.remove('theme-switching'); }, 400);
+        });
+    })();
+    </script>
 
     {% block extra_js %}{% endblock %}
 

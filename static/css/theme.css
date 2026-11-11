@@ -1,0 +1,529 @@
+/* =========================================================
+   Light / dark theme switch (every page that extends base.html)
+   Light mode = html[data-theme="light"], set by the toggle in the navbar and
+   remembered in localStorage ("kif-theme"). Dark stays the default, so the
+   dark rules elsewhere are untouched.
+
+   Most colours come from the variables below. Pages that hard-code dark
+   colours get their own override section further down.
+
+   ---- BUILDING A NEW PAGE OR SECTION (so it follows the theme) ----
+   1. Extend base.html. That gives the toggle and the saved theme for free.
+   2. Colour everything with the theme tokens, never hard-coded colours:
+        var(--bg)          page / section background
+        var(--surface)     cards, panels, modals
+        var(--surface-2)   inputs, nested boxes
+        var(--text)        headings and body text
+        var(--text-2)      secondary text
+        var(--border)      borders, dividers
+        var(--accent)      gold text, icons, links
+        var(--accent-gradient) + color: var(--on-accent)   gold buttons
+        var(--card-shadow) card shadows
+      e.g.  .my-card { background: var(--surface); color: var(--text);
+                       border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+   3. Text over a photo or video: put it inside an element with class
+      "hero" (or add your class to the "Heroes and banners" rule below) so it
+      keeps white text in light mode.
+   4. Check the page in both themes before shipping. If you must use a
+      hard-coded colour, add a light override for it in this file.
+   ========================================================= */
+
+/* ---------- Toggle button (both themes) ---------- */
+.theme-toggle {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 208, 63, 0.45);
+  background: rgba(244, 208, 63, 0.06);
+  color: #f4d03f;
+  font-size: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.4s ease;
+}
+.theme-toggle:hover { background: rgba(244, 208, 63, 0.14); transform: rotate(-18deg); }
+.theme-toggle:focus-visible { outline: 2px solid #f4d03f; outline-offset: 3px; }
+.theme-toggle .fa-sun { display: none; }
+html[data-theme="light"] .theme-toggle .fa-sun { display: inline-block; }
+html[data-theme="light"] .theme-toggle .fa-moon { display: none; }
+
+@media (min-width: 993px) {
+  /* Right after the calculator, with the same small gap as between nav buttons.
+     margin-left:auto on the links keeps links + toggle together on the right
+     (otherwise the navbar's space-between pushes the toggle to the far edge). */
+  .navbar > .nav-links { margin-left: auto; }
+  .theme-toggle { order: 3; margin-left: 0.4rem; }
+}
+@media (max-width: 992px) {
+  /* Next to the hamburger */
+  .theme-toggle { margin-left: auto; width: 40px; height: 40px; font-size: 1.05rem; }
+}
+
+/* Smooth colour change while switching (class added for ~0.4s by the toggle) */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease,
+              fill 0.35s ease !important;
+}
+
+/* =========================================================
+   LIGHT THEME
+   ========================================================= */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  /* Same variable names as base.html, light values */
+  --obsidian-black: #f7f3ec;   /* page background */
+  --charcoal-gray: #ffffff;    /* cards */
+  --medium-gray: #f1eadf;
+  --soft-gray: #d8ccbb;
+  --light-gray: #f1eadf;
+  --dark: #f7f3ec;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --text-light: #1d1a16;       /* main text */
+  --text-muted: #5c544a;
+  --rose-gold: #a5643f;        /* deeper so it reads on cream */
+  --shadow: rgba(80, 60, 30, 0.12);
+  /* Deeper gold: readable as text on cream, and white icons stay readable on it */
+  --accent-gradient: linear-gradient(135deg, #b8754d, #b8860b, #8f5a26);
+  --gradient-primary: var(--accent-gradient);
+
+  /* index-animations.css */
+  --gold-2: #b8860b;
+  --gold-3: #8f5a26;
+  --gold-line: rgba(184, 134, 11, 0.35);
+  --gold-flow: linear-gradient(110deg, #a8643f 0%, #b8860b 25%, #8a5523 50%, #b8860b 75%, #a8643f 100%);
+
+  /* Theme tokens (dark values in base.html :root) - what new pages should use */
+  --bg: #f7f3ec;
+  --surface: #ffffff;
+  --surface-2: #faf6ef;
+  --text: #1d1a16;
+  --text-2: #5c544a;
+  --border: rgba(160, 120, 40, 0.2);
+  --accent: #a5643f;
+  --on-accent: #ffffff;
+  --card-shadow: 0 6px 22px rgba(80, 60, 30, 0.08);
+
+  /* local tokens for this file */
+  --lt-text: #1d1a16;
+  --lt-muted: #5c544a;
+  --lt-gold: #8f5f2e;
+  --lt-card: #ffffff;
+  --lt-soft: #faf6ef;
+  --lt-border: rgba(160, 120, 40, 0.2);
+  --lt-shadow: 0 6px 22px rgba(80, 60, 30, 0.08);
+}
+html[data-theme="light"] body { background: var(--obsidian-black); color: var(--lt-text); }
+
+/* Heroes and banners on photos/video: keep their original gold and white text */
+html[data-theme="light"] .hero,
+html[data-theme="light"] .property-hero,
+html[data-theme="light"] .cta-section:has(.cta-overlay) {
+  --gold-2: #f4d03f;
+  --gold-3: #cd7f32;
+  --gold-line: rgba(244, 208, 63, 0.35);
+  --gold-flow: linear-gradient(110deg, #e8b4a0 0%, #f4d03f 25%, #cd7f32 50%, #f4d03f 75%, #e8b4a0 100%);
+  --accent-gradient: linear-gradient(135deg, #e8b4a0, #f4d03f, #cd7f32);
+  --rose-gold: #e8b4a0;
+  --text-light: #ffffff;
+  --text-muted: #d0d0d0;
+  --obsidian-black: #0a0a0a;  /* dark text on gold badges/buttons */
+  --charcoal-gray: #1a1a1a;
+  --medium-gray: #2a2a2a;
+  --bg: #0a0a0a;
+  --surface: #1a1a1a;
+  --surface-2: #2a2a2a;
+  --text: #ffffff;
+  --text-2: #d0d0d0;
+  --border: rgba(232, 180, 160, 0.15);
+  --accent: #e8b4a0;
+  --on-accent: #0a0a0a;
+}
+
+/* ---------- Toggle button in light mode ---------- */
+html[data-theme="light"] .theme-toggle {
+  color: #8f5a26;
+  border-color: rgba(143, 90, 38, 0.4);
+  background: rgba(184, 134, 11, 0.08);
+}
+html[data-theme="light"] .theme-toggle:hover { background: rgba(184, 134, 11, 0.16); }
+html[data-theme="light"] .theme-toggle:focus-visible { outline-color: #8f5a26; }
+
+/* ---------- Navbar ---------- */
+html[data-theme="light"] .navbar,
+html[data-theme="light"] .navbar.scrolled {
+  background: rgba(250, 246, 239, 0.95);
+  border-bottom: 1px solid var(--lt-border);
+  box-shadow: 0 6px 24px rgba(80, 60, 30, 0.08);
+}
+html[data-theme="light"] .nav-links a { color: #2b2620; }
+html[data-theme="light"] .nav-links a:hover { color: #8a5d0c; background: rgba(184, 134, 11, 0.08); }
+html[data-theme="light"] .nav-links a.active {
+  color: #8a5d0c;
+  background: rgba(184, 134, 11, 0.08);
+  border-color: rgba(184, 134, 11, 0.6);
+  box-shadow: 0 0 14px rgba(184, 134, 11, 0.18);
+}
+html[data-theme="light"] .nav-links .nav-link i.nl-ic { color: #b07d12; }
+html[data-theme="light"] .nav-calc .nav-link { color: #2b2620; }
+html[data-theme="light"] .nav-links > .nav-item.dropdown:not(.nav-calc),
+html[data-theme="light"] .nav-calc { border-color: rgba(160, 120, 40, 0.3); }
+html[data-theme="light"] .dropdown-menu,
+html[data-theme="light"] .nav-item.dropdown .dropdown-menu {
+  background: #ffffff;
+  border-color: var(--lt-border);
+  box-shadow: 0 20px 40px rgba(80, 60, 30, 0.12);
+}
+html[data-theme="light"] .dropdown-menu a { color: #2b2620; }
+html[data-theme="light"] .dropdown-menu a i { color: #a5643f; }
+html[data-theme="light"] .dropdown-menu a:hover { color: #8a5d0c; background: rgba(184, 134, 11, 0.08); }
+
+/* Mobile drawer (base.html uses !important on these) */
+@media (max-width: 992px) {
+  html[data-theme="light"] .nav-links { box-shadow: 2px 0 20px rgba(80, 60, 30, 0.15); }
+  html[data-theme="light"] .nav-link,
+  html[data-theme="light"] .mobile-header .navbar-brand,
+  html[data-theme="light"] .mobile-header .navbar-brand span,
+  html[data-theme="light"] .mobile-contact { color: #2b2620 !important; }
+  html[data-theme="light"] .dropdown-menu a { color: #2b2620 !important; }
+  html[data-theme="light"] .nav-item.dropdown .dropdown-menu { background: rgba(184, 134, 11, 0.06); box-shadow: none; }
+  html[data-theme="light"] .mobile-menu-backdrop { background: rgba(40, 30, 15, 0.35); }
+}
+
+/* Left social rail */
+html[data-theme="light"] .social-rail {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(184, 134, 11, 0.5);
+  box-shadow: 0 0 18px rgba(184, 134, 11, 0.15);
+}
+html[data-theme="light"] .social-rail a { color: #2b2620; }
+html[data-theme="light"] .social-rail a:hover { color: #8a5d0c; }
+html[data-theme="light"] .social-rail a + a::before { background: rgba(184, 134, 11, 0.3); }
+
+/* ---------- Gold gradient headings: deeper gold on cream ---------- */
+html[data-theme="light"] .heading-left h2,
+html[data-theme="light"] .location-head,
+html[data-theme="light"] .why-choose-kif-left h2,
+html[data-theme="light"] .kif-count,
+html[data-theme="light"] .services-left h2,
+html[data-theme="light"] .section-title-new h2 {
+  background-image: var(--gold-flow);
+}
+
+/* ---------- Latest Properties ---------- */
+html[data-theme="light"] .featured-properties { background: var(--obsidian-black); color: var(--lt-text); }
+html[data-theme="light"] .heading-right { color: var(--lt-muted); }
+html[data-theme="light"] .property-card {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .property-card:hover { box-shadow: 0 18px 40px rgba(80, 60, 30, 0.16); }
+html[data-theme="light"] .property-info { background: var(--lt-card); }
+html[data-theme="light"] .property-info h3,
+html[data-theme="light"] .learn-more { color: var(--lt-gold); }
+html[data-theme="light"] .learn-more:hover { color: var(--lt-text); }
+html[data-theme="light"] .property-info h4 { color: var(--lt-text); }
+html[data-theme="light"] .property-info h4 span { color: var(--lt-muted); }
+html[data-theme="light"] .property-info p { color: #6b6258; }
+html[data-theme="light"] .skeleton-card { background: var(--lt-card); border-color: var(--lt-border); }
+html[data-theme="light"] .skeleton-card .sk-img,
+html[data-theme="light"] .skeleton-card .sk-line {
+  background: linear-gradient(90deg, #efe7da 0%, #f7f1e7 50%, #efe7da 100%);
+  background-size: 200% 100%;
+}
+
+/* ---------- Services ---------- */
+html[data-theme="light"] .services-left p { color: var(--lt-muted); }
+html[data-theme="light"] .service-card-1 {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .service-card-1:hover {
+  background: #fffaf0;
+  border-color: rgba(184, 134, 11, 0.5);
+  box-shadow: 0 18px 40px rgba(80, 60, 30, 0.14);
+}
+html[data-theme="light"] .service-card-1 h3 { color: var(--lt-text); }
+html[data-theme="light"] .service-card-1 p { color: var(--lt-muted); }
+html[data-theme="light"] .service-card-1 svg { fill: rgba(184, 134, 11, 0.45); }
+html[data-theme="light"] .real-estate-image { box-shadow: 0 10px 30px rgba(80, 60, 30, 0.15); }
+
+/* ---------- Locations carousel ---------- */
+html[data-theme="light"] .carousel-wrapper { background: transparent; }
+html[data-theme="light"] .day-card {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .day-card:hover { box-shadow: 0 18px 40px rgba(80, 60, 30, 0.16); }
+html[data-theme="light"] .day-card .meta { background: var(--lt-card); }
+html[data-theme="light"] .meta { color: var(--lt-text); }
+html[data-theme="light"] .meta .location { color: var(--lt-gold); }
+html[data-theme="light"] .meta .desc { color: var(--lt-muted); }
+html[data-theme="light"] .arrow { background: rgba(255, 255, 255, 0.95); color: var(--lt-gold); border-color: var(--lt-border); }
+html[data-theme="light"] .arrow:hover { background: #b8860b; color: #fff; }
+
+/* ---------- Why Choose KIF ---------- */
+html[data-theme="light"] .why-choose-kif { color: var(--lt-text); }
+html[data-theme="light"] .why-choose-kif-right .intro { color: var(--lt-muted); }
+html[data-theme="light"] .kif-feature { border-bottom-color: rgba(160, 120, 40, 0.22); }
+html[data-theme="light"] .kif-feature:hover { background: rgba(184, 134, 11, 0.06); }
+html[data-theme="light"] .kif-count-wrapper span { color: #a77f12; }
+html[data-theme="light"] .kif-text h3 { color: var(--lt-text); }
+html[data-theme="light"] .kif-text p { color: var(--lt-muted); }
+
+/* Logo (static/images/logo-kif.png, everywhere it appears): shift its bright
+   yellow to the deeper gold of the light-mode "KIF Realty" text, and outline
+   the white "KIF REALTY" lettering so it still reads on cream. */
+html[data-theme="light"] img[src*="logo-kif"] {
+  filter: sepia(0.6) saturate(1.9) hue-rotate(-16deg) brightness(0.74)
+          drop-shadow(0 0 0.6px rgba(40, 28, 10, 0.9)) drop-shadow(0 0 0.6px rgba(40, 28, 10, 0.9));
+}
+
+/* ---------- Calculators ---------- */
+html[data-theme="light"] .section-title-new p,
+html[data-theme="light"] .section-title p { color: var(--lt-muted); }
+html[data-theme="light"] .section-title h2 { color: var(--rose-gold); }
+html[data-theme="light"] .calculator-card {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .calculator-card:hover { box-shadow: 0 18px 40px rgba(80, 60, 30, 0.12); }
+html[data-theme="light"] .calculator-header h3,
+html[data-theme="light"] .form-group label,
+html[data-theme="light"] .fee-value { color: var(--lt-text); }
+html[data-theme="light"] .calculator-header p,
+html[data-theme="light"] .result-label-small,
+html[data-theme="light"] .slider-values,
+html[data-theme="light"] .fee-label { color: var(--lt-muted); }
+html[data-theme="light"] .result-display,
+html[data-theme="light"] .fees-breakdown,
+html[data-theme="light"] .button-group {
+  background: var(--lt-soft);
+  border-color: var(--lt-border);
+}
+html[data-theme="light"] .result-value-large,
+html[data-theme="light"] .result-value-medium,
+html[data-theme="light"] .percentage-value,
+html[data-theme="light"] .fees-breakdown h4,
+html[data-theme="light"] .fee-item:last-child { color: #a5643f; text-shadow: none; }
+html[data-theme="light"] .editable-input {
+  color: var(--lt-text);
+  background: #ffffff;
+  border-color: rgba(160, 120, 40, 0.3);
+}
+html[data-theme="light"] .editable-input:focus { border-color: #b8860b; box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12); }
+html[data-theme="light"] .status-btn { color: var(--lt-muted); border-color: var(--lt-border); }
+html[data-theme="light"] .status-btn .rate-badge { color: #a77f12; }
+html[data-theme="light"] .status-btn:not(.active):hover { color: var(--lt-text); background: rgba(184, 134, 11, 0.08); }
+/* Keep the selected option's dark text (the .status-btn rule above is more specific) */
+html[data-theme="light"] .status-btn.active,
+html[data-theme="light"] .status-btn.active .rate-badge { color: #0f1419; }
+html[data-theme="light"] .slider { background: #eadfce; border-color: var(--lt-border); }
+html[data-theme="light"] .slider::-webkit-slider-thumb { border-color: #ffffff; }
+html[data-theme="light"] .slider::-moz-range-thumb { border-color: #ffffff; }
+html[data-theme="light"] .fee-item { border-bottom-color: var(--lt-border); }
+
+/* =========================================================
+   OTHER PAGES (found with a light-mode contrast audit of every page)
+   ========================================================= */
+
+/* ---------- Shared: dark-gradient cards used on the developer pages ---------- */
+html[data-theme="light"] .dev-card,
+html[data-theme="light"] .dev-skeleton,
+html[data-theme="light"] .dd-prop-card,
+html[data-theme="light"] .dd-skeleton,
+html[data-theme="light"] .dd-info-card,
+html[data-theme="light"] .dd-steps li,
+html[data-theme="light"] .dev-cta-banner,
+html[data-theme="light"] .dd-cta {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .dev-card:hover,
+html[data-theme="light"] .dd-prop-card:hover {
+  box-shadow: 0 18px 40px rgba(80, 60, 30, 0.16);
+}
+html[data-theme="light"] .skeleton-block {
+  background: linear-gradient(90deg, #efe7da 25%, #f7f1e7 50%, #efe7da 75%);
+  background-size: 200% 100%;
+}
+
+/* ---------- Developers list ---------- */
+html[data-theme="light"] #devSearch,
+html[data-theme="light"] .dev-sort-select { background-color: #ffffff; border-color: rgba(160, 120, 40, 0.3); }
+html[data-theme="light"] .dev-sort-select option { background: #ffffff; color: var(--lt-text); }
+html[data-theme="light"] .dev-card-logo { background: var(--lt-soft); border-bottom-color: var(--lt-border); }
+html[data-theme="light"] .dev-card-meta { border-top-color: var(--lt-border); }
+
+/* ---------- Developer detail (/developers/?name=...) ---------- */
+html[data-theme="light"] .dd-stats-bar { background: var(--lt-card); border-color: var(--lt-border); box-shadow: var(--lt-shadow); }
+html[data-theme="light"] .dd-stat-item { border-color: var(--lt-border); }
+html[data-theme="light"] .dd-logo-wrap { background: var(--lt-card); border-color: var(--lt-border); }
+html[data-theme="light"] #propSearch,
+html[data-theme="light"] .dd-filter-select,
+html[data-theme="light"] .category-filter { background-color: #ffffff; border-color: rgba(160, 120, 40, 0.3); }
+html[data-theme="light"] .dd-filter-select option { background: #ffffff; color: var(--lt-text); }
+html[data-theme="light"] .dd-prop-img,
+html[data-theme="light"] .dd-prop-img-placeholder { background: var(--lt-soft); }
+html[data-theme="light"] .dd-prop-badge { background: rgba(255, 255, 255, 0.92); border-color: var(--lt-border); color: var(--lt-gold); }
+html[data-theme="light"] .dd-prop-divider { background: var(--lt-border); }
+html[data-theme="light"] .dd-faq details { background: var(--lt-card); border-color: var(--lt-border); }
+html[data-theme="light"] .dd-faq details[open] { border-color: rgba(184, 134, 11, 0.45); }
+html[data-theme="light"] .dd-page-btn { background: #ffffff; border-color: rgba(160, 120, 40, 0.3); color: var(--lt-muted); }
+html[data-theme="light"] .dd-page-btn.active { background: var(--accent-gradient); border-color: transparent; color: #ffffff; }
+
+/* ---------- Properties list / detail ---------- */
+html[data-theme="light"] .unit-type-avail { color: #0f7a54; }
+
+/* ---------- Blogs ---------- */
+/* These buttons were filled with the page background: give them a solid dark fill */
+html[data-theme="light"] .newsletter-btn,
+html[data-theme="light"] .post-cta .contact-btn,
+html[data-theme="light"] .sidebar-widget .contact-btn { background: #1d1a16; color: #ffffff; }
+html[data-theme="light"] .search-input { background: #ffffff; border-color: rgba(160, 120, 40, 0.3); }
+
+/* ---------- Page headers (about, contact, blogs...): dark radial shade -> warm glow ---------- */
+html[data-theme="light"] .page-header {
+  background: radial-gradient(ellipse at center, rgba(184, 134, 11, 0.08) 0%, var(--obsidian-black) 70%);
+}
+
+/* ---------- About / Careers ---------- */
+html[data-theme="light"] .timeline-section .section-title p { color: var(--lt-muted) !important; } /* inline style */
+html[data-theme="light"] .no-openings h3 { color: var(--lt-text); }
+
+/* ---------- Landing pages (retail, offplan, plots, warehouses, office space...) ----------
+   Each template inlines the same dark CSS, starting with body { background: #030303 }.
+   Hero sections sit on photos and are left as they are. */
+html[data-theme="light"] body { background-color: var(--obsidian-black); }
+html[data-theme="light"] .graph_section,
+html[data-theme="light"] .prime-locations,
+html[data-theme="light"] .roi-cards-custom,
+html[data-theme="light"] .market-trends,
+html[data-theme="light"] .kif-investor-section,
+html[data-theme="light"] .kif-why-choose,
+html[data-theme="light"] .faq-section,
+html[data-theme="light"] .cta-section:not(:has(.cta-overlay)),  /* the home page CTA is a photo banner */
+html[data-theme="light"] .office-intro-section,
+html[data-theme="light"] .office-types-section,
+html[data-theme="light"] .office-locations-section,
+html[data-theme="light"] .office-process-section,
+html[data-theme="light"] .office-faq-section {
+  background: var(--obsidian-black);
+  color: var(--lt-text);
+}
+html[data-theme="light"] .graph_section h2,
+html[data-theme="light"] .location-card h3,
+html[data-theme="light"] .trend-card h3,
+html[data-theme="light"] .faq-question,
+html[data-theme="light"] .office-type-card h3,
+html[data-theme="light"] .office-location-card h3,
+html[data-theme="light"] .office-process-card h3,
+html[data-theme="light"] .office-faq-question { color: var(--lt-text); }
+/* Grey body copy (#a3a3a3 / #bbb) -> readable on cream */
+html[data-theme="light"] .graph_section p,
+html[data-theme="light"] .prime-locations p,
+html[data-theme="light"] .location-card p,
+html[data-theme="light"] .roi-cards-custom .section-header p,
+html[data-theme="light"] .roi-cards-custom .card h3,
+html[data-theme="light"] .market-trends p,
+html[data-theme="light"] .trend-card ul,
+html[data-theme="light"] .kif-investor-section .kif-subtitle,
+html[data-theme="light"] .kif-point,
+html[data-theme="light"] .kif-section-header p,
+html[data-theme="light"] .kif-card p,
+html[data-theme="light"] .faq-section .faq-subtitle,
+html[data-theme="light"] .faq-answer,
+html[data-theme="light"] .cta-section:not(:has(.cta-overlay)) p,
+html[data-theme="light"] .office-intro-section p,
+html[data-theme="light"] .office-intro-card p,
+html[data-theme="light"] .office-types-section > p,
+html[data-theme="light"] .office-type-card .tagline,
+html[data-theme="light"] .office-type-card ul,
+html[data-theme="light"] .office-locations-section > p,
+html[data-theme="light"] .office-location-card p,
+html[data-theme="light"] .office-process-section > p,
+html[data-theme="light"] .office-process-card p,
+html[data-theme="light"] .office-faq-answer p { color: var(--lt-muted); }
+/* Bright yellow accents (#F7B600) -> deeper gold */
+html[data-theme="light"] .graph_section h2 span,
+html[data-theme="light"] .prime-locations h2 span,
+html[data-theme="light"] .roi-cards-custom .section-header h2 span,
+html[data-theme="light"] .market-trends h2 span,
+html[data-theme="light"] .kif-investor-section h2 span,
+html[data-theme="light"] .kif-section-header h2 span,
+html[data-theme="light"] .faq-section h2 span,
+html[data-theme="light"] .faq-question span.faq-icon,
+html[data-theme="light"] .cta-section:not(:has(.cta-overlay)) h2 span,
+html[data-theme="light"] .location-card:hover h3,
+html[data-theme="light"] .trend-card:hover h3,
+html[data-theme="light"] .office-intro-section h2 span,
+html[data-theme="light"] .office-types-section h2 span,
+html[data-theme="light"] .office-locations-section h2 span,
+html[data-theme="light"] .office-process-section h2 span,
+html[data-theme="light"] .office-faq-section h2 span,
+html[data-theme="light"] .office-type-card:hover h3,
+html[data-theme="light"] .office-location-card:hover h3,
+html[data-theme="light"] .office-process-step,
+html[data-theme="light"] .office-faq-question:hover,
+html[data-theme="light"] .office-faq-question .plus { color: #a77f12; }
+/* Near-black cards (#080808 / #0b0b0b) -> white */
+html[data-theme="light"] .graph_container,
+html[data-theme="light"] .location-card,
+html[data-theme="light"] .roi-cards-custom .card,
+html[data-theme="light"] .trend-card,
+html[data-theme="light"] .kif-points-box,
+html[data-theme="light"] .kif-card,
+html[data-theme="light"] .faq-item,
+html[data-theme="light"] .office-intro-card,
+html[data-theme="light"] .office-type-card,
+html[data-theme="light"] .office-location-card,
+html[data-theme="light"] .office-process-card,
+html[data-theme="light"] .office-faq-item {
+  background: var(--lt-card);
+  border-color: var(--lt-border);
+  box-shadow: var(--lt-shadow);
+}
+html[data-theme="light"] .location-icon,
+html[data-theme="light"] .trend-icon,
+html[data-theme="light"] .office-location-icon { border-color: rgba(184, 134, 11, 0.3); }
+html[data-theme="light"] .cta-section:not(:has(.cta-overlay)) [class*="btn-outline"] { color: #8a5d0c; border-color: #b8860b; }
+/* Enquiry modal + phone input */
+html[data-theme="light"] .modal-content { background-color: #ffffff; color: var(--lt-text); }
+html[data-theme="light"] .modal-content p,
+html[data-theme="light"] .modal label { color: var(--lt-muted); }
+html[data-theme="light"] .modal-content h2,
+html[data-theme="light"] .close-btn,
+html[data-theme="light"] .close-btn2 { color: #a77f12; }
+html[data-theme="light"] .modal-content input,
+html[data-theme="light"] .modal-content select,
+html[data-theme="light"] .modal-content textarea,
+html[data-theme="light"] .modal-content input:focus,
+html[data-theme="light"] .modal-content textarea:focus,
+html[data-theme="light"] .iti input[type="tel"] {
+  background-color: #ffffff !important;
+  border-color: rgba(160, 120, 40, 0.35) !important;
+  color: var(--lt-text) !important;
+}
+html[data-theme="light"] .modal-content input:-webkit-autofill { -webkit-text-fill-color: var(--lt-text) !important; }
+html[data-theme="light"] .iti__flag-container { background: var(--lt-soft); border-right-color: rgba(160, 120, 40, 0.35); }
+html[data-theme="light"] .iti__country-list { background-color: #ffffff; color: var(--lt-text); border-color: var(--lt-border); }
+html[data-theme="light"] .iti__country:hover { background-color: var(--lt-soft); }
+
+/* ---------- Footer ---------- */
+html[data-theme="light"] .footer {
+  background: linear-gradient(135deg, #f3ece1 0%, #ece3d5 100%);
+  color: var(--lt-text);
+  border-top-color: var(--lt-border);
+}
+html[data-theme="light"] .footer-bottom { border-top-color: var(--lt-border); }

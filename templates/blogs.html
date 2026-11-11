@@ -408,7 +408,20 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
         top: 7rem;
         /* Adjust for fixed nav height */
         height: fit-content;
+        /* Never taller than the screen: the sidebar scrolls on its own and the
+           page length follows the posts, so both columns end together. */
+        align-self: start;
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(232, 180, 160, 0.35) transparent;
+        padding-right: 0.4rem;
     }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(232, 180, 160, 0.35); border-radius: 3px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar .sidebar-widget:last-child { margin-bottom: 0; }
     .sidebar-widget {
         background: linear-gradient(145deg, var(--charcoal-gray), var(--medium-gray));
         border-radius: 20px;
@@ -514,7 +527,106 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
         border-radius: 15px;
         font-size: 0.8rem;
         font-weight: 600;
+        flex-shrink: 0;
+        margin-left: 0.6rem;
     }
+    /* "Browse all categories" panel */
+    .all-categories {
+        position: relative;
+        z-index: 1;
+        margin-top: 0.5rem;
+        border-top: 1px solid rgba(232, 180, 160, 0.12);
+        padding-top: 1rem;
+    }
+    .all-categories summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--rose-gold);
+        font-size: 0.82rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.6rem 1.2rem;
+        border-radius: 15px;
+        transition: background 0.3s ease;
+    }
+    .all-categories summary::-webkit-details-marker { display: none; }
+    .all-categories summary::after {
+        content: '+';
+        font-size: 1.2rem;
+        line-height: 1;
+        transition: transform 0.3s ease;
+    }
+    .all-categories[open] summary::after { transform: rotate(45deg); }
+    .all-categories summary:hover { background: rgba(232, 180, 160, 0.08); }
+    .all-categories summary:focus-visible { outline: 1px solid var(--rose-gold); outline-offset: 2px; }
+    /* Small category search above the list */
+    .category-search {
+        position: relative;
+        z-index: 1;
+        margin: -0.6rem 0 1.2rem;
+    }
+    .category-search i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--rose-gold);
+        font-size: 0.78rem;
+        pointer-events: none;
+    }
+    .category-filter {
+        width: 100%;
+        background: var(--obsidian-black);
+        border: 1px solid rgba(232, 180, 160, 0.2);
+        border-radius: 50px;
+        padding: 0.6rem 1rem 0.6rem 2.4rem;
+        color: var(--text-light);
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    .category-filter::placeholder { color: var(--text-muted); }
+    .category-filter:focus { border-color: var(--rose-gold); }
+    .categories-widget.searching .top-categories,
+    .categories-widget.searching .all-categories summary { display: none; }
+    .categories-widget.searching .all-categories { border-top: none; padding-top: 0; margin-top: 0; }
+
+    /* Article search bar above the posts */
+    .blog-search-bar {
+        position: relative;
+        margin-bottom: 2.5rem;
+    }
+    .blog-search-bar .blog-search-icon {
+        position: absolute;
+        left: 1.4rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--rose-gold);
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+    .blog-search-bar .search-input { padding-left: 3rem; }
+    .blog-search-bar .search-btn {
+        padding: 0 2rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .categories-list.compact {
+        max-height: 320px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(232, 180, 160, 0.35) transparent;
+        padding-right: 0.3rem;
+    }
+    .categories-list.compact li { margin-bottom: 0.2rem; }
+    .categories-list.compact a { padding: 0.55rem 0.9rem; font-size: 0.88rem; }
+    .categories-list.compact .category-count { padding: 0.15rem 0.6rem; font-size: 0.72rem; }
+    .category-filter-empty { color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0.9rem; }
     /* Recent Posts */
     .recent-posts {
         position: relative;
@@ -686,7 +798,13 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-        }    }
+            /* Stacked under the posts here: no screen-height cap */
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
+        }
+        .sidebar .sidebar-widget { margin-bottom: 0; }
+    }
 
     @media (max-width: 768px) {
         .page-header {
@@ -782,8 +900,18 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
     <div class="blog-container">
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Article search: above the posts it searches -->
+            <form method="GET" action="" class="search-widget blog-search-bar" role="search">
+                <i class="fas fa-search blog-search-icon" aria-hidden="true"></i>
+                <input type="text" name="q" class="search-input" placeholder="Search articles…"
+                    aria-label="Search articles" value="{{ search_query|default:'' }}">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+
             <!-- Featured Post -->
             {% if featured_post and not search_query %}
+            {# The card below is written against `post`; without this it rendered blank #}
+            {% with post=featured_post %}
             <article class="blog-post">
     <div class="post-image" style="background-image: url('{{ post.featured_image.url }}');">
         <div class="post-category">{{ post.category.name }}</div>
@@ -806,7 +934,7 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
         </a>
     </div>
 </article>
-
+            {% endwith %}
             {% endif %}
 
             <!-- Search Results Header -->
@@ -860,7 +988,7 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
 
                         <h4 style="margin-top: 2rem;">Browse by Category:</h4>
                         <div class="suggestion-categories">
-                            {% for category in categories %}
+                            {% for category in top_categories %}
                             <div class="suggestion-item">
                                 <a href="{% url 'blog_category' slug=category.slug %}">
                                     {{ category.name }} ({{ category.posts_count }} posts)
@@ -908,21 +1036,20 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
 
         <!-- Sidebar -->
         <aside class="sidebar">
-            <!-- Search Widget -->
-            <div class="sidebar-widget">
-                <h3 class="widget-title">Search Articles</h3>
-                <form method="GET" action="" class="search-widget">
-                    <input type="text" name="q" class="search-input" placeholder="Search real estate insights..."
-                        value="{{ search_query|default:'' }}">
-                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-
             <!-- Categories Widget -->
-            <div class="sidebar-widget">
+            <div class="sidebar-widget categories-widget">
                 <h3 class="widget-title">Categories</h3>
-                <ul class="categories-list">
-                    {% for category in categories %}
+                {% if categories|length > top_categories|length %}
+                {# Small search just above the list; it searches every category, not only the top few #}
+                <div class="category-search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="search" class="category-filter" placeholder="Search categories…"
+                        aria-label="Search categories">
+                </div>
+                {% endif %}
+                {# Busiest few up front; the full list (hundreds) sits in a scrollable panel #}
+                <ul class="categories-list top-categories">
+                    {% for category in top_categories %}
                     <li>
                         <a href="{% url 'blog_category' slug=category.slug %}">
                             {{ category.name }}
@@ -933,6 +1060,22 @@ KIF Realty Blogs | Dubai Property News & Expert Insights
                     <li>No categories available</li>
                     {% endfor %}
                 </ul>
+                {% if categories|length > top_categories|length %}
+                <details class="all-categories">
+                    <summary>Browse all {{ categories|length }} categories</summary>
+                    <ul class="categories-list compact">
+                        {% for category in categories %}
+                        <li>
+                            <a href="{% url 'blog_category' slug=category.slug %}">
+                                {{ category.name }}
+                                <span class="category-count">{{ category.posts_count }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <p class="category-filter-empty" hidden>No matching categories</p>
+                </details>
+                {% endif %}
             </div>
 
             <!-- Recent Posts Widget -->
@@ -1312,6 +1455,36 @@ function attachPaginationListeners() {
         });
     });
 }
+
+// Category search above the Categories list (the sidebar is never replaced by AJAX paging).
+// While typing, the top-8 list is swapped for the full list, filtered.
+(function () {
+    const widget = document.querySelector('.categories-widget');
+    const input  = widget && widget.querySelector('.category-filter');
+    const panel  = widget && widget.querySelector('.all-categories');
+    if (!input || !panel) return;
+    const items = Array.from(panel.querySelectorAll('.categories-list li'));
+    const empty = panel.querySelector('.category-filter-empty');
+    let wasOpen = false;
+
+    input.addEventListener('input', function () {
+        const q = input.value.trim().toLowerCase();
+        if (q && !widget.classList.contains('searching')) {
+            wasOpen = panel.open;  // restore this when the search is cleared
+            panel.open = true;
+        }
+        widget.classList.toggle('searching', !!q);
+        if (!q) panel.open = wasOpen;
+
+        let shown = 0;
+        items.forEach(function (li) {
+            const match = !q || li.textContent.toLowerCase().includes(q);
+            li.hidden = !match;
+            if (match) shown++;
+        });
+        empty.hidden = shown > 0;
+    });
+})();
 </script>
 
 {% endblock %}

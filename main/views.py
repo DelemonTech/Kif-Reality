@@ -85,6 +85,20 @@ def _fix_image_url(path):
     return f"{MEDIA_BASE_URL}{path}"
 
 
+def _sidebar_categories(top_n=8):
+    """(all categories A-Z, the top_n busiest) for the blog sidebar.
+
+    There are hundreds of categories and most hold a single post, so the
+    sidebar shows the busiest few and tucks the full list into a collapsible
+    panel - listing them all made the sidebar far longer than the posts.
+    """
+    categories = list(Category.objects.annotate(
+        posts_count=Count('posts', filter=Q(posts__status='published'))
+    ).filter(posts_count__gt=0).order_by('name'))
+    top = sorted(categories, key=lambda c: (-c.posts_count, c.name))[:top_n]
+    return categories, top
+
+
 def blog_list(request):
     """Display blog list page with pagination and filtering"""
     posts = BlogPost.objects.filter(status='published').select_related(
@@ -124,9 +138,7 @@ def blog_list(request):
     page_obj = paginator.get_page(page_number)
 
     # Sidebar data
-    categories = Category.objects.annotate(
-        posts_count=Count('posts', filter=Q(posts__status='published'))
-    ).filter(posts_count__gt=0)
+    categories, top_categories = _sidebar_categories()
 
     recent_posts = BlogPost.objects.filter(status='published').order_by('-published_at')[:3]
     popular_tags = Tag.objects.annotate(
@@ -137,6 +149,7 @@ def blog_list(request):
         'featured_post': featured_post,
         'page_obj': page_obj,
         'categories': categories,
+        'top_categories': top_categories,
         'recent_posts': recent_posts,
         'popular_tags': popular_tags,
         'search_query': search_query,
@@ -237,12 +250,12 @@ def blog_category(request, slug):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    categories, top_categories = _sidebar_categories()
     context = {
         'category': category,
         'page_obj': page_obj,
-        'categories': Category.objects.annotate(
-            posts_count=Count('posts', filter=Q(posts__status='published'))
-        ).filter(posts_count__gt=0),
+        'categories': categories,
+        'top_categories': top_categories,
     }
 
     return render(request, 'blogs.html', context)
@@ -260,9 +273,12 @@ def blog_tag(request, slug):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    categories, top_categories = _sidebar_categories()
     context = {
         'tag': tag,
         'page_obj': page_obj,
+        'categories': categories,
+        'top_categories': top_categories,
         'popular_tags': Tag.objects.annotate(
             posts_count=Count('posts', filter=Q(posts__status='published'))
         ).filter(posts_count__gt=0).order_by('-posts_count')[:10],
@@ -1300,6 +1316,14 @@ def cities_api(request):
 #    and falls back gracefully when microservice is down
 # ─────────────────────────────────────────────
 def _xopp_developers_response():
+    """JSON response of _developers_with_counts(), or None if it's unavailable."""
+    data = _developers_with_counts()
+    if data is None:
+        return None
+    return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
+
+
+def _developers_with_counts():
     """Developers from the partner /developers/ endpoint, enriched with the
     number of catalog projects per developer. None if the endpoint is down.
 
@@ -1331,7 +1355,7 @@ def _xopp_developers_response():
         'projects_count': counts.get((d.get('name') or '').strip().lower(), 0),
     } for d in devs if d.get('name')]
 
-    return JsonResponse({'status': True, 'data': data}, json_dumps_params={'ensure_ascii': False})
+    return data
 
 
 @csrf_exempt
@@ -1421,6 +1445,9 @@ def preview_404(request):
     """Preview the 404 page during development"""
     return render(request, '404.html', status=404)
 
+DEVELOPERS_PER_PAGE = 24
+
+
 def developers(request):
     # Templates build '<MICROSERVICE_API>/developers/' — point them at our own API
     if request.GET.get('name'):
@@ -1438,9 +1465,17 @@ def developers(request):
     # page used to ship an empty grid that JavaScript filled in afterwards, so
     # Google indexed none of them. cached_only: never walk the partner API
     # inline - an empty list falls back to the old skeleton + JS behaviour.
+    # Paginated (?page=N, plain links) so crawlers still reach every developer
+    # without one ~1,200-card page.
+    devs = sorted(_developers_with_counts() or [], key=lambda d: d['name'].strip().casefold())
+    page_obj = Paginator(devs, DEVELOPERS_PER_PAGE).get_page(request.GET.get('page'))
     return render(request, 'developers.html', {
         'MICROSERVICE_API': '/api',
-        'developers': xopp_get_developers(cached_only=True),
+        'developers': page_obj.object_list,
+        'page_obj': page_obj,
+        'total_developers': len(devs),
+        'page_range': page_obj.paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1),
+        'per_page': DEVELOPERS_PER_PAGE,
     })
 
 

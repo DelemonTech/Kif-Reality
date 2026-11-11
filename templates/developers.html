@@ -5,7 +5,8 @@
 {% block description %}Explore KIF Realty's network of world-class property developers in Dubai and Sharjah. Browse top-tier projects from industry-leading names across UAE.{% endblock %}
 
 {% block canonical %}
-<link rel="canonical" href="https://kifrealty.com/developers/">
+{# Each ?page=N lists different developers, so it is its own canonical page #}
+<link rel="canonical" href="https://kifrealty.com/developers/{% if page_obj and page_obj.number > 1 %}?page={{ page_obj.number }}{% endif %}">
 {% endblock %}
 
 {% load static %}
@@ -186,6 +187,49 @@
 .dev-section {
     padding: 0 2rem 6rem;
 }
+
+/* ── Pagination (theme tokens: follows light/dark automatically) ── */
+.dev-pagination {
+    max-width: 1320px;
+    margin: 3rem auto 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.dev-pagination[hidden] { display: none; }
+.dev-page-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 0.9rem;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s;
+}
+a.dev-page-btn:hover,
+button.dev-page-btn:hover:not(:disabled):not(.active) { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.dev-page-btn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.dev-page-btn.active {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: var(--on-accent);
+    font-weight: 600;
+    cursor: default;
+}
+.dev-page-btn.disabled,
+.dev-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.dev-page-gap { color: var(--text-2); padding: 0 0.2rem; }
 .dev-grid {
     max-width: 1320px;
     margin: 0 auto;
@@ -513,7 +557,7 @@
         <p>KIF Realty partners with the UAE's most distinguished property developers — delivering exceptional residential and commercial projects across Dubai and Sharjah.</p>
         <div class="dev-stats-row">
             <div class="dev-stat">
-                <div class="dev-stat-num" id="statDevCount">{% if developers %}{{ developers|length }}{% else %}—{% endif %}</div>
+                <div class="dev-stat-num" id="statDevCount">{% if total_developers %}{{ total_developers }}{% else %}—{% endif %}</div>
                 <div class="dev-stat-label">Developers</div>
             </div>
             <div class="dev-stat">
@@ -539,7 +583,7 @@
             <option value="az">A → Z</option>
             <option value="za">Z → A</option>
         </select>
-        <p class="dev-count-badge">Showing <span id="devShownCount">{% if developers %}{{ developers|length }}{% else %}—{% endif %}</span> developers</p>
+        <p class="dev-count-badge">Showing <span id="devShownCount">{% if developers %}{{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ total_developers }}{% else %}—{% endif %}</span> developers</p>
     </div>
 </div>
 
@@ -581,6 +625,32 @@
         {% endfor %}
         {% endif %}
     </div>
+
+    {# Plain links so crawlers can walk every page; JS swaps in buttons while searching/sorting #}
+    <nav class="dev-pagination" id="devPager" aria-label="Developer pages"
+        {% if not page_obj or page_obj.paginator.num_pages < 2 %}hidden{% endif %}>
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        {% if page_obj.has_previous %}
+        <a class="dev-page-btn" href="{% if page_obj.previous_page_number == 1 %}{% url 'developers' %}{% else %}?page={{ page_obj.previous_page_number }}{% endif %}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i> Prev</a>
+        {% else %}
+        <span class="dev-page-btn disabled" aria-hidden="true"><i class="bi bi-chevron-left"></i> Prev</span>
+        {% endif %}
+        {% for n in page_range %}
+            {% if n == page_obj.paginator.ELLIPSIS %}
+            <span class="dev-page-gap">…</span>
+            {% elif n == page_obj.number %}
+            <span class="dev-page-btn active" aria-current="page">{{ n }}</span>
+            {% else %}
+            <a class="dev-page-btn" href="{% if n == 1 %}{% url 'developers' %}{% else %}?page={{ n }}{% endif %}" aria-label="Page {{ n }}">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a class="dev-page-btn" href="?page={{ page_obj.next_page_number }}" rel="next" aria-label="Next page">Next <i class="bi bi-chevron-right"></i></a>
+        {% else %}
+        <span class="dev-page-btn disabled" aria-hidden="true">Next <i class="bi bi-chevron-right"></i></span>
+        {% endif %}
+        {% endif %}
+    </nav>
 </section>
 
 <!-- CTA Banner -->
@@ -613,9 +683,12 @@
     const sortSelect = document.getElementById('devSort');
     const shownCount = document.getElementById('devShownCount');
     const statDevCount = document.getElementById('statDevCount');
+    const pager = document.getElementById('devPager');
+    const PER_PAGE = {{ per_page|default:24 }};
 
     let allDevelopers = [];
     let filteredDevelopers = [];
+    let currentPage = 1;
 
     /* ── Fetch ── */
     async function loadDevelopers() {
@@ -636,11 +709,8 @@
            wipe it when the fetch failed. Just sync the counters; search and
            sort call render() themselves once the data has arrived. */
         if (serverRendered) {
-            if (allDevelopers.length) {
-                statDevCount.textContent = allDevelopers.length;
-                shownCount.textContent = allDevelopers.length;
-            }
-            return;
+            if (allDevelopers.length) statDevCount.textContent = allDevelopers.length;
+            return;  // the server's "1–24 of N" count and page links stay as they are
         }
         render();
     }
@@ -666,7 +736,17 @@
 
         grid.innerHTML = '';
         statDevCount.textContent = allDevelopers.length || '—';
-        shownCount.textContent = filteredDevelopers.length;
+
+        // Client-side pages of PER_PAGE while searching/sorting
+        const total = filteredDevelopers.length;
+        const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+        currentPage = Math.min(Math.max(1, currentPage), totalPages);
+        const start = (currentPage - 1) * PER_PAGE;
+        const pageItems = filteredDevelopers.slice(start, start + PER_PAGE);
+        shownCount.textContent = total > PER_PAGE
+            ? `${start + 1}–${start + pageItems.length} of ${total}`
+            : total;
+        renderPager(totalPages);
 
         if (!filteredDevelopers.length) {
             grid.innerHTML = `
@@ -679,11 +759,46 @@
             return;
         }
 
-        filteredDevelopers.forEach((dev, idx) => {
+        pageItems.forEach((dev, idx) => {
             const card = buildCard(dev, idx);
             grid.appendChild(card);
         });
     }
+
+    /* ── Pager (replaces the server's page links while searching/sorting) ── */
+    function pageList(cur, last) {
+        if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+        const pages = [1];
+        const from = Math.max(2, cur - 1), to = Math.min(last - 1, cur + 1);
+        if (from > 2) pages.push('…');
+        for (let p = from; p <= to; p++) pages.push(p);
+        if (to < last - 1) pages.push('…');
+        pages.push(last);
+        return pages;
+    }
+
+    function renderPager(totalPages) {
+        if (totalPages <= 1) { pager.hidden = true; pager.innerHTML = ''; return; }
+        const btn = (page, label, opts = {}) =>
+            `<button type="button" class="dev-page-btn${opts.active ? ' active' : ''}" data-page="${page}"
+                ${opts.disabled ? 'disabled' : ''} ${opts.active ? 'aria-current="page"' : ''}
+                aria-label="${opts.aria || 'Page ' + page}">${label}</button>`;
+        pager.innerHTML =
+            btn(currentPage - 1, '<i class="bi bi-chevron-left"></i> Prev', { disabled: currentPage === 1, aria: 'Previous page' }) +
+            pageList(currentPage, totalPages).map(p => p === '…'
+                ? '<span class="dev-page-gap">…</span>'
+                : btn(p, p, { active: p === currentPage })).join('') +
+            btn(currentPage + 1, 'Next <i class="bi bi-chevron-right"></i>', { disabled: currentPage === totalPages, aria: 'Next page' });
+        pager.hidden = false;
+    }
+
+    pager.addEventListener('click', e => {
+        const b = e.target.closest('button.dev-page-btn');  // server <a> links just navigate
+        if (!b || b.disabled || b.classList.contains('active')) return;
+        currentPage = Number(b.dataset.page);
+        render();
+        document.getElementById('devSearch').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
 
     /* ── Build Card ── */
     function buildCard(dev, idx) {
@@ -704,7 +819,7 @@
             : `<div class="dev-logo-placeholder">${escHtml(name[0] || '?')}</div>`;
 
         const metaItems = [
-            projects !== '' ? `<div class="dev-card-meta-item"><div class="num">${projects}</div><div class="lbl">Projects</div></div>` : '',
+            projects ? `<div class="dev-card-meta-item"><div class="num">${projects}</div><div class="lbl">Projects</div></div>` : '',  // hide 0, like the server cards
             units    !== '' ? `<div class="dev-card-meta-item"><div class="num">${units}</div><div class="lbl">Units</div></div>` : '',
         ].filter(Boolean).join('');
 
@@ -735,8 +850,9 @@
     }
 
     /* ── Events ── */
-    searchInput.addEventListener('input', render);
-    sortSelect.addEventListener('change', render);
+    // A new search or sort starts again from the first page
+    searchInput.addEventListener('input', () => { currentPage = 1; render(); });
+    sortSelect.addEventListener('change', () => { currentPage = 1; render(); });
 
     /* ── Boot ── */
     loadDevelopers();
